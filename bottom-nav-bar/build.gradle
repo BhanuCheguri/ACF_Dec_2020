@@ -1,0 +1,63 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'bottom-nav-bar'
+
+    publishedGroupId = 'me.riddhimanadib.bottom-nav-bar'
+    libraryName = 'bottom-nav-bar'
+    artifact = 'bottom-nav-bar'
+
+    libraryDescription = 'Easily add four tabbed bottom navigation bar in your activity.'
+
+    siteUrl = 'https://github.com/adib2149/BottomNavBar'
+    gitUrl = 'https://github.com/adib2149/BottomNavBar.git'
+
+    libraryVersion = '1.0.1'
+
+    developerId = 'adib2149'
+    developerName = 'Riddhiman Adib'
+    developerEmail = 'adib2149@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.1"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+/*
+    implementation 'com.google.firebase:firebase-core:16.0.4'
+*/
+}
+
+apply from: 'install.gradle'
+apply from: 'bintray.gradle'
+/*
+apply plugin: 'com.google.gms.google-services'
+*/

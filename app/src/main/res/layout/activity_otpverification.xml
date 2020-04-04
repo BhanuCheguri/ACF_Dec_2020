@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="person"
+            type="com.joinacf.acf.activities.OTPVerificationActivity" />
+    </data>
+
+<RelativeLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.joinacf.acf.Activities.OTPVerificationActivity">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <!--<RelativeLayout
+                    android:id="@+id/layoutTop"
+                    android:background="@drawable/gradient_theme"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp" >
+                </RelativeLayout>
+                android:layout_below="@id/layoutTop"
+                android:layout_height="0dp"-->
+
+                <RelativeLayout
+                    android:id="@+id/layoutBottom"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentBottom="true"
+                     >
+
+                    <LinearLayout
+                        android:id="@+id/ll_verify_mobile_no"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginBottom="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="20dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:visibility="visible">
+
+                        <!-- android:background="@color/colorPaleGreen"-->
+
+                        <ImageView
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_gravity="center"
+                            app:srcCompat="@mipmap/ic_launcher_icon" />
+
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:fontFamily="@font/montserrat_light"
+                            android:textColor="@color/colorDarkBlue"
+                            android:gravity="center"
+                            android:padding="5dp"
+                            android:text="@string/verify_mobile_no"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/textView"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="15dp"
+                            android:fontFamily="@font/montserrat_light"
+                            android:padding="5dp"
+                            android:text="@string/verify_mobile_text"
+                            android:textSize="16dp" />
+
+                        <EditText
+                            android:id="@+id/et_MobileNo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="15dp"
+                            android:fontFamily="@font/montserrat_light"
+                            android:inputType="number"
+                            android:gravity="center"
+                            android:maxLength="10"
+                            android:hint="@string/mobile_number"/>
+
+                        <Button
+                            android:id="@+id/btnContinue"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="30dp"
+                            android:background="@drawable/button_style"
+                            android:fontFamily="@font/montserrat_light"
+                            android:padding="5dp"
+                            android:text="@string/txt_continue"
+                            android:textColor="@color/colorWhite" />
+
+
+                        <!-- <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="30dp">
+
+                            <EditText
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:ems="1"
+                                android:fontFamily="@font/montserrat_light"
+                                android:layout_weight="1"
+                                android:layout_marginLeft="5dp"
+                                android:layout_marginRight="5dp"
+                                android:inputType="number" />
+
+                            <EditText
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:ems="1"
+                                android:fontFamily="@font/montserrat_light"
+                                android:layout_weight="1"
+                                android:layout_marginLeft="5dp"
+                                android:layout_marginRight="5dp"
+                                android:inputType="number" />
+
+                            <EditText
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:ems="1"
+                                android:fontFamily="@font/montserrat_light"
+                                android:layout_weight="1"
+                                android:layout_marginLeft="5dp"
+                                android:layout_marginRight="5dp"
+                                android:inputType="number" />
+
+                            <EditText
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:ems="1"
+                                android:fontFamily="@font/montserrat_light"
+                                android:layout_marginLeft="5dp"
+                                android:layout_marginRight="5dp"
+                                android:layout_weight="1"
+                                android:inputType="number" />
+                        </LinearLayout>-->
+
+                        <!--<LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="10dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/montserrat_light"
+                                android:gravity="center"
+                                android:padding="5dp"
+                                android:text="@string/already_registered"
+                                android:textSize="16dp" />
+
+                            <TextView
+                                android:id="@+id/tv_LoginHere"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/montserrat_semibold"
+                                android:gravity="left"
+                                android:padding="5dp"
+                                android:text="@string/login_here"
+                                android:textColor="@color/colorSkyBlue"
+                                android:textSize="16dp" />
+                        </LinearLayout>-->
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_verifying_otp"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        android:layout_marginBottom="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="20dp">
+
+                        <ImageView
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_gravity="center"
+                            app:srcCompat="@mipmap/ic_launcher_icon" />
+
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:fontFamily="@font/montserrat_light"
+                            android:gravity="center"
+                            android:padding="5dp"
+                            android:text="@string/verifing_mobile_no"
+                            android:textColor="@color/colorDarkBlue"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+
+
+                        <TextView
+                            android:id="@+id/verify_otp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="15dp"
+                            android:fontFamily="@font/montserrat_light"
+                            android:padding="5dp"
+                            android:gravity="center"
+                            android:text="@string/verify_otp"
+                            android:textSize="16dp" />
+
+                        <!--<TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat_light"
+                            android:padding="5dp"
+                            android:gravity="center"
+                            android:text="@string/enter_otp"
+                            android:textSize="16dp" />-->
+
+                        <EditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="15dp"
+                            android:fontFamily="@font/montserrat_light"
+                            android:inputType="number"
+                            android:gravity="center"
+                            android:id="@+id/otp_code"
+                            android:hint="@string/otp"/>
+
+                        <Button
+                            android:id="@+id/btnSubmit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:background="@drawable/button_style"
+                            android:fontFamily="@font/montserrat_light"
+                            android:padding="5dp"
+                            android:text="@string/submit"
+                            android:textColor="@color/colorWhite" />
+
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat_light"
+                            android:padding="5dp"
+                            android:gravity="center"
+                            android:text="@string/or"
+                            android:textStyle="bold"
+                            android:textSize="16dp"
+                            android:layout_marginTop="10dp"
+                            android:textColor="@color/colorDarkBlue"/>
+
+                        <TextView
+                            android:id="@+id/change_mobile_no"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat_light"
+                            android:padding="5dp"
+                            android:gravity="center"
+                            android:textStyle="bold"
+                            android:textColor="@color/colorDarkBlue"
+                            android:text="@string/change_mobile_no"
+                            android:textSize="16dp" />
+
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+               <!-- <ImageView
+                    android:id="@+id/overlapImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:layout_above="@id/layoutBottom"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="-70dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/otp_sms" />-->
+
+            </RelativeLayout>
+
+
+    </RelativeLayout>
+</layout>

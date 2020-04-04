@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <TextView
+            android:fontFamily="@font/montserrat_light"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:text="Petition No:"
+            android:layout_column="0"
+            android:layout_row="0"
+            android:padding="5dp"/>
+
+        <TextView
+            android:fontFamily="@font/montserrat_light"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:padding="5dp"
+            android:text="12345"
+            android:id="@+id/tv_petitionNo"
+            android:layout_column="1"
+            android:layout_row="0"/>
+
+        <TextView
+            android:fontFamily="@font/montserrat_light"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:padding="5dp"
+            android:text="Petitioner:"
+            android:layout_column="2"
+            android:layout_row="0"/>
+
+        <TextView
+            android:fontFamily="@font/montserrat_light"
+            android:id="@+id/tv_petitioner"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:padding="5dp"
+            android:text="RK Reddy"
+            android:layout_column="3"
+            android:layout_row="0"/>
+        <TextView
+            android:fontFamily="@font/montserrat_light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Complaint for cheating"
+            android:id="@+id/tv_complaint"
+            android:layout_row="1"
+            android:layout_column="0"
+            android:layout_columnSpan="4"
+            android:layout_gravity="fill_horizontal"
+            android:layout_marginTop="10dp" />
+
+
+        <TextView
+            android:fontFamily="@font/montserrat_light"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/tv_status"
+            android:text="Status: Not Verified"
+            android:layout_row="2"
+            android:layout_column="0"
+            android:layout_columnSpan="2"
+            android:layout_gravity="fill_horizontal"
+            android:layout_marginTop="10dp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:fontFamily="@font/montserrat_light"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/tv_complaintDate"
+            android:layout_gravity="fill_horizontal"
+            android:gravity="right"
+            android:layout_row="2"
+            android:layout_column="2"
+            android:layout_columnSpan="2"
+            android:text="On 12/08/2019 7.15pm"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"/>
+
+
+        <Button
+            android:fontFamily="@font/montserrat_light"
+            android:layout_width="0dp"
+            android:layout_height="25dp"
+            android:text="Verify Now"
+            android:layout_gravity="fill_horizontal"
+            android:textColor="@color/colorWhite"
+            android:background="#6B2849"
+            android:layout_row="3"
+            android:layout_column="0"
+            android:layout_columnSpan="2"
+            android:textSize="12dp"
+            android:id="@+id/btnVerified"
+            android:drawableRight="@mipmap/ic_check_mark"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="80dp"
+            android:paddingRight="10dp"/>
+
+        <TextView
+            android:fontFamily="@font/montserrat_light"
+            android:id="@+id/tv_attachmentsNo"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_column="2"
+            android:layout_columnSpan="2"
+            android:layout_gravity="fill_horizontal"
+            android:layout_row="3"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:text="View Attachments(5)"
+            android:textColor="@color/colorPrimary"
+            android:textSize="16dp"
+            android:textStyle="bold" />
+
+    </GridLayout>
+
+
+</LinearLayout>

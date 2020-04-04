@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorLightPink">#fef0f1</color>
+    <color name="colorDarkBlue">#023049</color>
+    <color name="colorPaleGreen">#E0EFD8</color>
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorSkyBlue">#2196F3</color>
+    <color name="colorGreen">#23B67F</color>
+    <color name="colorSilverGrey">#e1e1e1</color>
+
+    <color name="winBackground">#98cb4a</color>
+    <color name="background">#f76d3c</color>
+
+
+
+</resources>

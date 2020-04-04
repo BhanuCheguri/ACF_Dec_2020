@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@mipmap/ic_home"
+        android:title="Home" />
+
+    <item
+        android:id="@+id/navigation_corruption"
+        android:icon="@mipmap/ic_corruption"
+        android:title="Corruption" />
+
+    <item
+        android:id="@+id/navigation_socialevil"
+        android:icon="@mipmap/ic_adulteration"
+        android:title="Social Evil" />
+
+    <item
+        android:id="@+id/navigation_findnfix"
+        android:icon="@mipmap/ic_findnfix"
+        android:title="Find N Fix" />
+
+    <item
+        android:id="@+id/navigation_more"
+        android:icon="@mipmap/ic_more"
+        android:title="More" />
+
+</menu>
