@@ -1,6 +1,7 @@
 package com.joinacf.acf.activities;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,7 +14,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Toast;
+import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -201,6 +203,46 @@ public class BaseActivity extends AppCompatActivity {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(false);
         dialog.setMessage(Msg);
+        dialog.show();
+    }
+
+    public void CustomDialog(Context context,String title,String msg,String subMsg)
+    {
+        final Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.custom_dialog);
+        //dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        dialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        // set the custom dialog components - text, image and button
+        TextView text = (TextView) dialog.findViewById(R.id.title);
+        text.setText(title);
+
+        TextView message = (TextView) dialog.findViewById(R.id.msg);
+        message.setText(msg);
+
+        if(!msg.equalsIgnoreCase("")) {
+            message.setVisibility(View.VISIBLE);
+            message.setText(msg);
+        }else
+            message.setVisibility(View.GONE);
+
+        TextView sub_Msg = (TextView) dialog.findViewById(R.id.sub_msg);
+
+        if(!subMsg.equalsIgnoreCase("")) {
+            sub_Msg.setVisibility(View.VISIBLE);
+            sub_Msg.setText(subMsg);
+        }else
+            sub_Msg.setVisibility(View.GONE);
+
+        Button dialogButton = (Button) dialog.findViewById(R.id.btnOk);
+        // if button is clicked, close the custom dialog
+        dialogButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
         dialog.show();
     }
 

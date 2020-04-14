@@ -59,8 +59,6 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 public class HomeFragment extends BaseFragment implements SearchView.OnQueryTextListener {
 
     FragmentHomeBinding dataBiding;
-    private OnFragmentInteractionListener listener;
-    private GoogleApiClient mGoogleApiClient;
     boolean bFirst;
     String strPersonName,strPersonEmail,strLoginType;
     int mLastFirstVisibleItem;
@@ -80,10 +78,6 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
 
         dataBiding = DataBindingUtil.inflate(inflater, R.layout.fragment_home, null, false);
-        //dataBiding.search.clearFocus();
-        //setSupportActionBar(dataBiding.toolBar);
-
-
 
         loadSharedPrefference();
         init();
@@ -113,13 +107,13 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
     private void showWelcomeAlert(String strPersonName) {
 
         ViewGroup viewGroup = getActivity().findViewById(android.R.id.content);
-        View dialogView = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_welcome, viewGroup, false);
+        View dialogView = LayoutInflater.from(getActivity()).inflate(R.layout.custom_dialog, viewGroup, false);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(dialogView);
         final AlertDialog alertDialog = builder.create();
         alertDialog.show();
 
-        TextView login_name = (TextView) dialogView.findViewById(R.id.login_name);
+        TextView login_name = (TextView) dialogView.findViewById(R.id.tv_title);
         login_name.setText(strPersonName);
 
         Handler mHandler = new Handler();
@@ -130,7 +124,6 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
             }
         };
         mHandler.postDelayed(mRunnable,2000);
-
     }
 
     private void loadSharedPrefference() {
@@ -138,7 +131,6 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
         bFirst = getBooleanSharedPreference(getActivity(), "FirstTime");
         strLoginType = getStringSharedPreference(getActivity(), "LoginType");
         strPersonName = getStringSharedPreference(getActivity(), "PersonName");
-        //Toast.makeText(getActivity(),strPersonName ,Toast.LENGTH_LONG).show();
         strPersonEmail = getStringSharedPreference(getActivity(), "personEmail");
         if (bFirst) {
             //showWelcomeAlert(strPersonName);
@@ -214,23 +206,6 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
         hideProgressDialog(getActivity());
     }
 
-
-    /*@Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            listener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        listener = null;
-    }*/
-
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         //inflater.inflate(R.menu.menu, menu);
@@ -287,29 +262,8 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
         return false;
     }
 
-
-    public interface OnFragmentInteractionListener {
-    }
-
-    /*@Override
-    public void onStart() {
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-        mGoogleApiClient = new GoogleApiClient.Builder(getContext())
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-        mGoogleApiClient.connect();
-        super.onStart();
-    }*/
-
     public void signOut()
     {
-       /* if (mGoogleApiClient.isConnected()) {
-            Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
-            mGoogleApiClient.disconnect();
-            mGoogleApiClient.connect();
-        }*/
         try {
             if (strLoginType.equalsIgnoreCase("Google")) {
                 GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -333,6 +287,11 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
                 startActivity(intent);
                 getActivity().finish();
             }
+            putBooleanSharedPreference(getActivity(), "FirstTime", false);
+            putStringSharedPreference(getActivity(), "LoginType", "");
+            putStringSharedPreference(getActivity(), "personName", "");
+            putStringSharedPreference(getActivity(), "personEmail", "");
+            putStringSharedPreference(getActivity(), "personId", "");
         }catch (Exception e)
         {
             Crashlytics.logException(e);

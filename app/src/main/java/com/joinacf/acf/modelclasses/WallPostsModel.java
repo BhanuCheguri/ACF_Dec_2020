@@ -33,6 +33,11 @@ public class WallPostsModel {
     @Expose
     private Integer status;
 
+    @SerializedName("FilePath")
+    @Expose
+    private String FilePath;
+
+
     public String getItemID() {
         return itemID;
     }
@@ -105,4 +110,11 @@ public class WallPostsModel {
         this.status = status;
     }
 
+    public String getFilePath() {
+        return FilePath;
+    }
+
+    public void setFilePath(String filePath) {
+        FilePath = filePath;
+    }
 }

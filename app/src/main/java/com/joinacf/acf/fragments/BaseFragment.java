@@ -64,7 +64,7 @@ public class BaseFragment extends Fragment {
         return pref.getString(key, "");
     }
 
-    public void putStringSharedPreference(Fragment activity,String key,String value)
+    public void putStringSharedPreference(Activity activity,String key,String value)
     {
         SharedPreferences.Editor editor = pref.edit();
         editor.putString(key,value); // Storing boolean - true/false

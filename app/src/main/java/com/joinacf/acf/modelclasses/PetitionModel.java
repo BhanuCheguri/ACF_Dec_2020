@@ -4,7 +4,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 
-public class MyPostsModel {
+public class PetitionModel {
 
     @SerializedName("PetitionID")
     @Expose

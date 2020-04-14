@@ -4,14 +4,16 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class StatusModel {
-    @SerializedName("Status")
+    @SerializedName("RES")
     @Expose
-    private Integer status;
+    private Integer rES;
 
-    public Integer getStatus() {
-        return status;
+    public Integer getRES() {
+        return rES;
     }
-    public void setStatus(Integer status) {
-        this.status = status;
+
+    public void setRES(Integer rES) {
+        this.rES = rES;
     }
+
 }

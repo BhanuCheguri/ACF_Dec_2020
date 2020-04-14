@@ -21,16 +21,18 @@ import android.widget.Toast;
 
 import com.joinacf.acf.R;
 import com.joinacf.acf.databinding.ActivityMyPostingsBinding;
-import com.joinacf.acf.modelclasses.MyPostsModel;
-import com.joinacf.acf.modelclasses.MyProfileModel;
+import com.joinacf.acf.modelclasses.MyPostingModel;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
-import com.joinacf.acf.petitions.MyPetitionListActivity;
 import com.joinacf.acf.petitions.PetitionModel;
-import com.joinacf.acf.petitions.PetitionsListAdapter;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -51,21 +53,7 @@ public class MyPostingsActivity extends BaseActivity {
         init();
         //LoadAdapter();
     }
-
-    /*private void LoadAdapter() {
-        model= new ArrayList<>();
-
-        model.add(new PetitionModel("1","RK Reddy","Not Verified","Complain on cheating","12th Aug 2019 , 7:20PM" ,"0"));
-        model.add(new PetitionModel("2","RK Reddy","Not Verified","Complain on cheating","14th Aug 2019 , 8:20PM" ,"0"));
-        model.add(new PetitionModel("3","RK Reddy","Verified","Complain on cheating","18th Aug 2019 , 2:20PM" ,"0"));
-        model.add(new PetitionModel("4","RK Reddy","Not Verified","Complain on cheating","19th Aug 2019 , 1:20PM" ,"0"));
-        model.add(new PetitionModel("5","RK Reddy","Verified","Complain on cheating","22th Aug 2019 , 9:20PM" ,"0"));
-
-        MyPostingAdapter adaper = new MyPostingAdapter(MyPostingsActivity.this,model);
-        dataBiding.lvPosting.setAdapter(adaper);
-    }*/
-
-    private void  init() {
+    private void init() {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.mipmap.ic_launcher_icon);
@@ -78,6 +66,168 @@ public class MyPostingsActivity extends BaseActivity {
     }
 
     private void getMyPostingDetails() {
+        String strMemberID = getStringSharedPreference(MyPostingsActivity.this,"MemberID");
+
+        final ArrayList<MyPostingModel> lstPostsModel = new ArrayList<>();
+
+        Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
+        APIInterface api = retrofit.create(APIInterface.class);
+       // final Call<List<MyPostingModel>> call = api.getMyPostings(strMemberID);
+        final Call<List<MyPostingModel>> call = api.getMyPostings("1");
+        call.enqueue(new Callback<List<MyPostingModel>>() {
+            @Override
+            public void onResponse(Call<List<MyPostingModel>> call, Response<List<MyPostingModel>> response) {
+                List<MyPostingModel> myPostingsData = response.body();
+
+                //String[] heroes = new String[myPostingsData.size()];
+
+                //looping through all the heroes and inserting the names inside the string array
+                for (int i = 0; i < myPostingsData.size(); i++) {
+                    MyPostingModel myPostsModel = new MyPostingModel();
+                    myPostsModel.setItemID(myPostingsData.get(i).getItemID());
+                    myPostsModel.setTitle(myPostingsData.get(i).getTitle());
+                    myPostsModel.setDescription(myPostingsData.get(i).getDescription());
+                    myPostsModel.setCategoryID(myPostingsData.get(i).getCategoryID());
+                    myPostsModel.setPostedDate(myPostingsData.get(i).getPostedDate());
+                    myPostsModel.setLocation(myPostingsData.get(i).getLocation());
+                    myPostsModel.setLatitude(myPostingsData.get(i).getLatitude());
+                    myPostsModel.setLangitude(myPostingsData.get(i).getLangitude());
+                    myPostsModel.setStatus(myPostingsData.get(i).getStatus());
+                    lstPostsModel.add(myPostsModel);
+                }
+                dataBiding.lvPosting.setLayoutManager(new LinearLayoutManager(MyPostingsActivity.this));
+                dataBiding.lvPosting.setItemAnimator(new DefaultItemAnimator());
+                dataBiding.lvPosting.setAdapter(new MyPostingAdapter(MyPostingsActivity.this,lstPostsModel));
+            }
+
+            @Override
+            public void onFailure(Call<List<MyPostingModel>> call, Throwable t) {
+                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
+    public class MyPostingAdapter extends RecyclerView.Adapter<MyPostingAdapter.ViewHolder> {
+        public ArrayList<MyPostingModel> dataSet;
+        FragmentActivity context;
+        private LayoutInflater inflater=null;
+
+
+        public MyPostingAdapter(FragmentActivity context,ArrayList<MyPostingModel> data) {
+            this.dataSet = data;
+            this.context = context;
+        }
+
+        public class ViewHolder extends RecyclerView.ViewHolder {
+
+            TextView txtTitle;
+            TextView txtDescription;
+            TextView txtLocation;
+            TextView txtDateTime;
+
+            public ViewHolder(View rowView) {
+                super(rowView);
+                this.txtTitle = (TextView) rowView.findViewById(R.id.tv_title);
+                this.txtDescription = (TextView) rowView.findViewById(R.id.tv_description);
+                this.txtLocation = (TextView) rowView.findViewById(R.id.tv_location);
+                this.txtDateTime = (TextView) rowView.findViewById(R.id.tv_DateTime);
+            }
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View itemView = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.custom_mypostings, parent, false);
+
+            return new ViewHolder(itemView);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            final MyPostingModel dataModel = dataSet.get(position);
+            holder.txtTitle.setText(dataModel.getTitle());
+            holder.txtDescription.setText(dataModel.getDescription());
+            holder.txtLocation.setText(dataModel.getLocation());
+            holder.txtDateTime.setText(getPostedDate(dataModel.getPostedDate()));
+        }
+
+        @Override
+        public int getItemCount() {
+            return dataSet.size();
+        }
+
+
+        private String getPostedDate(String postedDate)
+        {
+            if(postedDate.contains("T"))
+            {
+                String[] strDateZ = null;
+                String date ="";
+                Duration diff = null;
+
+                String[] strPostedDate = postedDate.split("T");
+                String strDate = strPostedDate[0] + " " + strPostedDate[1];
+                if(strDate.contains("Z"))
+                {
+                    strDateZ = strDate.split("Z");
+                    date = strDateZ[0];
+                }
+                try {
+                    if(strDateZ != null  && !date.equalsIgnoreCase("")) {
+                        SimpleDateFormat spf = new SimpleDateFormat("yyyy-MM-dd hh:mm:sss");
+                        try {
+
+                            Date oldDate = spf.parse(date);
+                            System.out.println(oldDate);
+
+                            int day = 0;
+                            int hh = 0;
+                            int mm = 0;
+                            Date currentDate = new Date();
+                            Long timeDiff = currentDate.getTime() - oldDate.getTime();
+                            day = (int) TimeUnit.MILLISECONDS.toDays(timeDiff);
+                            hh = (int) (TimeUnit.MILLISECONDS.toHours(timeDiff) - TimeUnit.DAYS.toHours(day));
+                            mm = (int) (TimeUnit.MILLISECONDS.toMinutes(timeDiff) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeDiff)));
+
+
+                            if (mm <= 60 && hh!= 0) {
+                                //if (hh <= 60 && day != 0) {
+                                if (hh <= 60 && day != 0) {
+                                    if(day > 5){
+                                        spf = new SimpleDateFormat("dd MMM yyyy");
+                                        date = spf.format(oldDate);
+                                        return date;
+                                    }
+                                    else
+                                        return day + " Days";
+                                } else {
+                                    return hh + " Hrs";
+                                }
+                            } else {
+                                return mm + " Min";
+                            }
+
+                            // Log.e("toyBornTime", "" + toyBornTime);
+
+                        } catch (ParseException e) {
+
+                            e.printStackTrace();
+                        }
+
+                    }
+                    return date;
+                }catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            return postedDate;
+        }
+    }
+}
+
+   /* private void getMyPostingDetails() {
         String strMemberID = getStringSharedPreference(MyPostingsActivity.this,"MemberID");
 
         final ArrayList<MyPostsModel> lstPostsModel = new ArrayList<>();
@@ -184,4 +334,4 @@ public class MyPostingsActivity extends BaseActivity {
             return dataSet.size();
         }
     }
-}
+}*/

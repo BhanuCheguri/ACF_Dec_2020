@@ -35,12 +35,28 @@
                 android:textStyle="normal" />
 
             <ImageView
+                android:id="@+id/imgFilePath"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:adjustViewBounds="true"
-                android:layout_marginTop="5dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/images" />
+                app:srcCompat="@mipmap/logo"
+                android:background="@drawable/rippleeffect"
+                android:layout_marginBottom="5dp"/>
+
+            <HorizontalScrollView
+                android:id="@+id/horizontal_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:id="@+id/linear"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:scaleType="fitCenter">
+                </LinearLayout>
+
+            </HorizontalScrollView>
 
             <LinearLayout
                 android:layout_width="match_parent"

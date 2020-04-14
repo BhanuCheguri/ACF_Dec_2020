@@ -6,9 +6,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.joinacf.acf.modelclasses.WallPostsModel;
 import com.joinacf.acf.R;
 
@@ -39,6 +42,8 @@ public class HomePageAdapter  extends ArrayAdapter<WallPostsModel> {
         TextView txtLocation;
         TextView txtDescription;
         TextView txtDateTime;
+        ImageView imgFilePath;
+        LinearLayout linearLayout;
     }
 
     @Override
@@ -81,11 +86,47 @@ public class HomePageAdapter  extends ArrayAdapter<WallPostsModel> {
         holder.txtLocation = (TextView) rowView.findViewById(R.id.tv_location);
         holder.txtDescription = (TextView) rowView.findViewById(R.id.tv_description);
         holder.txtDateTime = (TextView) rowView.findViewById(R.id.tv_DateTime);
+        holder.imgFilePath = (ImageView)rowView.findViewById(R.id.imgFilePath);
+        holder.linearLayout = (LinearLayout)rowView.findViewById(R.id.linear);
 
+        holder.imgFilePath.setBackgroundResource(R.drawable.rippleeffect);
         holder.txtTitle.setText(dataModel.getTitle());
         holder.txtLocation.setText(dataModel.getLocation());
         holder.txtDateTime.setText(getPostedDate(dataModel.getPostedDate()));
         holder.txtDescription.setText(dataModel.getDescription());
+
+        ArrayList<String> lstFilepaths = new ArrayList<>();
+        String strFilePaths = dataModel.getFilePath();
+        if(strFilePaths != null && !strFilePaths.equalsIgnoreCase(""))
+        {
+            String[] strFilepathArray = strFilePaths.split(",");
+            if(strFilepathArray.length > 0) {
+                holder.imgFilePath.setVisibility(View.VISIBLE);
+                for (int i = 0; i < strFilepathArray.length; i++) {
+                    lstFilepaths.add(strFilepathArray[i]);
+                    final ImageView imageView = new ImageView(context);
+                    imageView.setBackgroundResource(R.drawable.rippleeffect);
+                    imageView.setId(i);
+                    imageView.setContentDescription(strFilepathArray[i]);
+                    imageView.setPadding(5, 5, 5, 5);
+                    imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    Glide.with(context).load(strFilepathArray[i]).override(800, 500).into(imageView);
+                    holder.linearLayout.addView(imageView);
+                    final ImageView img = holder.imgFilePath;
+                    Glide.with(context).load(strFilepathArray[0]).into(img);
+                    imageView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            String url = imageView.getContentDescription().toString();
+                            Glide.with(context).load(url).into(img);
+                        }
+                    });
+                }
+            }
+            else
+                holder.imgFilePath.setVisibility(View.GONE);
+        }else
+            holder.imgFilePath.setVisibility(View.GONE);
 
 
         final ViewHolder finalHolder = holder;

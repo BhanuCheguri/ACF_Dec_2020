@@ -67,23 +67,27 @@
 
                     <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" >
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rippleeffect">
 
                         <com.google.android.gms.common.SignInButton
                             android:id="@+id/sign_in_button"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/montserrat_light"
-                            android:visibility="invisible"/>
+                            android:visibility="invisible"
+                            android:background="@color/colorWhite"
+                            android:foreground="@drawable/rippleeffect"/>
 
                         <Button
                             android:id="@+id/google"
                             android:layout_width="fill_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@android:color/transparent"
+                            android:layout_height="match_parent"
+                            android:background="@color/colorWhite"
+                            android:fontFamily="@font/montserrat_light"
+                            android:foreground="@drawable/rippleeffect"
                             android:onClick="onClick"
                             android:text="GOOGLE"
-                            android:fontFamily="@font/montserrat_light"
                             android:textStyle="bold" />
                     </FrameLayout>
 
@@ -95,23 +99,28 @@
 
                     <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" >
+                        android:layout_height="wrap_content"
+                        >
 
                         <com.facebook.login.widget.LoginButton
                             android:id="@+id/login_button"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@color/colorWhite"
+                            android:foreground="@drawable/rippleeffect"
+                            android:paddingBottom="25dp"
                             android:visibility="invisible" />
 
                         <Button
                             android:id="@+id/facebook"
                             android:layout_width="fill_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@android:color/transparent"
-                            android:onClick="onClick"
+                            android:layout_height="match_parent"
+                            android:foreground ="@drawable/rippleeffect"                            android:onClick="onClick"
                             android:text="FaceBook"
+                            android:background="@color/colorWhite"
                             android:fontFamily="@font/montserrat_light"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            />
                     </FrameLayout>
 
                     <TextView

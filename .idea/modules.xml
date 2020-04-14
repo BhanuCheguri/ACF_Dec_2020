@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/ACFBackup-Latest-master-master.iml" filepath="$PROJECT_DIR$/ACFBackup-Latest-master-master.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ACFBackup-Latest-master-master.iml" filepath="$PROJECT_DIR$/ACFBackup-Latest-master-master.iml" group="ACFBackup-Latest-master-master" />
+      <module fileurl="file://$PROJECT_DIR$/app/ACFBackup-Latest-master-master-app.iml" filepath="$PROJECT_DIR$/app/ACFBackup-Latest-master-master-app.iml" group="ACFBackup-Latest-master-master/app" />
+      <module fileurl="file://$PROJECT_DIR$/bottom-nav-bar/ACFBackup-Latest-master-master-bottom-nav-bar.iml" filepath="$PROJECT_DIR$/bottom-nav-bar/ACFBackup-Latest-master-master-bottom-nav-bar.iml" group="ACFBackup-Latest-master-master/bottom-nav-bar" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/bottom-nav-bar/bottom-nav-bar.iml" filepath="$PROJECT_DIR$/bottom-nav-bar/bottom-nav-bar.iml" />
     </modules>

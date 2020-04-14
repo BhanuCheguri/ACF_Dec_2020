@@ -28,12 +28,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".activities.MyPostingsActivity"></activity>
-        <activity android:name=".activities.AddPetitionActivity"></activity>
-        <!--<activity android:name=".PetitionActivity" />-->
-        <activity android:name=".activities.MoreActivity" />
-        <activity android:name=".activities.ChangePasswordActivity" />
-        <activity android:name=".activities.ProfileActivity" /> <!-- <activity android:name=".SearchResultsActivity"></activity> -->
         <activity
             android:name=".activities.SplashActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -46,23 +40,25 @@
         <activity
             android:name=".activities.NewLoginActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".activities.ForgotPasswordActivity" />
-        <!--<activity android:name=".MyPetitionListActivity" />-->
-        <activity android:name=".activities.NewComplaintActivity" />
-        <activity
-            android:name=".activities.LoginScreenActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".activities.RegistrationActivity" />
+        <activity android:name=".activities.OTPVerificationActivity" />
         <activity android:name=".activities.MainActivity">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity>
-        <activity android:name=".activities.OTPVerificationActivity" >
-        </activity>
+        <activity android:name=".activities.MoreActivity" />
+        <activity android:name=".activities.ProfileActivity" />
+        <activity android:name=".activities.NewComplaintActivity" />
+        <activity android:name=".activities.MyPostingsActivity"/>
+        <activity android:name=".activities.AddPetitionActivity"/>
         <activity
             android:name=".activities.ViewMediaActivity"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".activities.ChangePasswordActivity" />
+        <activity android:name=".activities.ForgotPasswordActivity" />
+        <!--<activity android:name=".MyPetitionListActivity" />-->
+        <!--<activity android:name=".PetitionActivity" />-->
+
         <activity
             android:name="com.facebook.FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"

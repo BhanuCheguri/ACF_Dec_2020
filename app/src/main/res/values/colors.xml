@@ -10,7 +10,8 @@
     <color name="colorSkyBlue">#2196F3</color>
     <color name="colorGreen">#23B67F</color>
     <color name="colorSilverGrey">#e1e1e1</color>
-
+    <color name="colorDarkGrey">#D3D3D3</color>
+    <color name="colorMaroon">#6B2849</color>
     <color name="winBackground">#98cb4a</color>
     <color name="background">#f76d3c</color>
 

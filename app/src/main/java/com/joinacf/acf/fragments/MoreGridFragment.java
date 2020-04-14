@@ -16,8 +16,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.joinacf.acf.activities.AddPetitionActivity;
 import com.joinacf.acf.activities.MoreActivity;
+import com.joinacf.acf.activities.NewLoginActivity;
+import com.joinacf.acf.activities.ProfileActivity;
 import com.joinacf.acf.modelclasses.DashboardCategories;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
@@ -37,24 +45,24 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import static com.facebook.FacebookSdk.getApplicationContext;
+
 public class MoreGridFragment extends BaseFragment {
 
     FragmentGridBinding dataBiding;
-    /*String[] web = {
-            "Corruption",
-            "Adulteration",
-            "Find N Fix",
-            "Social Evil"
-    } ;*/
+
+    boolean bFirst;
+    String strPersonName,strPersonEmail,strLoginType;
+
     int[] imageId = {
-            R.drawable.ic_adulteration,
+            R.mipmap.ic_adulteration,
             R.mipmap.ic_women_saftey,
-            R.drawable.ic_social_evil,
+            R.mipmap.ic_human_trafficking,
             R.mipmap.ic_medical_emergency,
             R.mipmap.ic_law_n_order,
+            R.mipmap.ic_information,
             R.mipmap.ic_law_n_order,
-            R.mipmap.ic_law_n_order,
-            R.mipmap.ic_law_n_order,
+            R.mipmap.ic_my_petitions,
     };
     private APIRetrofitClient apiRetrofitClient;
     ArrayList<String> lstCategories;
@@ -81,21 +89,88 @@ public class MoreGridFragment extends BaseFragment {
 
         apiRetrofitClient = new APIRetrofitClient();
         getDashboardCategories();
-
+        loadSharedPrefference();
         return dataBiding.getRoot();
+    }
+
+    private void loadSharedPrefference() {
+
+        bFirst = getBooleanSharedPreference(getActivity(), "FirstTime");
+        strLoginType = getStringSharedPreference(getActivity(), "LoginType");
+        strPersonName = getStringSharedPreference(getActivity(), "PersonName");
+        //Toast.makeText(getActivity(),strPersonName ,Toast.LENGTH_LONG).show();
+        strPersonEmail = getStringSharedPreference(getActivity(), "personEmail");
+        if (bFirst) {
+            //showWelcomeAlert(strPersonName);
+        }
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu, menu);
+        MenuItem action_search= menu.findItem(R.id.action_search);
+        action_search.setVisible(false);
+
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId())
+        {
+            case android.R.id.home:
+
+                break;
+            case R.id.myprofile:
+                Intent intent = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    intent = new Intent(getContext(), ProfileActivity.class);
+                }
+                getActivity().startActivity(intent);
+                break;
+
+            case R.id.logout:
+                signOut();
+                return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
+    public void signOut()
+    {
+        try {
+            if (strLoginType.equalsIgnoreCase("Google")) {
+                GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestEmail()
+                        .build();
+                GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(getActivity(), gso);
+                googleSignInClient.signOut();
+                putBooleanSharedPreference(getActivity(), "LoggedIn",false);
+                Toast.makeText(getApplicationContext(), "User Logged out successfully", Toast.LENGTH_LONG).show();
+
+                Intent intent = new Intent(getActivity(), NewLoginActivity.class);
+                startActivity(intent);
+                getActivity().finish();
+            } else {
+                FacebookSdk.sdkInitialize(getApplicationContext());
+                AppEventsLogger.activateApp(getActivity());
+                LoginManager.getInstance().logOut();
+                putBooleanSharedPreference(getActivity(), "LoggedIn",false);
+
+                Intent intent = new Intent(getActivity(), NewLoginActivity.class);
+                startActivity(intent);
+                getActivity().finish();
+            }
+            putBooleanSharedPreference(getActivity(), "FirstTime", false);
+            putStringSharedPreference(getActivity(), "LoginType", "");
+            putStringSharedPreference(getActivity(), "personName", "");
+            putStringSharedPreference(getActivity(), "personEmail", "");
+            putStringSharedPreference(getActivity(), "personId", "");
+        }catch (Exception e)
+        {
+            Crashlytics.logException(e);
+        }
+    }
 
     public class CustomGrid extends BaseAdapter{
         private Context mContext;
@@ -140,7 +215,7 @@ public class MoreGridFragment extends BaseFragment {
                 TextView textView = (TextView) grid.findViewById(R.id.grid_text);
                 ImageView imageView = (ImageView)grid.findViewById(R.id.grid_img);
 
-                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(150, 200);
+                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(300, 300);
                 imageView.setLayoutParams(layoutParams);
                 textView.setText(web.get(position));
                 imageView.setImageResource(Imageid[position]);

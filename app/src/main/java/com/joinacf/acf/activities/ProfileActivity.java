@@ -54,6 +54,7 @@ public class ProfileActivity extends BaseActivity {
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .skipMemoryCache(true)
                 .into(binding.profileImage);
+
         String strMobileNo = getStringSharedPreference(ProfileActivity.this,"mobile");
         Call<List<MyProfileModel>> call = api.getProfileDetails(strMobileNo);
 

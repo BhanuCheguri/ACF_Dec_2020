@@ -49,7 +49,6 @@ public class ServiceCall {
                     os.flush();
                     os.close();
 
-
                     InputStream response = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(response));
                     StringBuilder sb = new StringBuilder();

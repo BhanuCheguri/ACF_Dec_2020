@@ -60,7 +60,7 @@
                     android:orientation="horizontal">
 
                     <EditText
-                        android:id="@+id/issue"
+                        android:id="@+id/et_description"
                         android:layout_below="@+id/etTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -112,7 +112,7 @@
                         android:padding="5dp"
                         android:textColor="@android:color/black" />
 
-                    <TextView
+                    <!--<TextView
                         android:id="@+id/current_date"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -122,7 +122,20 @@
                         android:gravity="center|left"
                         android:textColor="@android:color/black"
                         android:fontFamily="@font/montserrat_light"
-                        android:padding="5dp" />
+                        android:padding="5dp" />-->
+
+                    <TextClock
+                        android:id="@+id/current_date"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.7"
+                        android:drawablePadding="10dp"
+                        android:drawableStart="@drawable/ic_clock_16_orange"
+                        android:gravity="center|left"
+                        android:textColor="@android:color/black"
+                        android:fontFamily="@font/montserrat_light"
+                        android:padding="5dp"
+                        android:format12Hour="hh:mm" />
 
 
                 </LinearLayout>

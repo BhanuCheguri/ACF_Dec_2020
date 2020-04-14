@@ -5,15 +5,23 @@ import com.joinacf.acf.modelclasses.AddMemberResult;
 import com.joinacf.acf.modelclasses.AddPetitionRequest;
 import com.joinacf.acf.modelclasses.AddPetitionResult;
 import com.joinacf.acf.modelclasses.DashboardCategories;
-import com.joinacf.acf.modelclasses.MyPostsModel;
+import com.joinacf.acf.modelclasses.MyPostingModel;
 import com.joinacf.acf.modelclasses.MyProfileModel;
+import com.joinacf.acf.modelclasses.OfficesModel;
+import com.joinacf.acf.modelclasses.PetitionModel;
+import com.joinacf.acf.modelclasses.SectionsModel;
+import com.joinacf.acf.modelclasses.StatusModel;
 import com.joinacf.acf.modelclasses.WallPostsModel;
+
+import org.json.JSONObject;
+
 import java.util.List;
 
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
 import retrofit2.http.Multipart;
@@ -31,9 +39,15 @@ public interface APIInterface {
     //http://api.ainext.in/members/validateotp?mobile=9032200318&otp=74340
     //http://api.ainext.in/members/validateotp?mobile=9032200318&otp=74340
 
+    @GET("moderation/getvideolink")
+    Call<String> getVideoLink();
+
     @GET("members/validatemember?")
     Call<ResponseBody> getValidateMember(@Query("email") String email);
 
+    @Headers("Content-Type: application/json")
+    @POST("emergency/updatemlocation")
+    Call<ResponseBody> updateMemLocation(@Body JsonObject jsonBody);
 
     @GET("members/getmembers?")
     Call<List<MyProfileModel>> getProfileDetails(@Query("mobile") String mobile);
@@ -44,35 +58,40 @@ public interface APIInterface {
     @GET("members/sendsms?")
     Call<ResponseBody> getSMSOTP(@Query("mobile") String mobile);
 
-   /*@GET("posts/getposts?categoryID=1&days=-1")
-    Call<List<WallPostsModel>> getWallPostDetails();*/
-
     @GET("posts/getposts?")
     Call<List<WallPostsModel>> getWallPostDetails(@Query("categoryID") String categoryID, @Query("days") String days);
 
-   // @Headers("Content-Type: application/json")
-    @Headers("Content-Type: application/x-www-form-urlencoded")
+    @GET("posts/getcategories?")
+    Call<List<DashboardCategories>> getDashboardCategories();
+
+    @Headers("Content-Type: application/json")
     @POST("members/addmember")
     Call<List<AddMemberResult>> postAddMember(@Body JsonObject jsonBody);
 
-    /*@POST("posts")
-    Call<AddMemberResult> postData(@Body JsonObject body);*/
+    @GET("posts/getmposts?")
+    Call<List<MyPostingModel>> getMyPostings(@Query("memberID") String memberID);
 
     @Multipart
     @POST("posts/upload")
     Call<JsonObject> uploadImage(@Part MultipartBody.Part image);
-
-
-
-    @GET("posts/getcategories?")
-    Call<List<DashboardCategories>> getDashboardCategories();
 
     @Headers({"Accept:application/json", "Content-Type:application/json;"})
     @POST("petitions/addpetition")
     Call<AddPetitionResult> postPetitionData(@Body AddPetitionRequest body);
 
     @GET("petitions/getmypetitions?")
-    Call<List<MyPostsModel>> getMyPostings(@Query("memberID") String memberID);
+    Call<List<PetitionModel>> getMyPetitions(@Query("memberID") String memberID);
+
+    @Headers({"Accept:application/json", "Content-Type:application/json;"})
+    @POST("posts/addpost?")
+    Call<ResponseBody> postNewItem(@Body JsonObject jsonBody);
+
+    @GET("petitions/getofficesbygeo?")
+    Call<List<OfficesModel>> getOfficesbyGeo(@Query("lat") String lat, @Query("long") String lang);
+
+    @GET("petitions/getspsections?")
+    Call<List<SectionsModel>> getSections(@Query("spid") String SPID);
+
 
 
 }

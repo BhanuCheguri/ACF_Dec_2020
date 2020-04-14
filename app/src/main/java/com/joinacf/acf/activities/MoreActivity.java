@@ -129,6 +129,9 @@ public class MoreActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
+        MenuItem action_search= menu.findItem(R.id.action_search);
+        action_search.setVisible(false);
+
         final MenuItem searchItem = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setSubmitButtonEnabled(true);

@@ -31,13 +31,9 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
 import com.joinacf.acf.R;
 import com.joinacf.acf.custom_dialogs.CustomProgressDialog;
-import com.joinacf.acf.modelclasses.AddMemberResult;
-import com.joinacf.acf.modelclasses.MyPostsModel;
 import com.joinacf.acf.modelclasses.StatusModel;
-import com.joinacf.acf.modelclasses.WallPostsModel;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.network.ServiceCall;
@@ -66,12 +62,10 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static com.joinacf.acf.network.APIInterface.ADD_PETITION;
 
 public class OTPVerificationActivity extends BaseActivity implements View.OnClickListener , GoogleApiClient.ConnectionCallbacks,
         OtpReceivedInterface, GoogleApiClient.OnConnectionFailedListener{
@@ -190,8 +184,8 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
 
                 break;
             case R.id.btnSubmit:
-                if(binding.otpCode.getText().toString().equalsIgnoreCase("") &&
-                        binding.otpCode.getText().toString() == null )
+                if((binding.otpCode.getText().toString()).equalsIgnoreCase("") &&
+                        (binding.otpCode.getText().toString()) == null )
                 {
                     Toast.makeText(this,"OTP Code cannot be empty",Toast.LENGTH_LONG).show();
                 }else
@@ -200,13 +194,9 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
                     String strOTPCode = getStringSharedPreference(OTPVerificationActivity.this,"OTPCode");
                     if (strOTPCode.equalsIgnoreCase("")) {
                         strOTPCode = binding.otpCode.getText().toString();
-                        getOTPVerifiedAsyncTask.execute(binding.etMobileNo.getText().toString(), strOTPCode);
-                    }else
-                        Toast.makeText(this,"OTP Code cannot be empty",Toast.LENGTH_LONG).show();
-
+                    }
+                    getOTPVerifiedAsyncTask.execute(binding.etMobileNo.getText().toString(), strOTPCode);
                 }
-
-
         }
     }
 

@@ -19,7 +19,15 @@ import android.view.WindowManager;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.joinacf.acf.activities.NewComplaintActivity;
+import com.joinacf.acf.activities.NewLoginActivity;
 import com.joinacf.acf.activities.ProfileActivity;
 import com.joinacf.acf.adapters.HomePageAdapter;
 import com.joinacf.acf.modelclasses.WallPostsModel;
@@ -47,11 +55,12 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 public class FindnFixFragment extends BaseFragment {
 
     FragmentFindnfixBinding dataBiding;
-    ServiceCall mServiceCalls;
     APIRetrofitClient apiRetrofitClient;
     ArrayList<WallPostsModel> lstWallPost;
     HomePageAdapter adapter;
     List<WallPostsModel> myProfileData;
+    boolean bFirst;
+    String strPersonName,strPersonEmail,strLoginType;
 
     public static FindnFixFragment newInstance() {
         return new FindnFixFragment();
@@ -72,6 +81,7 @@ public class FindnFixFragment extends BaseFragment {
         setActionBarTitle(getString(R.string.title_findandFix));
         init();
         LoadAdapter();
+        loadSharedPrefference();
         return dataBiding.getRoot();
     }
 
@@ -85,6 +95,18 @@ public class FindnFixFragment extends BaseFragment {
 
         setHasOptionsMenu(true);
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+    }
+
+    private void loadSharedPrefference() {
+
+        bFirst = getBooleanSharedPreference(getActivity(), "FirstTime");
+        strLoginType = getStringSharedPreference(getActivity(), "LoginType");
+        strPersonName = getStringSharedPreference(getActivity(), "PersonName");
+        //Toast.makeText(getActivity(),strPersonName ,Toast.LENGTH_LONG).show();
+        strPersonEmail = getStringSharedPreference(getActivity(), "personEmail");
+        if (bFirst) {
+            //showWelcomeAlert(strPersonName);
+        }
     }
 
     private void LoadAdapter()
@@ -179,10 +201,46 @@ public class FindnFixFragment extends BaseFragment {
                 getActivity().startActivity(intent);
                 break;
 
-            /*case R.id.logout:
+            case R.id.logout:
                 signOut();
-                return true;*/
+                return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void signOut()
+    {
+        try {
+            if (strLoginType.equalsIgnoreCase("Google")) {
+                GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestEmail()
+                        .build();
+                GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(getActivity(), gso);
+                googleSignInClient.signOut();
+                putBooleanSharedPreference(getActivity(), "LoggedIn",false);
+                Toast.makeText(getApplicationContext(), "User Logged out successfully", Toast.LENGTH_LONG).show();
+
+                Intent intent = new Intent(getActivity(), NewLoginActivity.class);
+                startActivity(intent);
+                getActivity().finish();
+            } else {
+                FacebookSdk.sdkInitialize(getApplicationContext());
+                AppEventsLogger.activateApp(getActivity());
+                LoginManager.getInstance().logOut();
+                putBooleanSharedPreference(getActivity(), "LoggedIn",false);
+
+                Intent intent = new Intent(getActivity(), NewLoginActivity.class);
+                startActivity(intent);
+                getActivity().finish();
+            }
+            putBooleanSharedPreference(getActivity(), "FirstTime", false);
+            putStringSharedPreference(getActivity(), "LoginType", "");
+            putStringSharedPreference(getActivity(), "personName", "");
+            putStringSharedPreference(getActivity(), "personEmail", "");
+            putStringSharedPreference(getActivity(), "personId", "");
+        }catch (Exception e)
+        {
+            Crashlytics.logException(e);
+        }
     }
 }

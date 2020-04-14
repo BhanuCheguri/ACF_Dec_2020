@@ -1,7 +1,6 @@
 package com.joinacf.acf.activities;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.databinding.DataBindingUtil;
 import io.fabric.sdk.android.Fabric;
 import okhttp3.ResponseBody;
@@ -11,14 +10,11 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 import android.accounts.Account;
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -26,10 +22,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.URLUtil;
 import android.widget.MediaController;
 import android.widget.Toast;
 
-import com.facebook.HttpMethod;
+import com.facebook.login.LoginBehavior;
+import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -43,8 +41,6 @@ import com.google.api.services.people.v1.model.Birthday;
 import com.google.api.services.people.v1.model.Date;
 import com.google.api.services.people.v1.model.Gender;
 import com.google.api.services.people.v1.model.Person;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.joinacf.acf.R;
 import com.joinacf.acf.databinding.ActivityNewLoginBinding;
 import com.crashlytics.android.Crashlytics;
@@ -68,25 +64,31 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.plus.Plus;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.joinacf.acf.modelclasses.AddMemberResult;
-import com.joinacf.acf.modelclasses.DashboardCategories;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
-import com.joinacf.acf.utilities.PeopleApi;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -120,19 +122,19 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
     private GoogleSignInAccount account;
     private WeakReference<NewLoginActivity> weakAct = new WeakReference<>(this);
 
-    int status;
+    int nStatus;
     private String personName,personFamilyName,personGivenName,personEmail,personId,personGender,personBday;
     private String image_url;
-
+    String Mobile = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         apiRetrofitClient = new APIRetrofitClient();
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_new_login);
 
         Fabric.with(this, new Crashlytics());
         try {
            // Crashlytics.getInstance().crash();
-
             boolean bLoggedIn = getBooleanSharedPreference(NewLoginActivity.this, "LoggedIn");
             if (bLoggedIn) {
                 putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", false);
@@ -141,9 +143,9 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                 finish();
             } else {
                 FacebookSdk.sdkInitialize(this.getApplicationContext());
+                callbackManager = CallbackManager.Factory.create();
 
                 mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-                binding = DataBindingUtil.setContentView(this, R.layout.activity_new_login);
 
                 Bundle bundle = new Bundle();
                 bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "image");
@@ -193,19 +195,9 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
 
 
                 /***** Facebook Login *****/
-                callbackManager = CallbackManager.Factory.create();
-
-                MediaController mediaController= new MediaController(this);
-                mediaController.setAnchorView(binding.videoView);
-                //Location of Media File
-                Uri vidUri = Uri.parse("http://techslides.com/demos/sample-videos/small.mp4");
-                //Starting VideView By Setting MediaController and URI
-                binding.videoView.setMediaController(mediaController);
-                binding.videoView.setVideoURI(vidUri);
-                binding.videoView.requestFocus();
-                ///binding.videoView.start();
-
                 //facebookLogin();
+                new AsyncGetVideoLink().execute();
+
             }
         }catch (Exception e)
         {
@@ -214,12 +206,112 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
     }
 
 
+    public class AsyncGetVideoLink extends AsyncTask<Void, Void, String> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            showProgressDialog(NewLoginActivity.this,"Buffering video please wait...");
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            hideProgressDialog(NewLoginActivity.this);
+            //Location of Media File
+            Uri vidUri = Uri.parse(result);
+
+            binding.videoView.setVideoURI(vidUri);
+            binding.videoView.requestFocus();
+            //binding.videoView.start();
+            binding.videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                }
+            });
+
+            binding.videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mediaPlayer) {
+                    binding.videoView.start();
+                    mediaPlayer.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
+                        @Override
+                        public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
+                            MediaController mediaController = new MediaController(NewLoginActivity.this);
+                            binding.videoView.setMediaController(mediaController);
+                            mediaController.setAnchorView(binding.videoView);
+                        }
+                    });
+                }
+            });
+
+            binding.videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+                    Log.d("video", "setOnErrorListener ");
+                    return true;
+                }
+            });
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            String strVideoLink = getVideoLink();
+            return strVideoLink;
+        }
+    }
+
+    private String getVideoLink() {
+        String result = "";
+        String inputLine= "";
+        String REQUEST_METHOD = "GET";
+        int READ_TIMEOUT = 15000;
+        int CONNECTION_TIMEOUT = 15000;
+        try {
+            //Create a URL object holding our url
+            URL myUrl = new URL("http://api.ainext.in/moderation/getvideolink");
+            //Create a connection
+            HttpURLConnection connection =(HttpURLConnection)
+                    myUrl.openConnection();
+            //Set methods and timeouts
+            connection.setRequestMethod(REQUEST_METHOD);
+            connection.setReadTimeout(READ_TIMEOUT);
+            connection.setConnectTimeout(CONNECTION_TIMEOUT);
+
+            //Connect to our url
+            connection.connect();
+            //Create a new InputStreamReader
+            InputStreamReader streamReader = new
+                    InputStreamReader(connection.getInputStream());
+            //Create a new buffered reader and String Builder
+            BufferedReader reader = new BufferedReader(streamReader);
+            StringBuilder stringBuilder = new StringBuilder();
+            //Check if the line we are reading is not null
+            while((inputLine = reader.readLine()) != null){
+                stringBuilder.append(inputLine);
+            }
+            //Close our InputStream and Buffered reader
+            reader.close();
+            streamReader.close();
+            //Set our result equal to our stringBuilder
+            result = stringBuilder.toString();
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
     public class FacebookAyncTask extends AsyncTask<Void, Void, Void>{
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            showProgressDialog(NewLoginActivity.this);
+            showProgressDialog(NewLoginActivity.this,"Login-In to Facebook");
         }
 
         @Override
@@ -230,7 +322,13 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
 
         @Override
         protected Void doInBackground(Void... params) {
-            facebookLogin();
+            try {
+                facebookLogin();
+            }catch (Exception e){
+                Crashlytics.logException(e);
+                e.printStackTrace();
+                Toast.makeText(NewLoginActivity.this, e.getMessage().toString(), Toast.LENGTH_SHORT).show();
+            }
             return null;
         }
     }
@@ -240,7 +338,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            showProgressDialog(NewLoginActivity.this);
+            showProgressDialog(NewLoginActivity.this,"Login-In to Facebook");
         }
 
         @Override
@@ -269,11 +367,16 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
     private void facebookLogin()
     {
         try {
+
+            //LoginButton loginButton  = new LoginButton(this);
+            //binding.loginButton.performClick();
+
             boolean loggedOut = AccessToken.getCurrentAccessToken() == null;
 
             if (!loggedOut) {
                 //Using Graph API
-                getUserProfile(AccessToken.getCurrentAccessToken());
+               // getUserProfile(AccessToken.getCurrentAccessToken());
+                return;
             }
             AccessTokenTracker fbTracker = new AccessTokenTracker() {
                 @Override
@@ -291,13 +394,15 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
             binding.loginButton.setReadPermissions("email");
             binding.loginButton.setReadPermissions("user_birthday");
 
+
             binding.loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
                 @Override
                 public void onSuccess(LoginResult loginResult) {
                     boolean loggedOut = AccessToken.getCurrentAccessToken() == null;
                     if (!loggedOut) {
                         Log.d("TAG", "Username is: " + Profile.getCurrentProfile().getName());
-                        getUserProfile(AccessToken.getCurrentAccessToken());
+                        //getUserProfile(AccessToken.getCurrentAccessToken());
+                        getUserProfile(loginResult.getAccessToken());
                     }
                 }
 
@@ -308,9 +413,12 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                 }
 
                 @Override
-                public void onError(FacebookException exception) {
+                public void onError(FacebookException e) {
                     System.out.println("onError");
-                    Crashlytics.logException(exception);
+                    Crashlytics.logException(e);
+                    e.printStackTrace();
+                    Toast.makeText(NewLoginActivity.this, e.getMessage().toString(), Toast.LENGTH_SHORT).show();
+
                 }
             });
 
@@ -320,7 +428,8 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
             LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile"));
         }catch (Exception e) {
             Crashlytics.logException(e);
-            Toast.makeText(NewLoginActivity.this, "Facebook login failed", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            Toast.makeText(NewLoginActivity.this, e.getMessage().toString(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -340,15 +449,20 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
             case R.id.login_button:
             case R.id.facebook:
                 try {
-                    /*LoginButton loginButton  = new LoginButton(this);
-                    loginButton.performClick();*/
+                    /*LoginButton loginButton  = new LoginButton(this);*/
+                    //binding.loginButton.performClick();
+                    //new FacebookAyncTask().execute();
                     if(isAppInstalled(getApplicationContext(), "com.facebook.katana")) {
-                        new FacebookAyncTask().execute();
-                    }else {
-                        Intent i = new Intent(android.content.Intent.ACTION_VIEW);
-                        i.setData(Uri.parse("https://play.google.com/store/apps/details?id=com.facebook.katana"));
-                        startActivity(i);
+                        try {
+                            new FacebookAyncTask().execute();
+                        }catch (Exception e) {
+                            Crashlytics.logException(e);
+                            e.printStackTrace();
+                            Toast.makeText(NewLoginActivity.this, e.getMessage().toString(), Toast.LENGTH_SHORT).show();
+                        }
                     }
+                    else
+                        Toast.makeText(NewLoginActivity.this, "App not installed", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     Crashlytics.logException(e);
                 }
@@ -383,9 +497,9 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                                 if(object.has("birthday")) {
                                     personBday = object.getString("birthday"); // 01/31/1980 format
                                 }
-                                if(object.has("gender")) {
+                                /*if(object.has("gender")) {
                                     personGender = object.getString("gender");
-                                }
+                                }*/
                                 if(object.has("id")) {
                                     personId = object.getString("id");
                                     image_url = "https://graph.facebook.com/" + personId + "/picture?type=large";
@@ -396,19 +510,23 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                                 putStringSharedPreference(NewLoginActivity.this, "personName", personName);
                                 putStringSharedPreference(NewLoginActivity.this, "personEmail", personEmail);
                                 putStringSharedPreference(NewLoginActivity.this, "personId", personId);
-                                putStringSharedPreference(NewLoginActivity.this, "mobile", "9177579498");
+                                putStringSharedPreference(NewLoginActivity.this, "mobile", "");
                                 putStringSharedPreference(NewLoginActivity.this, "personPhoto", image_url);
 
                                 //Integer nStatus = getValidateMember(personEmail);
-                                String Mobile = "9177579498";
+                                //String Mobile = "9177579498";
                                 String Gender = "F";
                                 String Photo = "Photo.jpg";
                                 JSONObject jsonParam = prepareAddMemberJSON(personName,Mobile,personEmail,Gender,image_url);
 
-                                postAddMember(jsonParam.toString());
+                                //postAddMember(jsonParam.toString());
+                                new AsyncTaskAddMember().execute();
 
                             } catch (JSONException e) {
+                                Crashlytics.logException(e);
                                 e.printStackTrace();
+                                Toast.makeText(NewLoginActivity.this, e.getMessage().toString(), Toast.LENGTH_SHORT).show();
+
                             }
                         }
                     });
@@ -432,7 +550,8 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
             ).executeAsync();*/
         }catch (Exception e) {
             Crashlytics.logException(e);
-            Toast.makeText(NewLoginActivity.this, "Failed to getUserProfile", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            Toast.makeText(NewLoginActivity.this, e.getMessage().toString(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -476,11 +595,8 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                         putStringSharedPreference(NewLoginActivity.this, "personId", personId);
                         putStringSharedPreference(NewLoginActivity.this, "personPhoto", image_url);
 
-                        String Mobile = "9177579498";
-                        String Gender = "F";
-                        String Photo = "Photo.jpg";
-                        JSONObject jsonParam = prepareAddMemberJSON(personName,Mobile,personEmail,personGender,image_url);
-                        postAddMember(jsonParam.toString());
+                        //String Gender = "F";
+                        //String Photo = "Photo.jpg";
                     }
                 } else {
                     // Google Sign-In failed
@@ -496,7 +612,70 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
-    static class GetProfileDetails extends AsyncTask<Void, Void, Person> {
+    public class AsyncTaskAddMember extends AsyncTask<String, String, String> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            showProgressDialog(NewLoginActivity.this,"Please wait.. ");
+        }
+        @Override
+        protected String doInBackground(String... strings) {
+            try {
+                JSONObject jsonParam = prepareAddMemberJSON(personName,Mobile,personEmail,personGender,image_url);
+                String result = postAddMember(jsonParam.toString());
+                if(!result.equalsIgnoreCase("") && result != null) {
+                    JSONArray jsonarray = new JSONArray(result);
+                    if(result.length() > 0) {
+                        AddMemberResult addMemberResult = new AddMemberResult();
+                        for (int i = 0; i < jsonarray.length(); i++) {
+                            JSONObject jsonobject = jsonarray.getJSONObject(i);
+                            if(jsonobject.has("Error"))
+                            {
+                                showAlert(NewLoginActivity.this,"Error",jsonobject.getString("Error"),"OK");
+                            }else {
+                               // Toast.makeText(NewLoginActivity.this, "Member added successfully", Toast.LENGTH_SHORT).show();
+                                System.out.println(jsonobject.toString());
+                                if (jsonobject.has("MemberID"))
+                                    addMemberResult.setMemberID(jsonobject.getString("MemberID"));
+                                addMemberResult.setFullName(jsonobject.getString("FullName"));
+                                addMemberResult.setEmail(jsonobject.getString("Email"));
+
+                                if (jsonobject.has("Mobile"))
+                                    addMemberResult.setMobile(jsonobject.getString("Mobile"));
+                                if (jsonobject.has("Photo"))
+                                    addMemberResult.setPhoto(jsonobject.getString("Photo"));
+
+                                addMemberResult.setMemberType(jsonobject.getString("MemberType"));
+                                addMemberResult.setRegDate(jsonobject.getString("RegDate"));
+                                addMemberResult.setStatus(jsonobject.getString("Status"));
+                                addMemberResult.setModifiedBy(jsonobject.getString("ModifiedBy"));
+                                addMemberResult.setModifiedDate(jsonobject.getString("ModifiedDate"));
+                                putStringSharedPreference(NewLoginActivity.this, "MemberID", jsonobject.getString("MemberID"));
+
+                            }
+                        }
+                    }
+                }
+            }catch (Exception e)
+            {
+                Crashlytics.logException(e);
+            }
+            return personEmail;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            hideProgressDialog(NewLoginActivity.this);
+            getValidateMember(result);
+            /*if(result != -1 && result != 0)
+                showAlert(NewLoginActivity.this,"Success","Uploaded Successfully","OK");
+            else
+                showAlert(NewLoginActivity.this,"Failure","Upload failed","OK");*/
+        }
+    }
+
+    public class GetProfileDetails extends AsyncTask<Void, Void, Person> {
 
         private PeopleService ps;
         private int authError = -1;
@@ -557,6 +736,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                     }
                 }
             }
+            new AsyncTaskAddMember().execute();
         }
     }
 
@@ -565,11 +745,15 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         if (account != null) {
             List<Gender> genders = meProfile.getGenders();
             if (genders != null && genders.size() > 0) {
-                personGender = genders.get(0).getValue();
+                if(genders.get(0).getValue() != null)
+                    personGender = genders.get(0).getValue();
+                else
+                    personGender = "";
                 Log.d(TAG, "onPostExecute gender: " + personGender);
                 putStringSharedPreference(NewLoginActivity.this, "profileGender", personGender);
             } else {
                 Log.d(TAG, "onPostExecute no gender if set to private ");
+                personGender = "";
             }
             List<Birthday> birthdays = meProfile.getBirthdays();
             if (birthdays != null && birthdays.size() > 0) {
@@ -590,10 +774,12 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                 }
             } else {
                 Log.w(TAG, "saveAdvanced no birthday");
+                personBday = "";
             }
             //editor.commit();  //next instruction is print from pref, so don't use apply()
         } else {
             Log.w(TAG, "saveAdvanced no acc");
+            personBday = "";
         }
     }
 
@@ -646,8 +832,62 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
             }
         }
 
-    private void postAddMember(String strJson) {
-            Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
+    private String postAddMember(String jsonParam) {
+
+        try {
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+            try {
+                URL url = new URL("http://api.ainext.in/members/addmember");
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setDoOutput(true);
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("Content-Type", "application/json");
+                urlConnection.setRequestProperty("Accept", "application/json");
+                Writer writer = new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), "UTF-8"));
+                writer.write(jsonParam);
+                writer.close();
+                InputStream inputStream = urlConnection.getInputStream();
+                //input stream
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    // Nothing to do.
+                    return null;
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String inputLine;
+                while ((inputLine = reader.readLine()) != null)
+                    buffer.append(inputLine + "\n");
+                if (buffer.length() == 0) {
+                    // Stream was empty. No point in parsing.
+                    return null;
+                }
+                String JsonResponse = buffer.toString();
+                //response data
+                Log.i(TAG, JsonResponse);
+                return JsonResponse;
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e(TAG, "Error closing stream", e);
+                    }
+                }
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+            /*Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
             APIInterface api = retrofit.create(APIInterface.class);
 
             try {
@@ -705,10 +945,10 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                 });
             } catch (Resources.NotFoundException e) {
                 e.printStackTrace();
-            }
+            }*/
     }
 
-    private int getValidateMember(String Email)
+    private void getValidateMember(String Email)
     {
         showProgressDialog(NewLoginActivity.this,"Please wait.. We are validating your Email ID");
         try{
@@ -726,10 +966,10 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                             JSONArray jsonarray = new JSONArray(bodyString);
                             for (int i = 0; i < jsonarray.length(); i++) {
                                 JSONObject jsonobject = jsonarray.getJSONObject(i);
-                                status = jsonobject.getInt("Status");
+                                nStatus = jsonobject.getInt("Status");
                             }
                             hideProgressDialog(NewLoginActivity.this);
-                            if(status == 0) {
+                            if(nStatus == 0) {
                                 putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
                                 putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
 
@@ -738,7 +978,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                                 startActivity(intent);
                                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                                 finish();
-                            }else if(status == 1){
+                            }else if(nStatus == 1){
                                 putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
                                 putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
 
@@ -777,18 +1017,33 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
             Crashlytics.logException(e);
             hideProgressDialog(NewLoginActivity.this);
         }
-        return status;
     }
 
     private JSONObject prepareAddMemberJSON(String personName, String mobile, String personEmail, String gender, String photo){
 
         try {
             JSONObject json = new JSONObject();
-            json.put("fullname", personName);
-            json.put("mobile", mobile);
+
+            if(personName.equalsIgnoreCase("") ||personName == null)
+                json.put("fullname", "");
+            else
+                json.put("fullname", personName);
+
+            if(mobile.equalsIgnoreCase("") ||mobile == null)
+                json.put("mobile", "");
+            else
+                json.put("mobile", mobile);
+
             json.put("email", personEmail);
-            json.put("gender", gender);
-            json.put("photo", photo);
+
+            if(gender.equalsIgnoreCase("") ||gender == null)
+                json.put("gender", "");
+            else
+                json.put("gender", gender);
+            if(photo.equalsIgnoreCase("") ||photo == null)
+                json.put("photo", "");
+            else
+                json.put("photo", photo);
 
             return json;
         }catch (Exception e)

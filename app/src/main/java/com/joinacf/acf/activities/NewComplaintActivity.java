@@ -1,6 +1,7 @@
 package com.joinacf.acf.activities;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
@@ -24,6 +25,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -38,6 +40,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 
 import android.os.Bundle;
@@ -57,6 +60,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -65,6 +69,7 @@ import com.google.gson.JsonObject;
 import com.joinacf.acf.BuildConfig;
 import com.joinacf.acf.R;
 import com.joinacf.acf.adapters.ImageListAdapter;
+import com.joinacf.acf.modelclasses.DashboardCategories;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.network.AppLocationService;
@@ -79,24 +84,34 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.PermissionRequestErrorListener;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 public class NewComplaintActivity extends BaseActivity {
 
+    final String TAG = "NewComplaintActivity.Class";
     ActivityNewComplaintBinding binding;
-    String[] Names = {"Corruption", "Adulteration", "Social Evil", "Find and Fix"};
+    //String[] Names = {"Corruption", "Adulteration", "Social Evil", "Find and Fix"};
     private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     ArrayList<String> tImagesPath = new ArrayList<String>();
     private int GALLERY = 1, CAMERA = 2;
@@ -116,7 +131,15 @@ public class NewComplaintActivity extends BaseActivity {
     private double latitude,longitude;
     private List<Address> addresses;
     private int locationRequestCode = 1000;
-    String strTitle, strComplaintType, strIssue;
+    String strTitle, strComplaintType, strDescription,strLocation;
+    private int strResult = -1;
+    private int category = -1;
+    String currentTime= "";
+    ArrayList<DashboardCategories> lstCatagories;
+    ArrayList<String> lstCatagoriesNames;
+    HashMap<String,String> hshMapCategoryLst ;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -175,6 +198,7 @@ public class NewComplaintActivity extends BaseActivity {
 
                         String fullAddress = addressLine1 + ",  " + city + ",  " + state + ",  " + pinCode;
                         binding.currentLocation.setText(addressLine1);
+                        strLocation = addressLine1;
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -205,31 +229,23 @@ public class NewComplaintActivity extends BaseActivity {
     private void init() {
         apiRetrofitClient  = new APIRetrofitClient();
         lstModelData = new ArrayList<>();
+        lstCatagories = new ArrayList<DashboardCategories>();
+        lstCatagoriesNames = new ArrayList<>();
+        hshMapCategoryLst = new HashMap<>();
+
         appLocationService = new AppLocationService(NewComplaintActivity.this);
 
-        strTitle = binding.etTitle.getText().toString();
-        strIssue = binding.issue.getText().toString();
+        currentTime = new SimpleDateFormat("hh:mm a", Locale.US).format(new Date());
+        //binding.currentDate.setText(currentTime);
 
-        String currentTime = new SimpleDateFormat("hh:mm a", Locale.US).format(new Date());
-        binding.currentDate.setText(currentTime);
 
-        ArrayAdapter adapter = new ArrayAdapter(this,R.layout.custom_textview_layout,R.id.text,Names);
-        adapter.setDropDownViewResource(android.R.layout.select_dialog_item);
-        binding.spinner.setAdapter(adapter);
-        binding.spinner.setThreshold(1);
-        binding.spinner.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                binding.spinner.showDropDown();
-                return false;
-            }
-        });
         binding.spinner.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 //Toast.makeText(NewComplaintActivity.this,Names[i],Toast.LENGTH_LONG).show();
-                strComplaintType = Names[i];
-
+                //strComplaintType = ""+(i+1);
+                String categoryID = hshMapCategoryLst.get(lstCatagoriesNames.get(i).toString());
+                category = Integer.valueOf(categoryID);
             }
         });
 
@@ -247,9 +263,71 @@ public class NewComplaintActivity extends BaseActivity {
         binding.btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                strTitle = binding.etTitle.getText().toString();
+                strDescription = binding.etDescription.getText().toString();
                 SubmitDialog();
             }
         });
+
+        showProgressDialog(NewComplaintActivity.this);
+        getDashboardCategories();
+    }
+
+
+    private void getDashboardCategories() {
+        try {
+            Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
+            APIInterface api = retrofit.create(APIInterface.class);
+            Call<List<DashboardCategories>> call = api.getDashboardCategories();
+
+            call.enqueue(new Callback<List<DashboardCategories>>() {
+                @Override
+                public void onResponse(Call<List<DashboardCategories>> call, Response<List<DashboardCategories>> response) {
+                    List<DashboardCategories> myProfileData = response.body();
+                    hideProgressDialog(NewComplaintActivity.this);
+                    for (Object object : myProfileData) {
+                        lstCatagories.add((DashboardCategories) object);
+                    }
+
+                    loadCategoriesData(lstCatagories);
+
+                }
+
+                @Override
+                public void onFailure(Call<List<DashboardCategories>> call, Throwable t) {
+                    Crashlytics.logException(t);
+                    hideProgressDialog(NewComplaintActivity.this);
+                    Toast.makeText(NewComplaintActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                    showAlert(NewComplaintActivity.this,"Error","Unable to get the Categories list","OK");
+                }
+            });
+
+        }catch (Exception e)
+        {
+            Crashlytics.logException(e);
+        }
+    }
+
+    private void loadCategoriesData(ArrayList<DashboardCategories> lstData) {
+        if(lstData.size() > 0 ) {
+            for (int i = 0; i < lstData.size(); i++) {
+                lstCatagoriesNames.add(lstData.get(i).getName().toString().trim());
+                hshMapCategoryLst.put(lstData.get(i).getName().toString().trim(), lstData.get(i).getCategoryID().toString().trim());
+            }
+            ArrayAdapter adapter = new ArrayAdapter(this,R.layout.custom_textview_layout,R.id.text,lstCatagoriesNames);
+            adapter.setDropDownViewResource(android.R.layout.select_dialog_item);
+            binding.spinner.setAdapter(adapter);
+            binding.spinner.setThreshold(1);
+            binding.spinner.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent) {
+                    binding.spinner.showDropDown();
+                    return false;
+                }
+            });
+        }else
+            showAlert(NewComplaintActivity.this,"Error","Unable to get the Categories list","OK");
+
     }
 
     private void showAttachementDialog() {
@@ -817,24 +895,28 @@ public class NewComplaintActivity extends BaseActivity {
 
     public void SubmitDialog()
     {
-        //if (!strIssue.equalsIgnoreCase("") && !strTitle.equalsIgnoreCase("") && !strComplaintType.equalsIgnoreCase("")) {
+        if (!strDescription.equalsIgnoreCase("") && !strTitle.equalsIgnoreCase("") && category != -1) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            //builder.setTitle("Upload");
-            //Setting message manually and performing action on button click
+            builder.setTitle("New Post Upload");
             builder.setMessage("Do you want to upload the complaint?")
                     .setCancelable(false)
                     .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            //finish();
                             dialog.cancel();
-                            if(!lstModelData.isEmpty())
+                            runOnUiThread(new Runnable() {
+                                public void run() {
+                                    new AsyncTaskExample().execute();
+                                }
+                            });
+
+                            /*if(!lstModelData.isEmpty())
                             {
                                 for(NewComplaintModel newComplaintModel : lstModelData)
                                 {
-                                    System.out.println("FilePath::"+newComplaintModel.getFilePath());
-                                    uploadImage(getRealPathFromURI(newComplaintModel.getUri()));
-                                }
-                            }
+                                    System.out.println("FilePath::"+newComplaintModel.getFilePath());*/
+                                    //uploadImage(getRealPathFromURI(newComplaintModel.getUri()));
+                               /* }
+                            }*/
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -845,12 +927,186 @@ public class NewComplaintActivity extends BaseActivity {
                     });
             //Creating dialog box
             AlertDialog alert = builder.create();
-            //Setting the title manually
-            alert.setTitle("Upload Alert");
             alert.show();
-        /*}else {
+        }else {
             Toast.makeText(NewComplaintActivity.this, "Please fill all the fields", Toast.LENGTH_LONG).show();
-        }*/
+        }
+    }
+
+
+    private class AsyncTaskExample extends AsyncTask<String, Integer, Integer> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            showProgressDialog(NewComplaintActivity.this,"Please wait.. We are posting your complaint");
+        }
+        @Override
+        protected Integer doInBackground(String... strings) {
+            String result = uploadData(String.valueOf(prepareJSON()),"http://api.ainext.in/posts/addpost");
+            try {
+                JSONArray jsonarray = new JSONArray(result);
+                for (int i = 0; i < jsonarray.length(); i++) {
+                    JSONObject jsonobject = jsonarray.getJSONObject(i);
+                    strResult = jsonobject.getInt("RES");
+                }
+            }catch (Exception e)
+            {
+                Crashlytics.logException(e);
+            }
+            return strResult;
+        }
+
+        @Override
+        protected void onPostExecute(Integer result) {
+            super.onPostExecute(result);
+            hideProgressDialog(NewComplaintActivity.this);
+
+            if(result != -1 && result != 0)
+                CustomDialog(NewComplaintActivity.this,"Thank You","Your request has been successfully posted. We will process and keep in touch with you.","");
+                //showAlert(NewComplaintActivity.this,"Success","Uploaded Successfully","OK");
+            else
+                showAlert(NewComplaintActivity.this,"Failed to upload data","Result:"+result,"OK");
+
+            binding.etTitle.setText("");
+            binding.etDescription.setText("");
+            binding.spinner.setText("");
+            getLocation();
+            //binding.currentDate.setText(currentTime);
+        }
+    }
+
+    @SuppressLint("LongLogTag")
+    private String uploadData(String jsonParam , String strUrl)
+    {
+        try{
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+            try {
+                URL url = new URL(strUrl);
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setDoOutput(true);
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("Content-Type", "application/json");
+                urlConnection.setRequestProperty("Accept", "application/json");
+                Writer writer = new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), "UTF-8"));
+                writer.write(jsonParam);
+                writer.close();
+                InputStream inputStream = urlConnection.getInputStream();
+                //input stream
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    // Nothing to do.
+                    return null;
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String inputLine;
+                while ((inputLine = reader.readLine()) != null)
+                    buffer.append(inputLine + "\n");
+                if (buffer.length() == 0) {
+                    // Stream was empty. No point in parsing.
+                    return null;
+                }
+                String JsonResponse = buffer.toString();
+                //response data
+                Log.i(TAG,JsonResponse);
+                return JsonResponse;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e(TAG, "Error closing stream", e);
+                    }
+                }
+            }
+
+            /*Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
+            APIInterface api = retrofit.create(APIInterface.class);
+            Call<ResponseBody> call = api.postNewItem(prepareJSON());
+
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    try {
+                        String  bodyString = new String(response.body().bytes());
+                        Log.v("bodyString ::: ",bodyString);
+                        if (response.isSuccessful()) {
+                            JSONArray jsonarray = new JSONArray(bodyString);
+                            for (int i = 0; i < jsonarray.length(); i++) {
+                                JSONObject jsonobject = jsonarray.getJSONObject(i);
+                                strResult = jsonobject.getInt("RES");
+                            }
+                            hideProgressDialog(NewComplaintActivity.this);
+                        } else {
+                            hideProgressDialog(NewComplaintActivity.this);
+                            Toast.makeText(NewComplaintActivity.this, "RESPONSE :: "+ response.body().toString(), Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (IOException e) {
+                        hideProgressDialog(NewComplaintActivity.this);
+                        e.printStackTrace();
+                        Crashlytics.logException(e);
+                    } catch (JSONException e) {
+                        hideProgressDialog(NewComplaintActivity.this);
+                        e.printStackTrace();
+                        Crashlytics.logException(e);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                    hideProgressDialog(NewComplaintActivity.this);
+                }
+            });*/
+        }catch (Exception e)
+        {
+            Crashlytics.logException(e);
+            hideProgressDialog(NewComplaintActivity.this);
+        }
+        return null;
+    }
+
+    private JsonObject prepareJSON() {
+        JsonObject jsonParam = null;
+        try {
+            String postedBy = getStringSharedPreference(NewComplaintActivity.this,"MemberID");
+            jsonParam = prepareAddNewPostJSON(category, strTitle, strDescription, postedBy,strLocation, String.valueOf(latitude),String.valueOf(longitude));
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return jsonParam;
+    }
+
+    private JsonObject prepareAddNewPostJSON(int strComplaintType, String strTitle, String strDescription, String postedBy, String strLocation, String latitude, String longitude){
+
+        try {
+            JsonObject json = new JsonObject();
+            json.addProperty("itemID", -1);
+            json.addProperty("title", strTitle);
+            json.addProperty("description", strDescription);
+            json.addProperty("categoryID", category);
+            json.addProperty("postedBy", postedBy);
+            json.addProperty("location", strLocation);
+            json.addProperty("latitude", latitude);
+            json.addProperty("langitude", longitude);
+
+            return json;
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            Crashlytics.logException(e);
+        }
+
+        return null;
     }
 
 
