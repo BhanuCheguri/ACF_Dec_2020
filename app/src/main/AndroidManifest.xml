@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.joinacf.acf">
 
     <uses-feature
@@ -18,6 +19,9 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.MANAGE_DOCUMENTS"
+        tools:ignore="ProtectedPermissions" />
+
 
     <application
         android:name=".utilities.App"
@@ -30,6 +34,7 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".activities.SplashActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,23 +44,34 @@
         </activity>
         <activity
             android:name=".activities.NewLoginActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".activities.OTPVerificationActivity" />
-        <activity android:name=".activities.MainActivity">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <activity android:name=".activities.OTPVerificationActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <activity android:name=".activities.MainActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity>
-        <activity android:name=".activities.MoreActivity" />
-        <activity android:name=".activities.ProfileActivity" />
-        <activity android:name=".activities.NewComplaintActivity" />
-        <activity android:name=".activities.MyPostingsActivity"/>
-        <activity android:name=".activities.AddPetitionActivity"/>
+        <activity android:name=".activities.MoreActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <activity android:name=".activities.ProfileActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <activity android:name=".activities.NewComplaintActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <activity android:name=".activities.MyPostingsActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <activity android:name=".activities.AddPetitionActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
         <activity
             android:name=".activities.ViewMediaActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".activities.ChangePasswordActivity" />
-        <activity android:name=".activities.ForgotPasswordActivity" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <activity android:name=".activities.ChangePasswordActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <activity android:name=".activities.ForgotPasswordActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
         <!--<activity android:name=".MyPetitionListActivity" />-->
         <!--<activity android:name=".PetitionActivity" />-->
 

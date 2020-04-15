@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -28,6 +29,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 
@@ -37,13 +40,16 @@ import androidx.appcompat.app.AlertDialog;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -55,8 +61,10 @@ import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -69,13 +77,13 @@ import com.google.gson.JsonObject;
 import com.joinacf.acf.BuildConfig;
 import com.joinacf.acf.R;
 import com.joinacf.acf.adapters.ImageListAdapter;
+import com.joinacf.acf.databinding.ActivityNewComplaintBinding;
 import com.joinacf.acf.modelclasses.DashboardCategories;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.network.AppLocationService;
 import com.joinacf.acf.modelclasses.NewComplaintModel;
 import com.joinacf.acf.utilities.Utility;
-import com.joinacf.acf.databinding.ActivityNewComplaintBinding;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -89,8 +97,11 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -98,6 +109,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -106,10 +118,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class NewComplaintActivity extends BaseActivity {
 
-    final String TAG = "NewComplaintActivity.Class";
+    private static Uri contentUri = null;
+    public static String TAG = "NewComplaintActivity.Class";
     ActivityNewComplaintBinding binding;
     //String[] Names = {"Corruption", "Adulteration", "Social Evil", "Find and Fix"};
     private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -123,7 +138,6 @@ public class NewComplaintActivity extends BaseActivity {
 
     NewComplaintModel model;
     ArrayList<NewComplaintModel> lstModelData;
-    LocationManager locationManager;
     AppLocationService appLocationService;
     private APIRetrofitClient apiRetrofitClient;
     private FusedLocationProviderClient locationProviderClient;
@@ -131,13 +145,16 @@ public class NewComplaintActivity extends BaseActivity {
     private double latitude,longitude;
     private List<Address> addresses;
     private int locationRequestCode = 1000;
-    String strTitle, strComplaintType, strDescription,strLocation;
+    String strTitle, strDescription,strLocation;
     private int strResult = -1;
     private int category = -1;
     String currentTime= "";
     ArrayList<DashboardCategories> lstCatagories;
     ArrayList<String> lstCatagoriesNames;
+    ArrayList<String> lstPathURI;
     HashMap<String,String> hshMapCategoryLst ;
+    String strResponse = "";
+    CustomImageAdapter customImageAdapter;
 
 
     @Override
@@ -153,12 +170,6 @@ public class NewComplaintActivity extends BaseActivity {
 
     private void getCurrentLocation() {
         try {
-
-            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    return;
-                }
-            }*/
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -187,18 +198,20 @@ public class NewComplaintActivity extends BaseActivity {
                     longitude = location.getLongitude();
                     try {
                         addresses = geocoder.getFromLocation(latitude, longitude, 1);
-                        String addressLine1 = addresses.get(0).getAddressLine(0);
-                        Log.e("line1", addressLine1);
-                        String city = addresses.get(0).getLocality();
-                        Log.e("city", city);
-                        String state = addresses.get(0).getAdminArea();
-                        Log.e("state", state);
-                        String pinCode = addresses.get(0).getPostalCode();
-                        Log.e("pinCode", pinCode);
+                        if(addresses.size() > 0) {
+                            String addressLine1 = addresses.get(0).getAddressLine(0);
+                            Log.e("line1", addressLine1);
+                            String city = addresses.get(0).getLocality();
+                            Log.e("city", city);
+                            String state = addresses.get(0).getAdminArea();
+                            Log.e("state", state);
+                            String pinCode = addresses.get(0).getPostalCode();
+                            Log.e("pinCode", pinCode);
 
-                        String fullAddress = addressLine1 + ",  " + city + ",  " + state + ",  " + pinCode;
-                        binding.currentLocation.setText(addressLine1);
-                        strLocation = addressLine1;
+                            String fullAddress = addressLine1 + ",  " + city + ",  " + state + ",  " + pinCode;
+                            binding.currentLocation.setText(addressLine1);
+                            strLocation = addressLine1;
+                        }
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -232,7 +245,7 @@ public class NewComplaintActivity extends BaseActivity {
         lstCatagories = new ArrayList<DashboardCategories>();
         lstCatagoriesNames = new ArrayList<>();
         hshMapCategoryLst = new HashMap<>();
-
+        lstPathURI = new ArrayList<>();
         appLocationService = new AppLocationService(NewComplaintActivity.this);
 
         currentTime = new SimpleDateFormat("hh:mm a", Locale.US).format(new Date());
@@ -242,8 +255,6 @@ public class NewComplaintActivity extends BaseActivity {
         binding.spinner.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                //Toast.makeText(NewComplaintActivity.this,Names[i],Toast.LENGTH_LONG).show();
-                //strComplaintType = ""+(i+1);
                 String categoryID = hshMapCategoryLst.get(lstCatagoriesNames.get(i).toString());
                 category = Integer.valueOf(categoryID);
             }
@@ -360,7 +371,8 @@ public class NewComplaintActivity extends BaseActivity {
                     case 0:
                         try {
                             requestMultiplePermissions();
-                            selectImage();
+                            //selectImage();
+                            takePhotoFromCamera();
                         }catch(ActivityNotFoundException anfe){
                             String errorMessage = "Whoops – your device doesn’t support capturing images!";
                             Toast toast = Toast.makeText(NewComplaintActivity.this, errorMessage, Toast.LENGTH_SHORT);
@@ -370,7 +382,7 @@ public class NewComplaintActivity extends BaseActivity {
                     case 1:
                         try {
                             requestMultiplePermissions();
-                            selectVideo();
+                            takeVideoFromCamera();
                         }catch(ActivityNotFoundException anfe){
                             String errorMessage = "Whoops – your device doesn’t support capturing videos!";
                             Toast toast = Toast.makeText(NewComplaintActivity.this, errorMessage, Toast.LENGTH_SHORT);
@@ -446,35 +458,15 @@ public class NewComplaintActivity extends BaseActivity {
         builder.show();
     }
 
-    private void selectVideo() {
-
-        final CharSequence[] items = { "Take Video", "Choose from Library",
-                "Cancel" };
-        AlertDialog.Builder builder = new AlertDialog.Builder(NewComplaintActivity.this);
-        builder.setTitle("Add Video!");
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int item) {
-                boolean result= Utility.checkPermission(NewComplaintActivity.this);
-                if (items[item].equals("Take Video")) {
-                    if(result)
-                        takeVideoFromCamera();
-                } else if (items[item].equals("Choose from Library")) {
-                    if(result)
-                        chooseVideoFromGallary();
-                } else if (items[item].equals("Cancel")) {
-                    dialog.dismiss();
-                }
-            }
-        });
-        builder.show();
-    }
-
     public void choosePhotoFromGallary() {
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK,
+        /*Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        galleryIntent.setType("image/*");
+        startActivityForResult(galleryIntent, GALLERY);*/
 
-        startActivityForResult(galleryIntent, GALLERY);
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        photoPickerIntent.setType("image/*");
+        startActivityForResult(photoPickerIntent, GALLERY);
     }
 
     private void takePhotoFromCamera() {
@@ -483,15 +475,35 @@ public class NewComplaintActivity extends BaseActivity {
     }
 
 
-    public void chooseVideoFromGallary() {
-        Intent video_galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(video_galleryIntent, VIDEO_GALLERY);
-    }
-
     private void takeVideoFromCamera() {
         Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
         startActivityForResult(intent, VIDEO_CAMERA);
     }
+
+
+    @SuppressLint("LongLogTag")
+    public void saveFile(Context context, Bitmap b, String picName){
+        FileOutputStream fos = null;
+        try {
+            fos = context.openFileOutput(picName, Context.MODE_PRIVATE);
+            b.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        }
+        catch (FileNotFoundException e) {
+            Log.d(TAG, "file not found");
+            e.printStackTrace();
+        }
+        catch (IOException e) {
+            Log.d(TAG, "io exception");
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -504,12 +516,18 @@ public class NewComplaintActivity extends BaseActivity {
             try {
                 if (data != null) {
                     String[] filePath = {MediaStore.Images.Media.DATA};
+                    String path = getPathFromUri(NewComplaintActivity.this,contentURI);
+
                     Cursor cursor = getContentResolver().query(contentURI, filePath, null, null, null);
                     cursor.moveToFirst();
                     String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                    Bitmap bm = android.provider.MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentURI);
                     Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(imagePath));
+                    cursor.close();
 
-                    setAttachmentData(imagePath,imagePath,uri,getExtensionType(contentURI));
+                    setAttachmentData(path,path,uri,getExtensionType(contentURI),bm);
 
                 }
             }catch (Exception e) {
@@ -518,20 +536,27 @@ public class NewComplaintActivity extends BaseActivity {
             }
 
         } else if (requestCode == CAMERA) {
-            Uri contentURI = data.getData();
             try {
                 Bitmap photo = (Bitmap) data.getExtras().get("data");
                 String imgcurTime = dateFormat.format(new Date());
-                File imageDirectory = new File(complaint_ImagePath);
-                imageDirectory.mkdirs();
-                String imagePath = complaint_ImagePath + imgcurTime + ".jpg";
-                FileOutputStream out = new FileOutputStream(imagePath);
-                photo.compress(Bitmap.CompressFormat.JPEG, 90, out);
-                out.close();
+                saveFile(NewComplaintActivity.this,photo,imgcurTime + ".jpg");
+                String dir = getFilesDir().getAbsolutePath();
+                String imagePath = dir + "/"+imgcurTime + ".jpg";
+                File file = new File(imagePath);
+                if(file.exists())
+                {
+                    FileOutputStream out = new FileOutputStream(imagePath);
+                    photo.compress(Bitmap.CompressFormat.JPEG, 90, out);
+                    out.close();
 
-                Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", imageDirectory);
+                    Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", file);
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inSampleSize = 4;
+                    Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
+                    setAttachmentData(imagePath,imagePath,uri,"jpg",bitmap);
+                }else
+                    Toast.makeText(this, "Not able to create image path", Toast.LENGTH_SHORT).show();
 
-                setAttachmentData(imagePath,imagePath,uri,"jpg");
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -539,30 +564,7 @@ public class NewComplaintActivity extends BaseActivity {
             }
 
         }
-        else if (requestCode == VIDEO_GALLERY) {
-            Uri contentURI = data.getData();
-
-            Log.d("what","gale");
-            if (data != null) {
-                try {
-                    String selectedVideoPath = getPath(contentURI);
-                    Log.d("path", selectedVideoPath);
-
-                    String[] filePath = {MediaStore.Video.Media.DATA};
-                    Cursor cursor = getContentResolver().query(contentURI, filePath, null, null, null);
-                    cursor.moveToFirst();
-                    String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
-                    Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(imagePath));
-
-                    setAttachmentData(selectedVideoPath,imagePath,uri,getExtensionType(contentURI));
-
-                }catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(NewComplaintActivity.this, "Attachment Failed", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-        } else if (requestCode == VIDEO_CAMERA) {
+       else if (requestCode == VIDEO_CAMERA) {
             Uri contentURI = data.getData();
             try {
                 String recordedVideoPath = getPath(contentURI);
@@ -574,7 +576,7 @@ public class NewComplaintActivity extends BaseActivity {
                 String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
                 Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(imagePath));
 
-                setAttachmentData(recordedVideoPath,imagePath,uri,getExtensionType(contentURI));
+                setAttachmentData(recordedVideoPath,imagePath,uri,getExtensionType(contentURI),null);
 
             }catch (Exception e) {
                 e.printStackTrace();
@@ -590,7 +592,7 @@ public class NewComplaintActivity extends BaseActivity {
 
                 String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtensionType(contentURI));
 
-                setAttachmentData(path,path,contentURI,mimeType);
+                setAttachmentData(path,path,contentURI,mimeType,null);
 
             }catch (Exception e) {
                 e.printStackTrace();
@@ -607,7 +609,7 @@ public class NewComplaintActivity extends BaseActivity {
 
                 String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtensionType(contentURI));
 
-                setAttachmentData(path,path,contentURI,mimeType);
+                setAttachmentData(path,path,contentURI,mimeType,null);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -616,16 +618,19 @@ public class NewComplaintActivity extends BaseActivity {
         }
     }
 
-    private void setAttachmentData(String Content, String FilePath, Uri contentURI, String mimeType) {
+    private void setAttachmentData(String Content, String FilePath, Uri contentURI, String mimeType,Bitmap bm) {
 
         model = new NewComplaintModel();
         model.setContent(Content);
         model.setFilePath(FilePath);
         model.setUri(contentURI);
         model.setExtensionType(mimeType);
+        model.setBitmap(bm);
         lstModelData.add(model);
 
-        binding.grid.setAdapter(new CustomImageAdapter(this, lstModelData));
+        lstPathURI.add(Content);
+        customImageAdapter = new CustomImageAdapter(this, lstModelData);
+        binding.grid.setAdapter(customImageAdapter);
     }
 
 
@@ -656,52 +661,6 @@ public class NewComplaintActivity extends BaseActivity {
         } else
             return null;
     }
-
-   /* private List<String> RetriveCapturedImagePath() {
-        List<String> tFileList = new ArrayList<String>();
-        File f = new File(complaint_ImagePath);
-        if (f.exists()) {
-            File[] files=f.listFiles();
-            Arrays.sort(files);
-
-            for(int i=0; i<files.length; i++){
-                File file = files[i];
-                if(file.isDirectory())
-                    continue;
-                tFileList.add(file.getPath());
-            }
-        }
-        return tFileList;
-    }
-
-
-    public String saveImage(Bitmap myBitmap) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        myBitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
-        File wallpaperDirectory = new File(complaint_ImagePath);
-        // have the object build the directory structure, if needed.
-        if (!wallpaperDirectory.exists()) {
-            wallpaperDirectory.mkdirs();
-        }
-
-        try {
-            File f = new File(wallpaperDirectory, Calendar.getInstance()
-                    .getTimeInMillis() + ".jpg");
-            f.createNewFile();
-            FileOutputStream fo = new FileOutputStream(f);
-            fo.write(bytes.toByteArray());
-            MediaScannerConnection.scanFile(this,
-                    new String[]{f.getPath()},
-                    new String[]{"image/jpeg"}, null);
-            fo.close();
-            Log.d("TAG", "File Saved::---&gt;" + f.getAbsolutePath());
-            tImagesPath.add(wallpaperDirectory.toString());
-            return f.getAbsolutePath();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-        return "";
-    }*/
 
     private void  requestMultiplePermissions(){
         Dexter.withActivity(this)
@@ -741,7 +700,7 @@ public class NewComplaintActivity extends BaseActivity {
         private Context context;
         private ArrayList<NewComplaintModel> lstModelData;
         private LayoutInflater inflater=null;
-        Bitmap bm = null;
+        //Bitmap bm = null;
 
         public CustomImageAdapter(NewComplaintActivity c, ArrayList<NewComplaintModel> lstData) {
             context = c;
@@ -778,22 +737,18 @@ public class NewComplaintActivity extends BaseActivity {
 
             rowView = inflater.inflate(R.layout.new_complaint_grid_row_layout, null);
             holder.grid_img = (ImageView) rowView.findViewById(R.id.grid_img);
-            //holder.grid_close = (ImageView) rowView.findViewById(R.id.img_close);
 
 
             final String strMimeType = lstModelData.get(position).getExtensionType();
             if(strMimeType.equalsIgnoreCase("jpg") || strMimeType.equalsIgnoreCase("png")) {
-                getBitmap(lstModelData.get(position).getFilePath());
-                holder.grid_img.setImageBitmap(bm);
-                holder.grid_img.setId(position);
-            }
-            else if(strMimeType.equalsIgnoreCase("mp4")) {
-                File file = new File(lstModelData.get(position).getFilePath());
-                Bitmap bMap = ThumbnailUtils.createVideoThumbnail(file.getAbsolutePath(), MediaStore.Video.Thumbnails.MICRO_KIND);
-                if (bMap != null) {
-                    holder.grid_img.setImageBitmap(bMap);
+                if(lstModelData.get(position).getBitmap() !=null) {
+                    holder.grid_img.setImageBitmap(lstModelData.get(position).getBitmap());
                     holder.grid_img.setId(position);
                 }
+            }
+            else if(strMimeType.equalsIgnoreCase("mp4")) {
+                    holder.grid_img.setImageResource(R.drawable.mp4);
+                    holder.grid_img.setId(position);
             }
             else if(strMimeType.equalsIgnoreCase("application/pdf")) {
                 holder.grid_img.setImageResource(R.drawable.pdf);
@@ -839,12 +794,17 @@ public class NewComplaintActivity extends BaseActivity {
                             if(strMimeType.equalsIgnoreCase("mp4"))
                             {
                                 Intent intent = new Intent(context,ViewMediaActivity.class);
-                                intent.putExtra("FilePath",lstModelData.get(position).getFilePath());
+                                intent.putExtra("FilePath",lstModelData.get(position).getUri().toString());
                                 intent.putExtra("FileType","mp4");
                                 context.startActivity(intent);
+
                             }else  if(strMimeType.equalsIgnoreCase("jpg") ||  strMimeType.equalsIgnoreCase("png")){
+                                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                                lstModelData.get(position).getBitmap().compress(Bitmap.CompressFormat.PNG, 100, stream);
+                                byte[] byteArray = stream.toByteArray();
+
                                 Intent intent = new Intent(context,ViewMediaActivity.class);
-                                intent.putExtra("FilePath",lstModelData.get(position).getFilePath());
+                                intent.putExtra("FilePath",byteArray);
                                 intent.putExtra("FileType","jpg");
                                 context.startActivity(intent);
                             }
@@ -857,39 +817,6 @@ public class NewComplaintActivity extends BaseActivity {
             });
 
             return rowView;
-        }
-
-
-        public Bitmap getBitmap(String url) {
-            FileInputStream fIn = null;
-            try {
-                //fIn = new FileInputStream(new File(imgData.get(position).toString()));
-                BitmapFactory.Options bfOptions = new BitmapFactory.Options();
-                bfOptions.inDither = false;                     //Disable Dithering mode
-                bfOptions.inPurgeable = true;                   //Tell to gc that whether it needs free memory, the Bitmap can be cleared
-                bfOptions.inInputShareable = true;              //Which kind of reference will be used to recover the Bitmap data after being clear, when it will be used in the future
-                bfOptions.inTempStorage = new byte[32 * 1024];
-
-                fIn = new FileInputStream(new File(url));
-
-                if (fIn != null) {
-                    bm = BitmapFactory.decodeFileDescriptor(fIn.getFD(), null, bfOptions);
-                    if (bm != null) {
-
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (fIn != null) {
-                    try {
-                        fIn.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            return bm;
         }
     }
 
@@ -909,14 +836,6 @@ public class NewComplaintActivity extends BaseActivity {
                                 }
                             });
 
-                            /*if(!lstModelData.isEmpty())
-                            {
-                                for(NewComplaintModel newComplaintModel : lstModelData)
-                                {
-                                    System.out.println("FilePath::"+newComplaintModel.getFilePath());*/
-                                    //uploadImage(getRealPathFromURI(newComplaintModel.getUri()));
-                               /* }
-                            }*/
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -925,7 +844,6 @@ public class NewComplaintActivity extends BaseActivity {
                             dialog.cancel();
                         }
                     });
-            //Creating dialog box
             AlertDialog alert = builder.create();
             alert.show();
         }else {
@@ -962,18 +880,92 @@ public class NewComplaintActivity extends BaseActivity {
             super.onPostExecute(result);
             hideProgressDialog(NewComplaintActivity.this);
 
-            if(result != -1 && result != 0)
-                CustomDialog(NewComplaintActivity.this,"Thank You","Your request has been successfully posted. We will process and keep in touch with you.","");
-                //showAlert(NewComplaintActivity.this,"Success","Uploaded Successfully","OK");
-            else
+            if(result != -1 && result != 0) {
+                CustomDialog(NewComplaintActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
+            }else
                 showAlert(NewComplaintActivity.this,"Failed to upload data","Result:"+result,"OK");
 
             binding.etTitle.setText("");
             binding.etDescription.setText("");
             binding.spinner.setText("");
             getLocation();
-            //binding.currentDate.setText(currentTime);
+            binding.currentDate.setText(currentTime);
+            new AsyncUploadImages().execute();
+
         }
+    }
+
+    private class AsyncUploadImages extends AsyncTask<String, String, String> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            showProgressDialog(NewComplaintActivity.this,"Please wait.. We are uploading your images");
+        }
+        @Override
+        protected String doInBackground(String... strings) {
+            String result = null;
+            if(!lstPathURI.isEmpty())
+            {
+                result = mulipleFileUploadFile(lstPathURI);
+            }
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            hideProgressDialog(NewComplaintActivity.this);
+
+            if(result != null && result.equalsIgnoreCase("")) {
+                CustomDialog(NewComplaintActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
+            }else {
+                showAlert(NewComplaintActivity.this, "Failed to upload data", "Result:" + result, "OK");
+            }
+            binding.grid.setAdapter(null);
+        }
+    }
+
+
+    public void CustomDialog(Context context,String title,String msg,String subMsg)
+    {
+        final Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.custom_dialog);
+        //dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        dialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        // set the custom dialog components - text, image and button
+        TextView text = (TextView) dialog.findViewById(R.id.title);
+        text.setText(title);
+
+        TextView message = (TextView) dialog.findViewById(R.id.msg);
+        message.setText(msg);
+
+        if(!msg.equalsIgnoreCase("")) {
+            message.setVisibility(View.VISIBLE);
+            message.setText(msg);
+        }else
+            message.setVisibility(View.GONE);
+
+        TextView sub_Msg = (TextView) dialog.findViewById(R.id.sub_msg);
+
+        if(!subMsg.equalsIgnoreCase("")) {
+            sub_Msg.setVisibility(View.VISIBLE);
+            sub_Msg.setText(subMsg);
+        }else
+            sub_Msg.setVisibility(View.GONE);
+
+        Button dialogButton = (Button) dialog.findViewById(R.id.btnOk);
+        // if button is clicked, close the custom dialog
+        dialogButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
     }
 
     @SuppressLint("LongLogTag")
@@ -1149,6 +1141,412 @@ public class NewComplaintActivity extends BaseActivity {
         return file.getPath();
     }
 
+    private String mulipleFileUploadFile(ArrayList<String> fileUri) {
+        try {
+            OkHttpClient okHttpClient = new OkHttpClient();
+            OkHttpClient clientWith30sTimeout = okHttpClient.newBuilder()
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .build();
+
+            Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
+            APIInterface api = retrofit.create(APIInterface.class);
+            Map<String, RequestBody> maps = new HashMap<>();
+
+
+            if (fileUri != null && fileUri.size() > 0) {
+                for (int i = 0; i < fileUri.size(); i++) {
+
+                    Uri contentURI = Uri.fromFile(new File(fileUri.get(i).toString()));
+                    String filePath = getPathFromUri(NewComplaintActivity.this,contentURI );
+                    File file1 = new File(filePath);
+
+                    if (filePath != null && filePath.length() > 0) {
+                        if (file1.exists()) {
+                            okhttp3.RequestBody requestFile = okhttp3.RequestBody.create(okhttp3.MediaType.parse("multipart/form-data"), file1);
+                            String filename = "imagePath" + i; //key for upload file like : imagePath0
+                            maps.put(filename + "\"; filename=\"" + file1.getName(), requestFile);
+                        }
+                    }
+                }
+            }
+
+            //hear is the your json request
+            Call<ResponseBody> call = api.uploadImages(maps);
+            call.enqueue(new Callback<ResponseBody>() {
+                @SuppressLint("LongLogTag")
+                @Override
+                public void onResponse(Call<ResponseBody> call,
+                                       Response<ResponseBody> response) {
+                    try {
+                        Log.i(TAG, "success");
+                        strResponse = response.body().toString();
+                        Log.d("body==>", response.body().toString() + "");
+                        System.out.println("body==>" + response.body().toString());
+
+                    }catch (Exception e)
+                    {
+                        strResponse = "";
+                        e.printStackTrace();
+                        Crashlytics.logException(e);
+                        hideProgressDialog(NewComplaintActivity.this);
+                        showErrorAlert(NewComplaintActivity.this,"Failed to upload images");
+                    }
+                }
+
+                @SuppressLint("LongLogTag")
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Log.e(TAG, t.getMessage());
+                    hideProgressDialog(NewComplaintActivity.this);
+                    showErrorAlert(NewComplaintActivity.this,t.toString());
+                }
+            });
+        }catch (Exception e)
+        {
+            hideProgressDialog(NewComplaintActivity.this);
+            e.printStackTrace();
+            Crashlytics.logException(e);
+        }
+        return strResponse;
+    }
+
+    public static String getPathFromUri(final Context context, final Uri uri) {
+
+        // check here to KITKAT or new version
+        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+        String selection = null;
+        String[] selectionArgs = null;
+        // DocumentProvider
+        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+            // ExternalStorageProvider
+            if (isExternalStorageDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                String fullPath = getPathFromExtSD(split);
+                if (fullPath != "") {
+                    return fullPath;
+                } else {
+                    return null;
+                }
+            }
+
+            // DownloadsProvider
+            else if (isDownloadsDocument(uri)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    final String id;
+                    Cursor cursor = null;
+                    try {
+                        cursor = context.getContentResolver().query(uri, new String[]{MediaStore.MediaColumns.DISPLAY_NAME}, null, null, null);
+                        if (cursor != null && cursor.moveToFirst()) {
+                            String fileName = cursor.getString(0);
+                            String path = Environment.getExternalStorageDirectory().toString() + "/Download/" + fileName;
+                            if (!TextUtils.isEmpty(path)) {
+                                return path;
+                            }
+                        }
+                    } finally {
+                        if (cursor != null)
+                            cursor.close();
+                    }
+                    id = DocumentsContract.getDocumentId(uri);
+                    if (!TextUtils.isEmpty(id)) {
+                        if (id.startsWith("raw:")) {
+                            return id.replaceFirst("raw:", "");
+                        }
+                        String[] contentUriPrefixesToTry = new String[]{
+                                "content://downloads/public_downloads",
+                                "content://downloads/my_downloads"
+                        };
+                        for (String contentUriPrefix : contentUriPrefixesToTry) {
+                            try {
+                                final Uri contentUri = ContentUris.withAppendedId(Uri.parse(contentUriPrefix), Long.valueOf(id));
+
+                         /*   final Uri contentUri = ContentUris.withAppendedId(
+                                    Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));*/
+
+                                return getDataColumn(context, contentUri, null, null);
+                            } catch (NumberFormatException e) {
+                                //In Android 8 and Android P the id is not a number
+                                return uri.getPath().replaceFirst("^/document/raw:", "").replaceFirst("^raw:", "");
+                            }
+                        }
+
+
+                    }
+
+                } else {
+                    final String id = DocumentsContract.getDocumentId(uri);
+                    final boolean isOreo = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+                    if (id.startsWith("raw:")) {
+                        return id.replaceFirst("raw:", "");
+                    }
+                    try {
+                        contentUri = ContentUris.withAppendedId(
+                                Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                    if (contentUri != null) {
+                        return getDataColumn(context, contentUri, null, null);
+                    }
+                }
+
+
+            }
+            // MediaProvider
+            else if (isMediaDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                Uri contentUri = null;
+
+                if ("image".equals(type)) {
+                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                } else if ("video".equals(type)) {
+                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                } else if ("audio".equals(type)) {
+                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                }
+                selection = "_id=?";
+                selectionArgs = new String[]{split[1]};
+
+
+                return getDataColumn(context, contentUri, selection,
+                        selectionArgs);
+            } else if (isGoogleDriveUri(uri)) {
+                return getDriveFilePath(uri, context);
+            }
+        }
+
+
+        // MediaStore (and general)
+        else if ("content".equalsIgnoreCase(uri.getScheme())) {
+
+            if (isGooglePhotosUri(uri)) {
+                return uri.getLastPathSegment();
+            }
+
+            if (isGoogleDriveUri(uri)) {
+                return getDriveFilePath(uri, context);
+            }
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.N) {
+                // return getFilePathFromURI(context,uri);
+                return getMediaFilePathForN(uri, context);
+                // return getRealPathFromURI(context,uri);
+            } else {
+
+                return getDataColumn(context, uri, null, null);
+            }
+
+
+        }
+        // File
+        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if a file exists on device
+     *
+     * @param filePath The absolute file path
+     */
+    private static boolean fileExists(String filePath) {
+        File file = new File(filePath);
+
+        return file.exists();
+    }
+
+
+    /**
+     * Get full file path from external storage
+     *
+     * @param pathData The storage type and the relative path
+     */
+    private static String getPathFromExtSD(String[] pathData) {
+        final String type = pathData[0];
+        final String relativePath = "/" + pathData[1];
+        String fullPath = "";
+
+        // on my Sony devices (4.4.4 & 5.1.1), `type` is a dynamic string
+        // something like "71F8-2C0A", some kind of unique id per storage
+        // don't know any API that can get the root path of that storage based on its id.
+        //
+        // so no "primary" type, but let the check here for other devices
+        if ("primary".equalsIgnoreCase(type)) {
+            fullPath = Environment.getExternalStorageDirectory() + relativePath;
+            if (fileExists(fullPath)) {
+                return fullPath;
+            }
+        }
+
+        // Environment.isExternalStorageRemovable() is `true` for external and internal storage
+        // so we cannot relay on it.
+        //
+        // instead, for each possible path, check if file exists
+        // we'll start with secondary storage as this could be our (physically) removable sd card
+        fullPath = System.getenv("SECONDARY_STORAGE") + relativePath;
+        if (fileExists(fullPath)) {
+            return fullPath;
+        }
+
+        fullPath = System.getenv("EXTERNAL_STORAGE") + relativePath;
+        if (fileExists(fullPath)) {
+            return fullPath;
+        }
+
+        return fullPath;
+    }
+
+    private static String getDriveFilePath(Uri uri, Context context) {
+        Uri returnUri = uri;
+        Cursor returnCursor = context.getContentResolver().query(returnUri, null, null, null, null);
+        /*
+         * Get the column indexes of the data in the Cursor,
+         *     * move to the first row in the Cursor, get the data,
+         *     * and display it.
+         * */
+        int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+        int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
+        returnCursor.moveToFirst();
+        String name = (returnCursor.getString(nameIndex));
+        String size = (Long.toString(returnCursor.getLong(sizeIndex)));
+        File file = new File(context.getCacheDir(), name);
+        try {
+            InputStream inputStream = context.getContentResolver().openInputStream(uri);
+            FileOutputStream outputStream = new FileOutputStream(file);
+            int read = 0;
+            int maxBufferSize = 1 * 1024 * 1024;
+            int bytesAvailable = inputStream.available();
+
+            //int bufferSize = 1024;
+            int bufferSize = Math.min(bytesAvailable, maxBufferSize);
+
+            final byte[] buffers = new byte[bufferSize];
+            while ((read = inputStream.read(buffers)) != -1) {
+                outputStream.write(buffers, 0, read);
+            }
+            Log.e("File Size", "Size " + file.length());
+            inputStream.close();
+            outputStream.close();
+            Log.e("File Path", "Path " + file.getPath());
+            Log.e("File Size", "Size " + file.length());
+        } catch (Exception e) {
+            Log.e("Exception", e.getMessage());
+        }
+        return file.getPath();
+    }
+
+    private static String getMediaFilePathForN(Uri uri, Context context) {
+        Uri returnUri = uri;
+        Cursor returnCursor = context.getContentResolver().query(returnUri, null, null, null, null);
+        /*
+         * Get the column indexes of the data in the Cursor,
+         *     * move to the first row in the Cursor, get the data,
+         *     * and display it.
+         * */
+        int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+        int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
+        returnCursor.moveToFirst();
+        String name = (returnCursor.getString(nameIndex));
+        String size = (Long.toString(returnCursor.getLong(sizeIndex)));
+        File file = new File(context.getFilesDir(), name);
+        try {
+            InputStream inputStream = context.getContentResolver().openInputStream(uri);
+            FileOutputStream outputStream = new FileOutputStream(file);
+            int read = 0;
+            int maxBufferSize = 1 * 1024 * 1024;
+            int bytesAvailable = inputStream.available();
+
+            //int bufferSize = 1024;
+            int bufferSize = Math.min(bytesAvailable, maxBufferSize);
+
+            final byte[] buffers = new byte[bufferSize];
+            while ((read = inputStream.read(buffers)) != -1) {
+                outputStream.write(buffers, 0, read);
+            }
+            Log.e("File Size", "Size " + file.length());
+            inputStream.close();
+            outputStream.close();
+            Log.e("File Path", "Path " + file.getPath());
+            Log.e("File Size", "Size " + file.length());
+        } catch (Exception e) {
+            Log.e("Exception", e.getMessage());
+        }
+        return file.getPath();
+    }
+
+
+    private static String getDataColumn(Context context, Uri uri,
+                                        String selection, String[] selectionArgs) {
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = {column};
+
+        try {
+            cursor = context.getContentResolver().query(uri, projection,
+                    selection, selectionArgs, null);
+
+            if (cursor != null && cursor.moveToFirst()) {
+                final int index = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(index);
+            }
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+
+        return null;
+    }
+
+    /**
+     * @param uri - The Uri to check.
+     * @return - Whether the Uri authority is ExternalStorageProvider.
+     */
+    private static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    /**
+     * @param uri - The Uri to check.
+     * @return - Whether the Uri authority is DownloadsProvider.
+     */
+    private static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    /**
+     * @param uri - The Uri to check.
+     * @return - Whether the Uri authority is MediaProvider.
+     */
+    private static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
+    /**
+     * @param uri - The Uri to check.
+     * @return - Whether the Uri authority is Google Photos.
+     */
+    private static boolean isGooglePhotosUri(Uri uri) {
+        return "com.google.android.apps.photos.content".equals(uri.getAuthority());
+    }
+
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is Google Drive.
+     */
+    private static boolean isGoogleDriveUri(Uri uri) {
+        return "com.google.android.apps.docs.storage".equals(uri.getAuthority()) || "com.google.android.apps.docs.storage.legacy".equals(uri.getAuthority());
+    }
+
+
     private void uploadImage(String imagePath)
     {
 
@@ -1205,6 +1603,8 @@ public class NewComplaintActivity extends BaseActivity {
             e.printStackTrace();
         }
     }
+
+
 
 
 }

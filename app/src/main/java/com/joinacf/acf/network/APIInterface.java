@@ -16,8 +16,11 @@ import com.joinacf.acf.modelclasses.WallPostsModel;
 import org.json.JSONObject;
 
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -27,6 +30,7 @@ import retrofit2.http.Headers;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
+import retrofit2.http.PartMap;
 import retrofit2.http.Query;
 
 public interface APIInterface {
@@ -92,6 +96,9 @@ public interface APIInterface {
     @GET("petitions/getspsections?")
     Call<List<SectionsModel>> getSections(@Query("spid") String SPID);
 
-
+    @Headers("Content-Type: application/json")
+    @Multipart
+    @POST("posts/upload")
+    Call<ResponseBody> uploadImages(@PartMap Map<String, RequestBody> Files);
 
 }

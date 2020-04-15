@@ -39,8 +39,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 app:srcCompat="@mipmap/logo"
-                android:background="@drawable/rippleeffect"
-                android:layout_marginBottom="5dp"/>
+                android:background="@android:color/transparent"
+                android:foreground="@drawable/rippleeffect"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp"
+                android:visibility="visible"
+                android:scaleType="fitXY"/>
 
             <HorizontalScrollView
                 android:id="@+id/horizontal_scroll"
@@ -50,6 +54,8 @@
 
                 <LinearLayout
                     android:id="@+id/linear"
+                    android:background="@android:color/transparent"
+                    android:foreground="@drawable/rippleeffect"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"

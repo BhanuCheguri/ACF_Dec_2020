@@ -1,5 +1,6 @@
 package com.joinacf.acf.modelclasses;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 
 public class NewComplaintModel {
@@ -8,6 +9,16 @@ public class NewComplaintModel {
     String Content;
     String ExtensionType;
     Uri Uri;
+
+    public android.graphics.Bitmap getBitmap() {
+        return Bitmap;
+    }
+
+    public void setBitmap(android.graphics.Bitmap bitmap) {
+        Bitmap = bitmap;
+    }
+
+    Bitmap Bitmap;
 
     public android.net.Uri getUri() {
         return Uri;

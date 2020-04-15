@@ -10,7 +10,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".activities.AddPetitionActivity">
+        tools:context=".activities.AddPetitionActivity"
+        android:layout_margin="10dp">
 
         <ScrollView
             android:layout_width="match_parent"
@@ -22,15 +23,6 @@
                 android:orientation="vertical"
                 tools:layout_editor_absoluteX="1dp"
                 tools:layout_editor_absoluteY="1dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:text="Tag your Petition"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
 
                 <EditText
                     android:id="@+id/et_Title"
@@ -59,7 +51,6 @@
                     android:isScrollContainer="true"
                     android:maxLines="2"
                     android:minLines="2"
-                    android:padding="5dp"
                     android:textIsSelectable="true" />
 
                 <LinearLayout
@@ -134,13 +125,15 @@
 
                 <Button
                     android:id="@+id/btnSubmit"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Submit"
                     android:gravity="center"
                     android:layout_gravity="center"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="20dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
                     android:textColor="@color/colorWhite"
                     android:background="@drawable/button_style"/>
             </LinearLayout>

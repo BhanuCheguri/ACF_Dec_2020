@@ -103,17 +103,22 @@ public class HomePageAdapter  extends ArrayAdapter<WallPostsModel> {
             if(strFilepathArray.length > 0) {
                 holder.imgFilePath.setVisibility(View.VISIBLE);
                 for (int i = 0; i < strFilepathArray.length; i++) {
+
+                    System.out.println("Image URL ::: "+strFilepathArray[i].trim().toString());
+                    String strFile = strFilepathArray[i].trim().toString();
                     lstFilepaths.add(strFilepathArray[i]);
                     final ImageView imageView = new ImageView(context);
                     imageView.setBackgroundResource(R.drawable.rippleeffect);
                     imageView.setId(i);
-                    imageView.setContentDescription(strFilepathArray[i]);
+                    imageView.setContentDescription(strFilepathArray[i].trim().toString());
                     imageView.setPadding(5, 5, 5, 5);
                     imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                    Glide.with(context).load(strFilepathArray[i]).override(800, 500).into(imageView);
+                    //LinearLayout.MarginLayoutParams mlp = (LinearLayout.MarginLayoutParams)imageView.getLayoutParams();
+                    //mlp.setMargins(5, 0, 5, 0);
+                    Glide.with(context).load(strFile).override(500, 500).into(imageView);
                     holder.linearLayout.addView(imageView);
                     final ImageView img = holder.imgFilePath;
-                    Glide.with(context).load(strFilepathArray[0]).into(img);
+                    Glide.with(context).load(strFilepathArray[0].trim().toString()).into(img);
                     imageView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {

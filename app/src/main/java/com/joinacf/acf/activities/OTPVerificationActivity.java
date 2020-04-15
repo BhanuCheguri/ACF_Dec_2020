@@ -172,8 +172,10 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
         {
             case R.id.btnContinue:
                 GetOTPAsyncTask getOTPtask = new GetOTPAsyncTask();
-                if(!binding.etMobileNo.getText().toString().equalsIgnoreCase(""))
+                if(!binding.etMobileNo.getText().toString().equalsIgnoreCase("")) {
                     getOTPtask.execute(binding.etMobileNo.getText().toString());
+                    putStringSharedPreference(OTPVerificationActivity.this,"mobile",binding.etMobileNo.getText().toString());
+                }
                 else
                     Toast.makeText(this,"Mobile Number cannot be empty",Toast.LENGTH_LONG).show();
 
