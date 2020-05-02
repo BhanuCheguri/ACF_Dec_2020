@@ -9,29 +9,29 @@
         android:id="@+id/card_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+            android:layout_marginBottom="@dimen/dimen_8"
         android:background="@android:color/white"
-        android:padding="10dp"
-        card_view:cardCornerRadius="5dp"
-        card_view:cardElevation="4dp"
-        card_view:contentPadding="5dp">
+        android:padding="@dimen/dimen_10"
+        card_view:cardCornerRadius="@dimen/dimen_5"
+        card_view:cardElevation="@dimen/dimen_4"
+        card_view:contentPadding="@dimen/dimen_5">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="10dp">
+            android:padding="@dimen/dimen_10">
 
             <TextView
                 android:id="@+id/tv_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
+                android:layout_marginTop="@dimen/dimen_5"
+                android:layout_marginBottom="@dimen/dimen_5"
                 android:fontFamily="@font/montserrat_semibold"
                 android:text="Hyderabad judge arrested in Corruption"
                 android:textColor="@color/colorDarkBlue"
-                android:textSize="16dp"
+                android:textSize="@dimen/dimen_16"
                 android:textStyle="normal" />
 
             <LinearLayout
@@ -43,15 +43,15 @@
                     android:id="@+id/tv_description"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="5dp"
+                    android:layout_marginTop="@dimen/dimen_5"
+                    android:layout_marginBottom="@dimen/dimen_5"
                     android:fontFamily="@font/montserrat_light"
-                    android:paddingLeft="5dp"
-                    android:paddingTop="5dp"
-                    android:paddingRight="5dp"
-                    android:paddingBottom="5dp"
+                    android:paddingLeft="@dimen/dimen_5"
+                    android:paddingTop="@dimen/dimen_5"
+                    android:paddingRight="@dimen/dimen_5"
+                    android:paddingBottom="@dimen/dimen_5"
                     android:text="A card is a sheet of material that serves as an entry point to more detailed information. Cards may contain a photo, text, and a link about a single subject. They may display content containing elements of varying size, such as photos with captions of variable length."
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/dimen_15" />
             </LinearLayout>
 
             <LinearLayout
@@ -67,18 +67,18 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
+                        android:layout_marginTop="@dimen/dimen_5"
                         android:orientation="horizontal">
 
                         <TextView
                             android:id="@+id/tv_location"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_margin="5dp"
-                            android:layout_marginTop="5dp"
+                            android:layout_margin="@dimen/dimen_5"
+                            android:layout_marginTop="@dimen/dimen_5"
                             android:layout_weight="0.35"
                             android:drawableLeft="@drawable/ic_placeholder"
-                            android:drawablePadding="5dp"
+                            android:drawablePadding="@dimen/dimen_5"
                             android:fontFamily="@font/montserrat_light"
                             android:text="KPHB,Hyderabad"
                             android:textStyle="bold" />
@@ -87,11 +87,11 @@
                             android:id="@+id/tv_DateTime"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_margin="5dp"
-                            android:layout_marginTop="5dp"
+                            android:layout_margin="@dimen/dimen_5"
+                            android:layout_marginTop="@dimen/dimen_5"
                             android:layout_weight="0.65"
                             android:drawableLeft="@drawable/ic_clock_16"
-                            android:drawablePadding="5dp"
+                            android:drawablePadding="@dimen/dimen_5"
                             android:fontFamily="@font/montserrat_light"
                             android:textStyle="bold" />
 
@@ -107,16 +107,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
                 android:layout_below="@+id/card_view"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="@dimen/dimen_5"
                 android:background="@color/colorSilverGrey"
                 android:gravity="center" />
 
             <!--<TextView
                 android:layout_width="match_parent"
-                android:layout_height="0.5dp"
+                android:layout_height="0.@dimen/dimen_5"
                 android:background="@color/colorDarkBlue"
                 android:gravity="center"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="@dimen/dimen_5"
                 android:layout_below="@+id/card_view"/>-->
         </LinearLayout>
 
@@ -125,10 +125,10 @@
 
     <!-- <TextView
          android:layout_width="match_parent"
-         android:layout_height="0.5dp"
+         android:layout_height="0.@dimen/dimen_5"
          android:background="@android:color/darker_gray"
          android:gravity="center"
-         android:layout_marginBottom="5dp"
+         android:layout_marginBottom="@dimen/dimen_5"
          android:layout_below="@+id/card_view"/>-->
 
 </RelativeLayout>

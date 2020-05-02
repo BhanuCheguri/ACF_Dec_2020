@@ -6,21 +6,21 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     card_view:cardBackgroundColor="@color/colorWhite"
-    card_view:cardCornerRadius="5dp"
-    card_view:cardElevation="3dp"
+    card_view:cardCornerRadius="@dimen/dimen_5"
+    card_view:cardElevation="@dimen/dimen_3"
     card_view:cardUseCompatPadding="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:layout_margin="5dp"
+        android:layout_margin="@dimen/dimen_5"
         android:orientation="vertical">
 
         <ImageView
             android:id="@+id/grid_img"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="@dimen/dimen_120"
+            android:layout_height="@dimen/dimen_120"
             android:scaleType="fitXY"
             android:src="@drawable/pdf" />
 
@@ -37,8 +37,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         card_view:cardBackgroundColor="@color/colorWhite"
-        card_view:cardCornerRadius="5dp"
-        card_view:cardElevation="3dp"
+        card_view:cardCornerRadius="@dimen/dimen_5"
+        card_view:cardElevation="@dimen/dimen_3"
         card_view:cardUseCompatPadding="true">
 
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -51,8 +51,8 @@
 
             <ImageView
                 android:id="@+id/grid_img"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
+                android:layout_width="@dimen/dimen_120"
+                android:layout_height="@dimen/dimen_120"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentTop="true"
@@ -62,8 +62,8 @@
 
             <ImageView
                 android:id="@+id/img_close"
-                android:layout_width="13dp"
-                android:layout_height="13dp"
+                android:layout_width="1@dimen/dimen_3"
+                android:layout_height="1@dimen/dimen_3"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentTop="true"
                 android:background="@drawable/close" />

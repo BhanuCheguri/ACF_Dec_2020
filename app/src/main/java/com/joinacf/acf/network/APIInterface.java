@@ -7,6 +7,7 @@ import com.joinacf.acf.modelclasses.AddPetitionResult;
 import com.joinacf.acf.modelclasses.DashboardCategories;
 import com.joinacf.acf.modelclasses.MyPostingModel;
 import com.joinacf.acf.modelclasses.MyProfileModel;
+import com.joinacf.acf.modelclasses.NewComplaintDataRequest;
 import com.joinacf.acf.modelclasses.OfficesModel;
 import com.joinacf.acf.modelclasses.PetitionModel;
 import com.joinacf.acf.modelclasses.SectionsModel;
@@ -54,7 +55,10 @@ public interface APIInterface {
     Call<ResponseBody> updateMemLocation(@Body JsonObject jsonBody);
 
     @GET("members/getmembers?")
-    Call<List<MyProfileModel>> getProfileDetails(@Query("mobile") String mobile);
+    Call<MyProfileModel> getProfileDetails(@Query("mobile") String mobile);
+
+    @GET("members/getmembersbyemail?")
+    Call<MyProfileModel> getProfileDetailsbyEmail(@Query("email") String email);
 
     @GET("members/validateotp?")
     Call<ResponseBody> getValidateOTPStatus(@Query("mobile") String mobile,@Query("otp") String otp);
@@ -63,17 +67,17 @@ public interface APIInterface {
     Call<ResponseBody> getSMSOTP(@Query("mobile") String mobile);
 
     @GET("posts/getposts?")
-    Call<List<WallPostsModel>> getWallPostDetails(@Query("categoryID") String categoryID, @Query("days") String days);
+    Call<WallPostsModel> getWallPostDetails(@Query("categoryID") String categoryID, @Query("days") String days);
 
     @GET("posts/getcategories?")
-    Call<List<DashboardCategories>> getDashboardCategories();
+    Call<DashboardCategories> getDashboardCategories();
 
     @Headers("Content-Type: application/json")
     @POST("members/addmember")
     Call<List<AddMemberResult>> postAddMember(@Body JsonObject jsonBody);
 
     @GET("posts/getmposts?")
-    Call<List<MyPostingModel>> getMyPostings(@Query("memberID") String memberID);
+    Call<MyPostingModel> getMyPostings(@Query("memberID") String memberID);
 
     @Multipart
     @POST("posts/upload")
@@ -88,17 +92,20 @@ public interface APIInterface {
 
     @Headers({"Accept:application/json", "Content-Type:application/json;"})
     @POST("posts/addpost?")
-    Call<ResponseBody> postNewItem(@Body JsonObject jsonBody);
+    Call<ResponseBody> postNewItem(@Body NewComplaintDataRequest jsonBody);
 
     @GET("petitions/getofficesbygeo?")
-    Call<List<OfficesModel>> getOfficesbyGeo(@Query("lat") String lat, @Query("long") String lang);
+    Call<OfficesModel> getOfficesbyGeo(@Query("lat") String lat, @Query("long") String lang);
 
     @GET("petitions/getspsections?")
-    Call<List<SectionsModel>> getSections(@Query("spid") String SPID);
+    Call<SectionsModel> getSections(@Query("spid") String SPID);
 
-    @Headers("Content-Type: application/json")
-    @Multipart
+    //@Multipart
     @POST("posts/upload")
-    Call<ResponseBody> uploadImages(@PartMap Map<String, RequestBody> Files);
+    @Headers("Content-Type: application/json")
+    Call<ResponseBody> uploadImages(@Query("item") String item,@Body RequestBody requestBody);
 
+    @Multipart
+    @POST("petitions/upload")
+    Call<ResponseBody> uploadPetitionImages(@Query("item") String item,@PartMap Map<String, RequestBody> Files);
 }

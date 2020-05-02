@@ -78,7 +78,7 @@ public class ServiceCall {
         return reponse;
     }
 
-    public ArrayList<WallPostsModel> getWallPostDetails(String categoryID, String Days) {
+    /*public ArrayList<WallPostsModel> getWallPostDetails(String categoryID, String Days) {
         apiRetrofitClient = new APIRetrofitClient();
         Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
         APIInterface api = retrofit.create(APIInterface.class);
@@ -101,5 +101,5 @@ public class ServiceCall {
             }
         });
         return lstWallPost;
-    }
+    }*/
 }

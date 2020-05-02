@@ -19,6 +19,8 @@ import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.modelclasses.WallPostsModel;
 import com.joinacf.acf.databinding.ActivityMoreBinding;
+import com.joinacf.acf.utilities.App;
+import com.pd.chocobar.ChocoBar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,11 +30,13 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import static com.facebook.FacebookSdk.getApplicationContext;
+
 public class MoreActivity extends BaseActivity {
 
     ActivityMoreBinding dataBiding;
     APIRetrofitClient apiRetrofitClient;
-    ArrayList<WallPostsModel> lstWallPost;
+    ArrayList<WallPostsModel.Result> lstWallPost;
     String strCategoryID = "";
     String strName = "";
     HomePageAdapter adapter;
@@ -68,8 +72,17 @@ public class MoreActivity extends BaseActivity {
     private void LoadAdapter()
     {
         showProgressDialog(MoreActivity.this);
+        if(App.isNetworkAvailable())
+            getWallPostDetails(strCategoryID,"-1");
+        else{
+            ChocoBar.builder().setView(dataBiding.mainLayout)
+                    .setText("No Internet connection")
+                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                    //.setActionText(android.R.string.ok)
+                    .red()   // in built red ChocoBar
+                    .show();
+        }
 
-        getWallPostDetails(strCategoryID,"-1");
 
         dataBiding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,24 +92,29 @@ public class MoreActivity extends BaseActivity {
             }
         });
     }
-    public ArrayList<WallPostsModel> getWallPostDetails(String categoryID, String Days) {
+    public void getWallPostDetails(String categoryID, String Days) {
         apiRetrofitClient = new APIRetrofitClient();
         Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
         APIInterface api = retrofit.create(APIInterface.class);
-        Call<List<WallPostsModel>> call = api.getWallPostDetails(categoryID, Days);
+        Call<WallPostsModel> call = api.getWallPostDetails(categoryID, Days);
 
-        call.enqueue(new Callback<List<WallPostsModel>>() {
+        call.enqueue(new Callback<WallPostsModel>() {
             @Override
-            public void onResponse(Call<List<WallPostsModel>> call, Response<List<WallPostsModel>> response) {
+            public void onResponse(Call<WallPostsModel> call, Response<WallPostsModel> response) {
                 if(response != null) {
-                    myProfileData = response.body();
-                    if(myProfileData.size() > 0) {
+                    WallPostsModel myWallData  = response.body();
+                    if(myWallData != null) {
                         dataBiding.llNoData.setVisibility(View.GONE);
-                        lstWallPost = new ArrayList<WallPostsModel>();
-                        for (Object object : myProfileData) {
-                            lstWallPost.add((WallPostsModel) object);
+                        String status = myWallData.getStatus();
+                        String msg = myWallData.getMessage();
+                        if(msg.equalsIgnoreCase("SUCCESS")) {
+                            lstWallPost = myWallData.getResult();
+                            populateListView(lstWallPost);
+                        }else
+                        {
+                            dataBiding.llNoData.setVisibility(View.VISIBLE);
+                            hideProgressDialog(MoreActivity.this);
                         }
-                        populateListView(lstWallPost);
                     }else {
                         dataBiding.llNoData.setVisibility(View.VISIBLE);
                         hideProgressDialog(MoreActivity.this);
@@ -104,22 +122,19 @@ public class MoreActivity extends BaseActivity {
                 }else {
                     dataBiding.llNoData.setVisibility(View.VISIBLE);
                     hideProgressDialog(MoreActivity.this);
-
-                    //Toast.makeText(getActivity(), "No NewsFeed for the selected Category", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<List<WallPostsModel>> call, Throwable t) {
+            public void onFailure(Call<WallPostsModel> call, Throwable t) {
                 Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
                 hideProgressDialog(MoreActivity.this);
-
             }
         });
-        return lstWallPost;
+        // return lstWallPost;
     }
 
-    private void populateListView(ArrayList<WallPostsModel> wallPostData) {
+    private void populateListView(ArrayList<WallPostsModel.Result> wallPostData) {
         adapter = new HomePageAdapter(MoreActivity.this,wallPostData);
         dataBiding.lvMoreFeed.setAdapter(adapter);
         hideProgressDialog(MoreActivity.this);

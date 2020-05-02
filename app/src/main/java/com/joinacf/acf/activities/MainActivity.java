@@ -20,12 +20,14 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.TranslateAnimation;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
+import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 
 
@@ -36,6 +38,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.JsonObject;
 import com.joinacf.acf.R;
 import com.joinacf.acf.bottom_nav.BottomNavigationViewNew;
+import com.joinacf.acf.databinding.ActivityMainBinding;
 import com.joinacf.acf.fragments.CorruptionFragment;
 import com.joinacf.acf.fragments.FindnFixFragment;
 import com.joinacf.acf.fragments.HomeFragment;
@@ -43,7 +46,9 @@ import com.joinacf.acf.fragments.MoreGridFragment;
 import com.joinacf.acf.fragments.SocialEvilFragment;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
+import com.joinacf.acf.utilities.App;
 import com.joinacf.acf.utilities.LocationHandler;
+import com.pd.chocobar.ChocoBar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -70,6 +75,7 @@ import retrofit2.Retrofit;
 public class MainActivity extends BaseActivity {
 
     LocationHandler locationHandler;
+    ActivityMainBinding binding;
     private FusedLocationProviderClient locationProviderClient;
     private Geocoder geocoder;
     private double latitude,longitude;
@@ -79,6 +85,7 @@ public class MainActivity extends BaseActivity {
     String currentAddress="";
     String currentLatLang ="";
     String LatLang;
+    BottomNavigationViewNew navigation;
     APIRetrofitClient apiRetrofitClient;
 
     private BottomNavigationViewNew.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -151,12 +158,14 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        //setContentView(R.layout.activity_main);
 
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         apiRetrofitClient = new APIRetrofitClient();
 
-        BottomNavigationViewNew navigation = (BottomNavigationViewNew) findViewById(R.id.bottom_navigation);
+        navigation = (BottomNavigationViewNew) findViewById(R.id.bottom_navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        navigation.setVisibility(View.VISIBLE);
 
         boolean isLocationEnabled = isLocationEnabled(MainActivity.this);
         if(isLocationEnabled){
@@ -179,8 +188,6 @@ public class MainActivity extends BaseActivity {
         }
 
         loadHomeFragment();
-
-
 
         /*BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
         //CoordinatorLayout.LayoutParams layoutParams = (CoordinatorLayout.LayoutParams) bottomNavigationView.getLayoutParams();
@@ -211,6 +218,33 @@ public class MainActivity extends BaseActivity {
 
     }
 
+
+    public void hideBottomNavigation()
+    {
+        navigation.setVisibility(View.GONE);
+        TranslateAnimation animate = new TranslateAnimation(
+                0,                 // fromXDelta
+                0,                 // toXDelta
+                0,                 // fromYDelta
+                navigation.getHeight()); // toYDelta
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        navigation.startAnimation(animate);
+    }
+
+    public void showBottomNavigation()
+    {
+        navigation.setVisibility(View.VISIBLE);
+        TranslateAnimation animate = new TranslateAnimation(
+                0,                 // fromXDelta
+                0,                 // toXDelta
+                navigation.getHeight(),  // fromYDelta
+                0);                // toYDelta
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        navigation.startAnimation(animate);
+    }
+
     public class AsyncUpdateMembersLocation extends AsyncTask<String,String,String> {
         @Override
         protected void onPreExecute() {
@@ -228,17 +262,30 @@ public class MainActivity extends BaseActivity {
             super.onPostExecute(result);
             System.out.println(result);
             hideProgressDialog(MainActivity.this);
+            int nStatus = -2;
             if(result != null && !result.equalsIgnoreCase(""))
             {
                 try {
-                    JSONArray jsonArray = new JSONArray(result);
-                    for (int i=0; i<jsonArray.length();i++) {
-                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        if(jsonObject.has("STATUS")) {
-                            if (jsonObject.getInt("STATUS") == 1)
-                                Toast.makeText(MainActivity.this, "Location Updated", Toast.LENGTH_SHORT).show();
-                            else
-                                Toast.makeText(MainActivity.this, "Location failed to  update", Toast.LENGTH_SHORT).show();
+                    JSONObject jobject = new JSONObject(result);
+                    if (result.length() > 0) {
+                        if (jobject.has("message")) {
+                            if(jobject.getString("message").equalsIgnoreCase("SUCCESS")) {
+                                if (jobject.has("result")) {
+                                    JSONArray jsonArray = new JSONArray(jobject.getString("result"));
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                        if(jsonObject.has("STATUS"))
+                                            nStatus = jsonObject.getInt("STATUS");
+                                    }
+                                    if (nStatus == 1)
+                                        Toast.makeText(MainActivity.this, "Location Updated successfully", Toast.LENGTH_SHORT).show();
+                                    else if (nStatus == 0)
+                                        Toast.makeText(MainActivity.this, "Error while updating Location", Toast.LENGTH_SHORT).show();
+                                    else
+                                        Toast.makeText(MainActivity.this, "failed to update Location", Toast.LENGTH_SHORT).show();
+
+                                }
+                            }
                         }
                     }
                 }catch (JSONException e)
@@ -253,9 +300,7 @@ public class MainActivity extends BaseActivity {
     private String updateCurrentLocation(String lat, String lang) {
         String reponse ="";
         JsonObject json = new JsonObject();
-
         try{
-
             try {
                 json.addProperty("memberid",getStringSharedPreference(MainActivity.this, "MemberID"));
                 json.addProperty("latitude", lat);
@@ -404,7 +449,16 @@ public class MainActivity extends BaseActivity {
                         lat = String.valueOf(latitude);
                         lang = String.valueOf(longitude);
                         currentAddress = lat +"#"+lang;
-                        new AsyncUpdateMembersLocation().execute(currentAddress);
+                        if(App.isNetworkAvailable())
+                            new AsyncUpdateMembersLocation().execute(currentAddress);
+                        else{
+                            ChocoBar.builder().setView(binding.container)
+                                    .setText("No Internet connection")
+                                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                                    //.setActionText(android.R.string.ok)
+                                    .red()   // in built red ChocoBar
+                                    .show();
+                        }
                         //String fullAddress = addressLine1 + ",  " + city + ",  " + state + ",  " + pinCode;
                         //binding.currentLocation.setText(addressLine1);
                     } catch (IOException e) {
@@ -425,6 +479,7 @@ public class MainActivity extends BaseActivity {
         }
         return true;
     }
+
 }
 
  /*extends BottomBarHolderActivity implements HomeFragment.OnFragmentInteractionListener {

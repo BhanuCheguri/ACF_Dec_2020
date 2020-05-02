@@ -3,12 +3,14 @@ package com.joinacf.acf.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -23,15 +25,19 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.joinacf.acf.activities.AddPetitionActivity;
+import com.joinacf.acf.activities.MainActivity;
 import com.joinacf.acf.activities.MoreActivity;
 import com.joinacf.acf.activities.NewLoginActivity;
 import com.joinacf.acf.activities.ProfileActivity;
 import com.joinacf.acf.modelclasses.DashboardCategories;
+import com.joinacf.acf.modelclasses.WallPostsModel;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.R;
 import com.joinacf.acf.databinding.FragmentGridBinding;
 import com.crashlytics.android.Crashlytics;
+import com.joinacf.acf.utilities.App;
+import com.pd.chocobar.ChocoBar;
 
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
@@ -50,7 +56,8 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 public class MoreGridFragment extends BaseFragment {
 
     FragmentGridBinding dataBiding;
-
+    int mLastFirstVisibleItem;
+    int mLastVisibleItemCount;
     boolean bFirst;
     String strPersonName,strPersonEmail,strLoginType;
 
@@ -68,8 +75,9 @@ public class MoreGridFragment extends BaseFragment {
     ArrayList<String> lstCategories;
     HashMap<String,String> hshMapDashBoardsLst ;
     ArrayList<String> lstExistsCategories;
-    ArrayList<DashboardCategories> lstgridCatagories;
-    ArrayList<DashboardCategories> lstDashboardCatagories;
+    ArrayList<DashboardCategories.Result> lstgridCatagories;
+    ArrayList<DashboardCategories.Result> lstDashboardCatagories;
+    ArrayList<DashboardCategories.Result> lstResltCatagories;
 
     public static MoreGridFragment newInstance() {
         return new MoreGridFragment();
@@ -86,10 +94,41 @@ public class MoreGridFragment extends BaseFragment {
 
         dataBiding = DataBindingUtil.inflate(inflater, R.layout.fragment_grid, null, false);
         setActionBarTitle(getString(R.string.title_more));
-
-        apiRetrofitClient = new APIRetrofitClient();
-        getDashboardCategories();
+        if(App.isNetworkAvailable())
+            getDashboardCategories();
+        else{
+            ChocoBar.builder().setView(dataBiding.mainLayout)
+                    .setText("No Internet connection")
+                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                    //.setActionText(android.R.string.ok)
+                    .red()   // in built red ChocoBar
+                    .show();
+        }
         loadSharedPrefference();
+
+        dataBiding.grid.setOnScrollListener(new AbsListView.OnScrollListener() {
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                if (mLastFirstVisibleItem > firstVisibleItem) {
+                    Log.e(getClass().toString(), "scrolling up");
+                    ((MainActivity)getActivity()).hideBottomNavigation();
+                } else if (mLastFirstVisibleItem < firstVisibleItem) {
+                    Log.e(getClass().toString(), "scrolling down");
+                    ((MainActivity)getActivity()).showBottomNavigation();
+                } else if (mLastVisibleItemCount < visibleItemCount) {
+                    Log.e(getClass().toString(), "scrolling down");
+                    ((MainActivity)getActivity()).showBottomNavigation();
+                } else if (mLastVisibleItemCount > visibleItemCount) {
+                    Log.e(getClass().toString(), "scrolling up");
+                    ((MainActivity)getActivity()).hideBottomNavigation();
+                }
+                mLastFirstVisibleItem = firstVisibleItem;
+                mLastVisibleItemCount = visibleItemCount;
+            }
+
+            public void onScrollStateChanged(AbsListView listView, int scrollState) {
+            }
+        });
+
         return dataBiding.getRoot();
     }
 
@@ -232,21 +271,26 @@ public class MoreGridFragment extends BaseFragment {
         try {
             Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
             APIInterface api = retrofit.create(APIInterface.class);
-            Call<List<DashboardCategories>> call = api.getDashboardCategories();
+            Call<DashboardCategories> call = api.getDashboardCategories();
 
-            call.enqueue(new Callback<List<DashboardCategories>>() {
+            call.enqueue(new Callback<DashboardCategories>() {
                 @Override
-                public void onResponse(Call<List<DashboardCategories>> call, Response<List<DashboardCategories>> response) {
-                    List<DashboardCategories> myProfileData = response.body();
-                    ArrayList<DashboardCategories> lstgridCatagories = new ArrayList<DashboardCategories>();
-                    for (Object object : myProfileData) {
-                        lstgridCatagories.add((DashboardCategories) object);
+                public void onResponse(Call<DashboardCategories> call, Response<DashboardCategories> response) {
+                    DashboardCategories myProfileData  = response.body();
+                    if(myProfileData != null) {
+                        String status = myProfileData.getStatus();
+                        String msg = myProfileData.getMessage();
+                        if (msg.equalsIgnoreCase("SUCCESS")) {
+                            lstResltCatagories = myProfileData.getResult();
+                            checkExistingCategories(lstResltCatagories);
+                        }
                     }
-                    checkExistingCategories(lstgridCatagories);
+
+                   /* */
                 }
 
                 @Override
-                public void onFailure(Call<List<DashboardCategories>> call, Throwable t) {
+                public void onFailure(Call<DashboardCategories> call, Throwable t) {
                     Toast.makeText(getActivity(), t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
@@ -256,8 +300,8 @@ public class MoreGridFragment extends BaseFragment {
         }
     }
 
-    private void checkExistingCategories(ArrayList<DashboardCategories> lstData) {
-        lstDashboardCatagories = new ArrayList<DashboardCategories>();
+    private void checkExistingCategories(ArrayList<DashboardCategories.Result> lstData) {
+        lstDashboardCatagories = new ArrayList<DashboardCategories.Result>();
         lstExistsCategories = new ArrayList<String>();
         lstCategories = new ArrayList<String>();
         hshMapDashBoardsLst = new HashMap<>();

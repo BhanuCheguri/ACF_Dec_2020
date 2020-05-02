@@ -11,27 +11,27 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_margin="15dp"
+        android:layout_margin="@dimen/dimen_15"
         >
 
         <ImageView
             android:id="@+id/logo"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="@dimen/dimen_300"
             app:srcCompat="@drawable/logo"
-            android:layout_marginTop="15dp"
-            android:layout_marginBottom="15dp"/>
+            android:layout_marginTop="@dimen/dimen_15"
+            android:layout_marginBottom="@dimen/dimen_15"/>
 
         <TextView
             android:id="@+id/text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/logo"
-            android:layout_marginTop="25dp"
+            android:layout_marginTop="@dimen/dimen_25"
             android:gravity="center"
             android:textColor="#B52036"
             android:text="@string/splash_text"
-            android:textSize="28dp"
+            android:textSize="@dimen/dimen_28"
             android:textStyle="bold"
             android:fontFamily="@font/montserrat_light"/>
 
@@ -49,7 +49,7 @@
                 android:layout_below="@+id/imgSign"
                 android:gravity="center"
                 android:text="Al based Social Media App to Learn,Classify,Extract and Connect 5000+ Media Platforms."
-                android:textSize="16dp"
+                android:textSize="@dimen/dimen_16"
                 android:textStyle="bold"
                 android:textColor="@android:color/black"
                 android:fontFamily="@font/montserrat_light"/>

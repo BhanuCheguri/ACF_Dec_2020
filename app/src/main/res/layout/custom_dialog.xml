@@ -7,12 +7,12 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="@dimen/dimen_150"
         android:background="@color/colorGreen">
 
         <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="@dimen/dimen_100"
+            android:layout_height="@dimen/dimen_100"
             android:layout_centerInParent="true"
             android:background="@mipmap/ic_like" />
 
@@ -25,16 +25,16 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="10dp">
+            android:padding="@dimen/dimen_10">
 
             <TextView
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Thank You"
-                android:textSize="25dp"
+                android:textSize="@dimen/dimen_25"
                 android:gravity="center"
-                android:padding="10dp"
+                android:padding="@dimen/dimen_10"
                 android:textColor="@color/colorGreen"
                 />
 
@@ -43,37 +43,37 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Your request has been successfully posted. We will process and keep in touch with you"
-                android:textSize="20dp"
+                android:textSize="@dimen/dimen_20"
                 android:gravity="center"
                 android:textColor="@color/colorPrimary"
-                android:layout_margin="8dp" />
+                android:layout_margin="@dimen/dimen_8" />
 
             <TextView
                 android:id="@+id/sub_msg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textSize="20dp"
+                android:textSize="@dimen/dimen_20"
                 android:gravity="center"
                 android:textColor="@color/colorMaroon"
-                android:layout_margin="8dp"
+                android:layout_margin="@dimen/dimen_8"
                 android:visibility="gone"/>
 
              <Button
                  android:layout_width="wrap_content"
                  android:layout_height="wrap_content"
                  android:text="Ok"
-                 android:textSize="16dp"
+                 android:textSize="@dimen/dimen_16"
                  android:id="@+id/btnOk"
-                 android:layout_marginTop="20dp"
+                 android:layout_marginTop="@dimen/dimen_20"
                  android:textColor="@color/colorWhite"
                  android:background="@drawable/button_style"/>
 
         </LinearLayout>
 
        <!-- <Button
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="20dp"
+            android:layout_marginTop="@dimen/dimen_10"
+            android:layout_marginBottom="@dimen/dimen_20"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Ok"

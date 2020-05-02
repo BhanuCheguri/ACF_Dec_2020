@@ -15,6 +15,7 @@ import retrofit2.Retrofit;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -33,6 +34,7 @@ import android.widget.Toast;
 
 import com.joinacf.acf.R;
 import com.joinacf.acf.custom_dialogs.CustomProgressDialog;
+import com.joinacf.acf.modelclasses.AddMemberResult;
 import com.joinacf.acf.modelclasses.StatusModel;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
@@ -48,6 +50,8 @@ import com.google.android.gms.auth.api.credentials.HintRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.gson.JsonObject;
+import com.joinacf.acf.utilities.App;
+import com.pd.chocobar.ChocoBar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -173,7 +177,16 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
             case R.id.btnContinue:
                 GetOTPAsyncTask getOTPtask = new GetOTPAsyncTask();
                 if(!binding.etMobileNo.getText().toString().equalsIgnoreCase("")) {
-                    getOTPtask.execute(binding.etMobileNo.getText().toString());
+                    if(App.isNetworkAvailable())
+                        getOTPtask.execute(binding.etMobileNo.getText().toString());
+                    else{
+                        ChocoBar.builder().setView(binding.mainLayout)
+                                .setText("No Internet connection")
+                                .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                                //.setActionText(android.R.string.ok)
+                                .red()   // in built red ChocoBar
+                                .show();
+                    }
                     putStringSharedPreference(OTPVerificationActivity.this,"mobile",binding.etMobileNo.getText().toString());
                 }
                 else
@@ -197,7 +210,16 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
                     if (strOTPCode.equalsIgnoreCase("")) {
                         strOTPCode = binding.otpCode.getText().toString();
                     }
-                    getOTPVerifiedAsyncTask.execute(binding.etMobileNo.getText().toString(), strOTPCode);
+                    if(App.isNetworkAvailable())
+                        getOTPVerifiedAsyncTask.execute(binding.etMobileNo.getText().toString(), strOTPCode);
+                    else{
+                        ChocoBar.builder().setView(binding.mainLayout)
+                                .setText("No Internet connection")
+                                .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                                //.setActionText(android.R.string.ok)
+                                .red()   // in built red ChocoBar
+                                .show();
+                    }
                 }
         }
     }
@@ -415,50 +437,69 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         ResponseBody myOTPStatus = response.body();
                         try {
-                            String  bodyString = new String(response.body().bytes());
-                            Log.v("bodyString ::: ",bodyString);
-                            int Status = -2;
+                            String  result = new String(response.body().bytes());
+                            Log.v("bodyString ::: ",result);
+                            int nStatus = -2;
                             if (response.isSuccessful()) {
-                                JSONArray jsonarray = new JSONArray(bodyString);
-                                for (int i = 0; i < jsonarray.length(); i++) {
-                                    JSONObject jsonobject = jsonarray.getJSONObject(i);
-                                    Status = jsonobject.getInt("Status");
+                                if(!result.equalsIgnoreCase("") && result != null) {
+                                    JSONObject jobject = new JSONObject(result);
+                                    if (result.length() > 0) {
+                                        if (jobject.has("message")) {
+                                            if(jobject.getString("message").equalsIgnoreCase("SUCCESS")) {
+                                                if (jobject.has("result")) {
+                                                    JSONArray jsonArray = new JSONArray(jobject.getString("result"));
+                                                    for (int i=0; i<jsonArray.length();i++)
+                                                    {
+                                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                                        nStatus = jsonObject.getInt("Status");
+                                                        if(nStatus == 1) {
+                                                            putBooleanSharedPreference(OTPVerificationActivity.this, "FirstTime", true);
+                                                            putBooleanSharedPreference(OTPVerificationActivity.this, "LoggedIn", true);
+                                                            Intent intent = new Intent(OTPVerificationActivity.this, MainActivity.class);
+                                                            startActivity(intent);
+                                                            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                                                            finish();
+                                                        }else if(nStatus == 0){
+                                                            putBooleanSharedPreference(OTPVerificationActivity.this, "FirstTime", false);
+                                                            putBooleanSharedPreference(OTPVerificationActivity.this, "LoggedIn", false);
+                                                            showAlert(OTPVerificationActivity.this,"Failed","Something wrong from our end","OK");
+                                                        }
+                                                        else if(nStatus == -1){
+                                                            putBooleanSharedPreference(OTPVerificationActivity.this, "FirstTime", false);
+                                                            putBooleanSharedPreference(OTPVerificationActivity.this, "LoggedIn", false);
+                                                            showAlert(OTPVerificationActivity.this,"Error","Error in Validating OTP","OK");
+                                                        }
+                                                    }
+                                                }
+                                            }else if (jobject.getString("message").equalsIgnoreCase("ERROR")) {
+                                                showAlert(OTPVerificationActivity.this, "Error", jobject.getString("result"), "OK");
+                                            } else if (jobject.getString("message").equalsIgnoreCase("FAILURE")) {
+                                                showAlert(OTPVerificationActivity.this, "Failed",jobject.getString("result"), "OK");
+                                            }
+                                        }
+                                    }
                                 }
-                                if(Status == 1) {
-                                    putBooleanSharedPreference(OTPVerificationActivity.this, "FirstTime", true);
-                                    putBooleanSharedPreference(OTPVerificationActivity.this, "LoggedIn", true);
-
-                                    Intent intent = new Intent(OTPVerificationActivity.this, MainActivity.class);
-                                    startActivity(intent);
-                                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                                    finish();
-                                }else if(Status == 0){
-                                    putBooleanSharedPreference(OTPVerificationActivity.this, "FirstTime", false);
-                                    putBooleanSharedPreference(OTPVerificationActivity.this, "LoggedIn", false);
-                                    showAlert(OTPVerificationActivity.this,"Failed","Something wrong fro our end","OK");
-                                }
-                                else if(Status == -1){
-                                    putBooleanSharedPreference(OTPVerificationActivity.this, "FirstTime", false);
-                                    putBooleanSharedPreference(OTPVerificationActivity.this, "LoggedIn", false);
-                                    showAlert(OTPVerificationActivity.this,"Error","Error in Validating OTP","OK");
-                                }
-                            } else {
-                                Toast.makeText(OTPVerificationActivity.this, "ServerError"+ response.body().toString(), Toast.LENGTH_SHORT).show();
                             }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (JSONException e) {
+                        }catch (IOException ex) {
+                            ex.printStackTrace();
+                        }catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
 
+                    public void UpdateMobileNo(String MobileNO, String MemberID){
+
+                    }
+
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Crashlytics.logException(t);
                         Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
             }catch (Exception e)
             {
+                e.printStackTrace();
                 Crashlytics.logException(e);
             }
             return resp;
@@ -481,7 +522,8 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
         {
             putBooleanSharedPreference(OTPVerificationActivity.this, "FirstTime", false);
             putBooleanSharedPreference(OTPVerificationActivity.this, "LoggedIn", false);
-
+            Intent intent = new Intent(OTPVerificationActivity.this,NewLoginActivity.class);
+            startActivity(intent);
             finish();
         }
         return super.onKeyDown(keyCode, event);

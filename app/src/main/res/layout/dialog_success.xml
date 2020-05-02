@@ -10,12 +10,12 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="@dimen/dimen_150"
         android:orientation="horizontal"
         android:background="@color/colorGreen">
         <ImageView
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="@dimen/dimen_80"
             android:layout_weight="1"
             app:srcCompat="@drawable/like"
             android:layout_gravity="center"/>
@@ -23,19 +23,19 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="@dimen/dimen_150"
         android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
-            android:layout_height="80dp"
+            android:layout_height="@dimen/dimen_80"
             android:layout_weight="1"
             android:text="@string/alert_thankyou"
             android:layout_gravity="center"/>
 
         <TextView
             android:layout_width="wrap_content"
-            android:layout_height="80dp"
+            android:layout_height="@dimen/dimen_80"
             android:layout_weight="1"
             android:text="@string/alert_success"
             android:layout_gravity="center"/>

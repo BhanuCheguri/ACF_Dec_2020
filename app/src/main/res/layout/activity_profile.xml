@@ -21,7 +21,7 @@
                 android:id="@+id/layoutTop"
                 android:background="@drawable/gradient_theme"
                 android:layout_width="match_parent"
-                android:layout_height="100dp" >
+                android:layout_height="@dimen/dimen_100" >
             </RelativeLayout>
 
             <RelativeLayout
@@ -35,7 +35,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:layout_margin="10dp"
+                    android:layout_margin="@dimen/dimen_10"
                     android:layout_gravity="center"
                     android:gravity="center">
 
@@ -45,9 +45,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/montserrat_semibold"
-                        android:padding="5dp"
+                        android:padding="@dimen/dimen_5"
                         android:gravity="center"
                         android:text="TextView"
+                        android:textSize="@dimen/dimen_15"
+                        android:textStyle="bold"
+                        android:textColor="@color/colorBlack"
                         android:layout_marginTop="30dp"/>
 
 
@@ -56,8 +59,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/montserrat_light"
-                        android:padding="5dp"
+                        android:padding="@dimen/dimen_5"
                         android:gravity="center"
+                        android:textSize="@dimen/dimen_14"
                         android:text="TextView" />
 
                     <ScrollView
@@ -73,16 +77,16 @@
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:layout_margin="5dp"
+                                android:layout_margin="@dimen/dimen_5"
                                 android:orientation="vertical"
                                 tools:ignore="MissingConstraints"
-                                tools:layout_editor_absoluteX="5dp">
+                                tools:layout_editor_absoluteX="@dimen/dimen_5">
 
 
                                 <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_margin="8dp"
+                                    android:layout_margin="@dimen/dimen_8"
                                     android:background="@drawable/whitebg_rounded_corners"
                                     android:orientation="vertical"
                                     tools:ignore="MissingConstraints">
@@ -91,37 +95,38 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
                                         android:fontFamily="@font/montserrat_bold"
-                                        android:padding="5dp"
+                                        android:padding="@dimen/dimen_5"
                                         android:text="Contact Info"
-                                        android:textSize="16dp" />
+                                        android:textSize="@dimen/dimen_16" />
 
                                     <LinearLayout
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
                                         android:orientation="vertical"
-                                        android:padding="5dp">
+                                        android:padding="@dimen/dimen_5">
 
                                         <TextView
                                             android:layout_width="match_parent"
                                             android:layout_height="wrap_content"
                                             android:fontFamily="@font/montserrat_semibold"
-                                            android:padding="5dp"
+                                            android:padding="@dimen/dimen_5"
                                             android:text="EMAIL"
                                             android:textColor="@color/colorDarkBlue"
-                                            android:textSize="12dp" />
+                                            android:textSize="@dimen/dimen_12" />
 
                                         <TextView
                                             android:id="@+id/email"
                                             android:layout_width="match_parent"
                                             android:layout_height="wrap_content"
                                             android:fontFamily="@font/montserrat_light"
-                                            android:padding="5dp"
+                                            android:padding="@dimen/dimen_5"
+                                            android:textSize="@dimen/dimen_14"
                                             android:text="TextView" />
 
                                         <View
                                             android:layout_width="match_parent"
                                             android:layout_height="0.5dp"
-                                            android:layout_marginTop="10dp"
+                                            android:layout_marginTop="@dimen/dimen_10"
                                             android:background="@color/colorSilverGrey" />
                                     </LinearLayout>
 
@@ -129,24 +134,25 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
                                         android:orientation="vertical"
-                                        android:padding="5dp">
+                                        android:padding="@dimen/dimen_5">
 
                                         <TextView
                                             android:layout_width="match_parent"
                                             android:layout_height="wrap_content"
                                             android:fontFamily="@font/montserrat_semibold"
-                                            android:padding="5dp"
+                                            android:padding="@dimen/dimen_5"
                                             android:text="PHONE"
                                             android:textColor="@color/colorDarkBlue"
-                                            android:textSize="12dp" />
+                                            android:textSize="@dimen/dimen_12" />
 
                                         <TextView
                                             android:id="@+id/mobileNo"
                                             android:layout_width="match_parent"
                                             android:layout_height="wrap_content"
-                                            android:layout_marginBottom="5dp"
+                                            android:layout_marginBottom="@dimen/dimen_5"
                                             android:fontFamily="@font/montserrat_light"
-                                            android:padding="5dp"
+                                            android:padding="@dimen/dimen_5"
+                                            android:textSize="@dimen/dimen_14"
                                             android:text="TextView" />
 
                                     </LinearLayout>
@@ -156,11 +162,11 @@
                                 <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_margin="8dp"
+                                    android:layout_margin="@dimen/dimen_8"
                                     android:background="@drawable/whitebg_rounded_corners"
                                     android:orientation="vertical"
-                                    android:paddingBottom="5dp"
-                                    android:paddingTop="5dp"
+                                    android:paddingBottom="@dimen/dimen_5"
+                                    android:paddingTop="@dimen/dimen_5"
                                     tools:ignore="MissingConstraints">
 
                                     <TextView
@@ -169,21 +175,21 @@
                                         android:layout_height="wrap_content"
                                         android:drawableRight="@mipmap/right_arrow"
                                         android:fontFamily="@font/montserrat_semibold"
-                                        android:padding="10dp"
+                                        android:padding="@dimen/dimen_10"
                                         android:text="My Postings"
                                         android:textColor="@color/colorDarkBlue"
-                                        android:textSize="12dp" />
+                                        android:textSize="@dimen/dimen_12" />
 
                                 </LinearLayout>
 
                                 <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_margin="8dp"
+                                    android:layout_margin="@dimen/dimen_8"
                                     android:background="@drawable/whitebg_rounded_corners"
                                     android:orientation="vertical"
-                                    android:paddingBottom="5dp"
-                                    android:paddingTop="5dp"
+                                    android:paddingBottom="@dimen/dimen_5"
+                                    android:paddingTop="@dimen/dimen_5"
                                     tools:ignore="MissingConstraints">
 
                                     <TextView
@@ -191,10 +197,10 @@
                                         android:layout_height="wrap_content"
                                         android:drawableRight="@mipmap/right_arrow"
                                         android:fontFamily="@font/montserrat_semibold"
-                                        android:padding="10dp"
+                                        android:padding="@dimen/dimen_10"
                                         android:text="Settings"
                                         android:textColor="@color/colorDarkBlue"
-                                        android:textSize="12dp" />
+                                        android:textSize="@dimen/dimen_12" />
 
                                 </LinearLayout>
 
@@ -202,11 +208,11 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
                                     android:layout_gravity="bottom"
-                                    android:layout_margin="8dp"
+                                    android:layout_margin="@dimen/dimen_8"
                                     android:gravity="center"
                                     android:orientation="vertical"
-                                    android:paddingBottom="5dp"
-                                    android:paddingTop="5dp"
+                                    android:paddingBottom="@dimen/dimen_5"
+                                    android:paddingTop="@dimen/dimen_5"
                                     tools:ignore="MissingConstraints">
 
                                     <TextView
@@ -216,11 +222,11 @@
                                         android:layout_gravity="center"
                                         android:fontFamily="@font/montserrat_light"
                                         android:gravity="center"
-                                        android:padding="10dp"
+                                        android:padding="@dimen/dimen_10"
                                         android:text="Logout"
                                         android:visibility="gone"
                                         android:textColor="@color/colorDarkBlue"
-                                        android:textSize="16dp" />
+                                        android:textSize="@dimen/dimen_16" />
 
                                 </LinearLayout>
 

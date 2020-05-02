@@ -79,10 +79,12 @@ import com.joinacf.acf.R;
 import com.joinacf.acf.adapters.ImageListAdapter;
 import com.joinacf.acf.databinding.ActivityNewComplaintBinding;
 import com.joinacf.acf.modelclasses.DashboardCategories;
+import com.joinacf.acf.modelclasses.NewComplaintDataRequest;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.network.AppLocationService;
 import com.joinacf.acf.modelclasses.NewComplaintModel;
+import com.joinacf.acf.utilities.App;
 import com.joinacf.acf.utilities.Utility;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -91,8 +93,10 @@ import com.karumi.dexter.listener.DexterError;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.PermissionRequestErrorListener;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
+import com.pd.chocobar.ChocoBar;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -149,7 +153,7 @@ public class NewComplaintActivity extends BaseActivity {
     private int strResult = -1;
     private int category = -1;
     String currentTime= "";
-    ArrayList<DashboardCategories> lstCatagories;
+    ArrayList<DashboardCategories.Result> lstCatagories;
     ArrayList<String> lstCatagoriesNames;
     ArrayList<String> lstPathURI;
     HashMap<String,String> hshMapCategoryLst ;
@@ -242,7 +246,7 @@ public class NewComplaintActivity extends BaseActivity {
     private void init() {
         apiRetrofitClient  = new APIRetrofitClient();
         lstModelData = new ArrayList<>();
-        lstCatagories = new ArrayList<DashboardCategories>();
+        lstCatagories = new ArrayList<DashboardCategories.Result>();
         lstCatagoriesNames = new ArrayList<>();
         hshMapCategoryLst = new HashMap<>();
         lstPathURI = new ArrayList<>();
@@ -281,7 +285,16 @@ public class NewComplaintActivity extends BaseActivity {
         });
 
         showProgressDialog(NewComplaintActivity.this);
-        getDashboardCategories();
+        if(App.isNetworkAvailable())
+            getDashboardCategories();
+        else{
+            ChocoBar.builder().setView(binding.mainLayout)
+                    .setText("No Internet connection")
+                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                    //.setActionText(android.R.string.ok)
+                    .red()   // in built red ChocoBar
+                    .show();
+        }
     }
 
 
@@ -289,23 +302,26 @@ public class NewComplaintActivity extends BaseActivity {
         try {
             Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
             APIInterface api = retrofit.create(APIInterface.class);
-            Call<List<DashboardCategories>> call = api.getDashboardCategories();
+            Call<DashboardCategories> call = api.getDashboardCategories();
 
-            call.enqueue(new Callback<List<DashboardCategories>>() {
+            call.enqueue(new Callback<DashboardCategories>() {
                 @Override
-                public void onResponse(Call<List<DashboardCategories>> call, Response<List<DashboardCategories>> response) {
-                    List<DashboardCategories> myProfileData = response.body();
+                public void onResponse(Call<DashboardCategories> call, Response<DashboardCategories> response) {
+                    DashboardCategories myProfileData = response.body();
                     hideProgressDialog(NewComplaintActivity.this);
-                    for (Object object : myProfileData) {
-                        lstCatagories.add((DashboardCategories) object);
+                    if(myProfileData != null) {
+                        String status = myProfileData.getStatus();
+                        String msg = myProfileData.getMessage();
+                        if (msg.equalsIgnoreCase("SUCCESS")) {
+                            lstCatagories = myProfileData.getResult();
+                        }
                     }
-
                     loadCategoriesData(lstCatagories);
 
                 }
 
                 @Override
-                public void onFailure(Call<List<DashboardCategories>> call, Throwable t) {
+                public void onFailure(Call<DashboardCategories> call, Throwable t) {
                     Crashlytics.logException(t);
                     hideProgressDialog(NewComplaintActivity.this);
                     Toast.makeText(NewComplaintActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
@@ -319,7 +335,7 @@ public class NewComplaintActivity extends BaseActivity {
         }
     }
 
-    private void loadCategoriesData(ArrayList<DashboardCategories> lstData) {
+    private void loadCategoriesData(ArrayList<DashboardCategories.Result> lstData) {
         if(lstData.size() > 0 ) {
             for (int i = 0; i < lstData.size(); i++) {
                 lstCatagoriesNames.add(lstData.get(i).getName().toString().trim());
@@ -434,7 +450,6 @@ public class NewComplaintActivity extends BaseActivity {
 
     }
 
-
     private void selectImage() {
         final CharSequence[] items = { "Take Photo", "Choose from Library",
                 "Cancel" };
@@ -492,10 +507,7 @@ public class NewComplaintActivity extends BaseActivity {
             Log.d(TAG, "file not found");
             e.printStackTrace();
         }
-        catch (IOException e) {
-            Log.d(TAG, "io exception");
-            e.printStackTrace();
-        } finally {
+        finally {
             try {
                 fos.close();
             } catch (IOException e) {
@@ -832,7 +844,16 @@ public class NewComplaintActivity extends BaseActivity {
                             dialog.cancel();
                             runOnUiThread(new Runnable() {
                                 public void run() {
-                                    new AsyncTaskExample().execute();
+                                    if(App.isNetworkAvailable())
+                                        new AsyncTaskExample().execute();
+                                    else{
+                                        ChocoBar.builder().setView(binding.mainLayout)
+                                                .setText("No Internet connection")
+                                                .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                                                //.setActionText(android.R.string.ok)
+                                                .red()   // in built red ChocoBar
+                                                .show();
+                                    }
                                 }
                             });
 
@@ -863,11 +884,21 @@ public class NewComplaintActivity extends BaseActivity {
         protected Integer doInBackground(String... strings) {
             String result = uploadData(String.valueOf(prepareJSON()),"http://api.ainext.in/posts/addpost");
             try {
-                JSONArray jsonarray = new JSONArray(result);
-                for (int i = 0; i < jsonarray.length(); i++) {
-                    JSONObject jsonobject = jsonarray.getJSONObject(i);
-                    strResult = jsonobject.getInt("RES");
+                JSONObject jsonObject = new JSONObject(result);
+                if(jsonObject.has("message"))
+                {
+                    if(jsonObject.getString("message").equalsIgnoreCase("SUCCESS")){
+                        if(jsonObject.has("result"))
+                        {
+                            JSONArray jsonarray = new JSONArray(jsonObject.getString("result"));
+                            for (int i = 0; i < jsonarray.length(); i++) {
+                                JSONObject jsonobject = jsonarray.getJSONObject(i);
+                                strResult = jsonobject.getInt("RES");
+                            }
+                        }
+                    }
                 }
+
             }catch (Exception e)
             {
                 Crashlytics.logException(e);
@@ -890,7 +921,6 @@ public class NewComplaintActivity extends BaseActivity {
             binding.spinner.setText("");
             getLocation();
             binding.currentDate.setText(currentTime);
-            new AsyncUploadImages().execute();
 
         }
     }
@@ -907,9 +937,9 @@ public class NewComplaintActivity extends BaseActivity {
             String result = null;
             if(!lstPathURI.isEmpty())
             {
-                result = mulipleFileUploadFile(lstPathURI);
+                result = mulipleFileUploadFile(lstPathURI,strings[0]);
             }
-
+            System.out.println("Upload Images Result::" + result);
             return result;
         }
 
@@ -918,8 +948,29 @@ public class NewComplaintActivity extends BaseActivity {
             super.onPostExecute(result);
             hideProgressDialog(NewComplaintActivity.this);
 
-            if(result != null && result.equalsIgnoreCase("")) {
-                CustomDialog(NewComplaintActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
+            if(result != null && !result.equalsIgnoreCase("")) {
+                try{
+                    JSONObject jobject = new JSONObject(result);
+                    if (result.length() > 0) {
+                        if (jobject.has("message")) {
+                            if (jobject.getString("message").equalsIgnoreCase("SUCCESS")) {
+                                if (jobject.has("result")) {
+                                    JSONArray jsonArray = new JSONArray(jobject.getString("result"));
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                        CustomDialog(NewComplaintActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
+                                        /*if(jsonObject.has("Status")) {
+                                            int Status = jsonObject.getInt("Status");
+                                        }*/
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
             }else {
                 showAlert(NewComplaintActivity.this, "Failed to upload data", "Result:" + result, "OK");
             }
@@ -962,6 +1013,16 @@ public class NewComplaintActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
+                if(App.isNetworkAvailable())
+                    new AsyncUploadImages().execute(String.valueOf(strResult));
+                else{
+                    ChocoBar.builder().setView(binding.mainLayout)
+                            .setText("No Internet connection")
+                            .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                            //.setActionText(android.R.string.ok)
+                            .red()   // in built red ChocoBar
+                            .show();
+                }
             }
         });
 
@@ -1066,16 +1127,26 @@ public class NewComplaintActivity extends BaseActivity {
         return null;
     }
 
-    private JsonObject prepareJSON() {
+    private NewComplaintDataRequest prepareJSON() {
         JsonObject jsonParam = null;
+        NewComplaintDataRequest request = new NewComplaintDataRequest();
         try {
             String postedBy = getStringSharedPreference(NewComplaintActivity.this,"MemberID");
-            jsonParam = prepareAddNewPostJSON(category, strTitle, strDescription, postedBy,strLocation, String.valueOf(latitude),String.valueOf(longitude));
+            request.setCategoryID(category);
+            request.setDescription(strDescription);
+            request.setTitle(strTitle);
+            request.setPostedBy(Integer.valueOf(postedBy));
+            request.setLangitude(String.valueOf(latitude));
+            request.setLangitude(String.valueOf(longitude));
+            request.setItemID(-1);
+            request.setLocation(strLocation);
+            //jsonParam = prepareAddNewPostJSON(category, strTitle, strDescription, postedBy,strLocation, String.valueOf(latitude),String.valueOf(longitude));
         }catch (Exception e)
         {
             e.printStackTrace();
         }
-        return jsonParam;
+       // return jsonParam;
+        return request;
     }
 
     private JsonObject prepareAddNewPostJSON(int strComplaintType, String strTitle, String strDescription, String postedBy, String strLocation, String latitude, String longitude){
@@ -1141,7 +1212,7 @@ public class NewComplaintActivity extends BaseActivity {
         return file.getPath();
     }
 
-    private String mulipleFileUploadFile(ArrayList<String> fileUri) {
+    private String mulipleFileUploadFile(ArrayList<String> fileUri, String item) {
         try {
             OkHttpClient okHttpClient = new OkHttpClient();
             OkHttpClient clientWith30sTimeout = okHttpClient.newBuilder()
@@ -1150,7 +1221,7 @@ public class NewComplaintActivity extends BaseActivity {
 
             Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
             APIInterface api = retrofit.create(APIInterface.class);
-            Map<String, RequestBody> maps = new HashMap<>();
+            /*Map<String, RequestBody> maps = new HashMap<>();
 
 
             if (fileUri != null && fileUri.size() > 0) {
@@ -1168,10 +1239,24 @@ public class NewComplaintActivity extends BaseActivity {
                         }
                     }
                 }
+            }*/
+            MultipartBody.Builder builder = new MultipartBody.Builder();
+            if (fileUri != null && fileUri.size() > 0) {
+                for (int i = 0; i < fileUri.size(); i++) {
+                    Uri contentURI = Uri.fromFile(new File(fileUri.get(i).toString()));
+                    String filePath = getPathFromUri(NewComplaintActivity.this,contentURI );
+                    File file = new File(filePath);
+                    if (file.exists()) {
+                        builder.setType(MultipartBody.FORM);
+                        builder.addFormDataPart("files", file.getName(), RequestBody.create(MediaType.parse("image/*"), file));
+                    }
+                }
             }
 
+            MultipartBody requestBody = builder.build();
+
             //hear is the your json request
-            Call<ResponseBody> call = api.uploadImages(maps);
+            Call<ResponseBody> call = api.uploadImages(item,requestBody);
             call.enqueue(new Callback<ResponseBody>() {
                 @SuppressLint("LongLogTag")
                 @Override
@@ -1189,7 +1274,7 @@ public class NewComplaintActivity extends BaseActivity {
                         e.printStackTrace();
                         Crashlytics.logException(e);
                         hideProgressDialog(NewComplaintActivity.this);
-                        showErrorAlert(NewComplaintActivity.this,"Failed to upload images");
+                        //showErrorAlert(NewComplaintActivity.this,"Failed to upload images");
                     }
                 }
 
@@ -1603,8 +1688,4 @@ public class NewComplaintActivity extends BaseActivity {
             e.printStackTrace();
         }
     }
-
-
-
-
 }

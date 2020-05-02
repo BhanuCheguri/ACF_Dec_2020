@@ -3,71 +3,110 @@ package com.joinacf.acf.modelclasses;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
+
 public class OfficesModel {
-    @SerializedName("SPID")
+    @SerializedName("status")
     @Expose
-    private String sPID;
-    @SerializedName("Name")
+    private String status;
+    @SerializedName("message")
     @Expose
-    private String name;
-    @SerializedName("Address")
+    private String message;
+    @SerializedName("result")
     @Expose
-    private String address;
-    @SerializedName("Latitude")
-    @Expose
-    private String latitude;
-    @SerializedName("Longitude")
-    @Expose
-    private String longitude;
-    @SerializedName("DISTANCE")
-    @Expose
-    private String dISTANCE;
+    private ArrayList<Result> result = null;
 
-    public String getSPID() {
-        return sPID;
+    public String getStatus() {
+        return status;
     }
 
-    public void setSPID(String sPID) {
-        this.sPID = sPID;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public String getName() {
-        return name;
+    public String getMessage() {
+        return message;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
-    public String getAddress() {
-        return address;
+    public ArrayList<Result> getResult() {
+        return result;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setResult(ArrayList<Result> result) {
+        this.result = result;
     }
 
-    public String getLatitude() {
-        return latitude;
-    }
+    public class Result {
 
-    public void setLatitude(String latitude) {
-        this.latitude = latitude;
-    }
+        @SerializedName("SPID")
+        @Expose
+        private String sPID;
+        @SerializedName("Name")
+        @Expose
+        private String name;
+        @SerializedName("Address")
+        @Expose
+        private String address;
+        @SerializedName("Latitude")
+        @Expose
+        private String latitude;
+        @SerializedName("Longitude")
+        @Expose
+        private String longitude;
+        @SerializedName("DISTANCE")
+        @Expose
+        private String dISTANCE;
 
-    public String getLongitude() {
-        return longitude;
-    }
+        public String getSPID() {
+            return sPID;
+        }
 
-    public void setLongitude(String longitude) {
-        this.longitude = longitude;
-    }
+        public void setSPID(String sPID) {
+            this.sPID = sPID;
+        }
 
-    public String getDISTANCE() {
-        return dISTANCE;
-    }
+        public String getName() {
+            return name;
+        }
 
-    public void setDISTANCE(String dISTANCE) {
-        this.dISTANCE = dISTANCE;
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getAddress() {
+            return address;
+        }
+
+        public void setAddress(String address) {
+            this.address = address;
+        }
+
+        public String getLatitude() {
+            return latitude;
+        }
+
+        public void setLatitude(String latitude) {
+            this.latitude = latitude;
+        }
+
+        public String getLongitude() {
+            return longitude;
+        }
+
+        public void setLongitude(String longitude) {
+            this.longitude = longitude;
+        }
+
+        public String getDISTANCE() {
+            return dISTANCE;
+        }
+
+        public void setDISTANCE(String dISTANCE) {
+            this.dISTANCE = dISTANCE;
+        }
     }
 }

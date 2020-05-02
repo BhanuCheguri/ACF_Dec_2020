@@ -29,6 +29,7 @@ import android.widget.Toast;
 import com.facebook.login.LoginBehavior;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -72,6 +73,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.joinacf.acf.modelclasses.AddMemberResult;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
+import com.joinacf.acf.utilities.App;
+import com.pd.chocobar.ChocoBar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -134,7 +137,6 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
 
         Fabric.with(this, new Crashlytics());
         try {
-           // Crashlytics.getInstance().crash();
             boolean bLoggedIn = getBooleanSharedPreference(NewLoginActivity.this, "LoggedIn");
             if (bLoggedIn) {
                 putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", false);
@@ -193,11 +195,17 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
 
                 binding.signInButton.setOnClickListener(this);
 
-
-                /***** Facebook Login *****/
-                //facebookLogin();
-                new AsyncGetVideoLink().execute();
-
+                if(App.isNetworkAvailable())
+                    new AsyncGetVideoLink().execute();
+                else{
+                    ChocoBar.builder().setView(binding.linearLayout)
+                            .setText("No Internet connection")
+                            .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                            //.setActionText(android.R.string.ok)
+                            .red()   // in built red ChocoBar
+                            .show();
+                }
+                    //Snackbar.make(coordinatorLayout, "Message is restored!", Snackbar.LENGTH_SHORT).show();
             }
         }catch (Exception e)
         {
@@ -268,32 +276,22 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         int READ_TIMEOUT = 15000;
         int CONNECTION_TIMEOUT = 15000;
         try {
-            //Create a URL object holding our url
             URL myUrl = new URL("http://api.ainext.in/moderation/getvideolink");
-            //Create a connection
             HttpURLConnection connection =(HttpURLConnection)
                     myUrl.openConnection();
-            //Set methods and timeouts
             connection.setRequestMethod(REQUEST_METHOD);
             connection.setReadTimeout(READ_TIMEOUT);
             connection.setConnectTimeout(CONNECTION_TIMEOUT);
-
-            //Connect to our url
             connection.connect();
-            //Create a new InputStreamReader
             InputStreamReader streamReader = new
                     InputStreamReader(connection.getInputStream());
-            //Create a new buffered reader and String Builder
             BufferedReader reader = new BufferedReader(streamReader);
             StringBuilder stringBuilder = new StringBuilder();
-            //Check if the line we are reading is not null
             while((inputLine = reader.readLine()) != null){
                 stringBuilder.append(inputLine);
             }
-            //Close our InputStream and Buffered reader
             reader.close();
             streamReader.close();
-            //Set our result equal to our stringBuilder
             result = stringBuilder.toString();
         } catch (ProtocolException e) {
             e.printStackTrace();
@@ -338,7 +336,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            showProgressDialog(NewLoginActivity.this,"Login-In to Facebook");
+            showProgressDialog(NewLoginActivity.this,"Login-In to Google");
         }
 
         @Override
@@ -367,15 +365,8 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
     private void facebookLogin()
     {
         try {
-
-            //LoginButton loginButton  = new LoginButton(this);
-            //binding.loginButton.performClick();
-
             boolean loggedOut = AccessToken.getCurrentAccessToken() == null;
-
             if (!loggedOut) {
-                //Using Graph API
-               // getUserProfile(AccessToken.getCurrentAccessToken());
                 return;
             }
             AccessTokenTracker fbTracker = new AccessTokenTracker() {
@@ -387,13 +378,10 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                 }
             };
             fbTracker.startTracking();
-
-            //binding.loginButton.setReadPermissions(Arrays.asList("email", "public_profile","user_birthday"));
             binding.loginButton.setReadPermissions("user_friends");
             binding.loginButton.setReadPermissions("public_profile");
             binding.loginButton.setReadPermissions("email");
             binding.loginButton.setReadPermissions("user_birthday");
-
 
             binding.loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
                 @Override
@@ -401,8 +389,16 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                     boolean loggedOut = AccessToken.getCurrentAccessToken() == null;
                     if (!loggedOut) {
                         Log.d("TAG", "Username is: " + Profile.getCurrentProfile().getName());
-                        //getUserProfile(AccessToken.getCurrentAccessToken());
-                        getUserProfile(loginResult.getAccessToken());
+                        if(App.isNetworkAvailable())
+                            getUserProfile(loginResult.getAccessToken());
+                        else{
+                            ChocoBar.builder().setView(binding.linearLayout)
+                                    .setText("No Internet connection")
+                                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                                    //.setActionText(android.R.string.ok)
+                                    .red()   // in built red ChocoBar
+                                    .show();
+                        }
                     }
                 }
 
@@ -421,10 +417,6 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
 
                 }
             });
-
-            AccessToken accessToken = AccessToken.getCurrentAccessToken();
-            boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
-
             LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile"));
         }catch (Exception e) {
             Crashlytics.logException(e);
@@ -449,12 +441,18 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
             case R.id.login_button:
             case R.id.facebook:
                 try {
-                    /*LoginButton loginButton  = new LoginButton(this);*/
-                    //binding.loginButton.performClick();
-                    //new FacebookAyncTask().execute();
                     if(isAppInstalled(getApplicationContext(), "com.facebook.katana")) {
                         try {
-                            new FacebookAyncTask().execute();
+                            if(App.isNetworkAvailable())
+                                new FacebookAyncTask().execute();
+                            else{
+                                ChocoBar.builder().setView(binding.linearLayout)
+                                        .setText("No Internet connection")
+                                        .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                                        //.setActionText(android.R.string.ok)
+                                        .red()   // in built red ChocoBar
+                                        .show();
+                            }
                         }catch (Exception e) {
                             Crashlytics.logException(e);
                             e.printStackTrace();
@@ -469,7 +467,16 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                 break;
             case R.id.sign_in_button:
             case R.id.google:
-                new GPlusAyncTask().execute();
+                if(App.isNetworkAvailable())
+                    new GPlusAyncTask().execute();
+                else{
+                    ChocoBar.builder().setView(binding.linearLayout)
+                            .setText("No Internet connection")
+                            .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                            //.setActionText(android.R.string.ok)
+                            .red()   // in built red ChocoBar
+                            .show();
+                }
                 break;
         }
     }
@@ -497,15 +504,10 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                                 if(object.has("birthday")) {
                                     personBday = object.getString("birthday"); // 01/31/1980 format
                                 }
-                                /*if(object.has("gender")) {
-                                    personGender = object.getString("gender");
-                                }*/
                                 if(object.has("id")) {
                                     personId = object.getString("id");
                                     image_url = "https://graph.facebook.com/" + personId + "/picture?type=large";
                                 }
-
-                                //Toast.makeText(NewLoginActivity.this, personName + " " + personEmail, Toast.LENGTH_LONG).show();
                                 putStringSharedPreference(NewLoginActivity.this, "LoginType", "Facebook");
                                 putStringSharedPreference(NewLoginActivity.this, "personName", personName);
                                 putStringSharedPreference(NewLoginActivity.this, "personEmail", personEmail);
@@ -513,14 +515,16 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                                 putStringSharedPreference(NewLoginActivity.this, "mobile", "");
                                 putStringSharedPreference(NewLoginActivity.this, "personPhoto", image_url);
 
-                                //Integer nStatus = getValidateMember(personEmail);
-                                //String Mobile = "9177579498";
-                                String Gender = "F";
-                                String Photo = "Photo.jpg";
-                                JSONObject jsonParam = prepareAddMemberJSON(personName,Mobile,personEmail,Gender,image_url);
-
-                                //postAddMember(jsonParam.toString());
-                                new AsyncTaskAddMember().execute();
+                                if(App.isNetworkAvailable())
+                                    new AsyncTaskAddMember().execute();
+                                else{
+                                    ChocoBar.builder().setView(binding.linearLayout)
+                                            .setText("No Internet connection")
+                                            .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                                            //.setActionText(android.R.string.ok)
+                                            .red()   // in built red ChocoBar
+                                            .show();
+                                }
 
                             } catch (JSONException e) {
                                 Crashlytics.logException(e);
@@ -534,20 +538,6 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
             parameters.putString("fields", "first_name,last_name,email,id,gender,birthday");
             request.setParameters(parameters);
             request.executeAsync();
-
-            /*new GraphRequest(
-                    AccessToken.getCurrentAccessToken(),
-                    personId,
-                    null,
-                    HttpMethod.GET,
-                    new GraphRequest.Callback() {
-                        public void onCompleted(GraphResponse response) {
-                            *//* handle the result *//*
-                            String result  = response.toString();
-                            Log.d("TAG", response.toString());
-                        }
-                    }
-            ).executeAsync();*/
         }catch (Exception e) {
             Crashlytics.logException(e);
             e.printStackTrace();
@@ -577,7 +567,16 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                     GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
                     if (account != null) {
 
-                        new GetProfileDetails(account, weakAct, TAG).execute();
+                        if(App.isNetworkAvailable())
+                            new GetProfileDetails(account, weakAct, TAG).execute();
+                        else{
+                            ChocoBar.builder().setView(binding.linearLayout)
+                                    .setText("No Internet connection")
+                                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                                    //.setActionText(android.R.string.ok)
+                                    .red()   // in built red ChocoBar
+                                    .show();
+                        }
 
                         personName = account.getDisplayName();
                         personGivenName = account.getGivenName();
@@ -624,42 +623,53 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                 JSONObject jsonParam = prepareAddMemberJSON(personName,Mobile,personEmail,personGender,image_url);
                 String result = postAddMember(jsonParam.toString());
                 if(!result.equalsIgnoreCase("") && result != null) {
-                    JSONArray jsonarray = new JSONArray(result);
-                    if(result.length() > 0) {
-                        AddMemberResult addMemberResult = new AddMemberResult();
-                        for (int i = 0; i < jsonarray.length(); i++) {
-                            JSONObject jsonobject = jsonarray.getJSONObject(i);
-                            if(jsonobject.has("Error"))
-                            {
-                                showAlert(NewLoginActivity.this,"Error",jsonobject.getString("Error"),"OK");
-                            }else {
-                               // Toast.makeText(NewLoginActivity.this, "Member added successfully", Toast.LENGTH_SHORT).show();
-                                System.out.println(jsonobject.toString());
-                                if (jsonobject.has("MemberID"))
-                                    addMemberResult.setMemberID(jsonobject.getString("MemberID"));
-                                addMemberResult.setFullName(jsonobject.getString("FullName"));
-                                addMemberResult.setEmail(jsonobject.getString("Email"));
+                    JSONObject jobject = new JSONObject(result);
+                    if (result.length() > 0) {
+                        AddMemberResult addMember = new AddMemberResult();
+                        addMember.setMessage(jobject.getString("message"));
+                        addMember.setStatus(jobject.getString("status"));
+                        AddMemberResult.Result addMemberResult = new AddMemberResult.Result();
+                        if (jobject.has("message")) {
+                            if (addMember.getMessage().equalsIgnoreCase("SUCCESS"))
+                                if (jobject.has("result")) {
+                                    JSONArray jsonArray = new JSONArray(jobject.getString("result"));
+                                    System.out.println(jobject.toString());
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        JSONObject jsonobject = jsonArray.getJSONObject(i);
+                                        addMemberResult.setMemberID(jsonobject.getString("MemberID"));
+                                        addMemberResult.setFullName(jsonobject.getString("FullName"));
+                                        addMemberResult.setEmail(jsonobject.getString("Email"));
 
-                                if (jsonobject.has("Mobile"))
-                                    addMemberResult.setMobile(jsonobject.getString("Mobile"));
-                                if (jsonobject.has("Photo"))
-                                    addMemberResult.setPhoto(jsonobject.getString("Photo"));
+                                        if (jsonobject.has("Mobile"))
+                                            addMemberResult.setMobile(jsonobject.getString("Mobile"));
+                                        if (jsonobject.has("Photo"))
+                                            addMemberResult.setPhoto(jsonobject.getString("Photo"));
 
-                                addMemberResult.setMemberType(jsonobject.getString("MemberType"));
-                                addMemberResult.setRegDate(jsonobject.getString("RegDate"));
-                                addMemberResult.setStatus(jsonobject.getString("Status"));
-                                addMemberResult.setModifiedBy(jsonobject.getString("ModifiedBy"));
-                                addMemberResult.setModifiedDate(jsonobject.getString("ModifiedDate"));
-                                putStringSharedPreference(NewLoginActivity.this, "MemberID", jsonobject.getString("MemberID"));
-
-                            }
+                                        addMemberResult.setMemberType(jsonobject.getString("MemberType"));
+                                        addMemberResult.setRegDate(jsonobject.getString("RegDate"));
+                                        addMemberResult.setStatus(jsonobject.getInt("Status"));
+                                        addMemberResult.setModifiedBy(jsonobject.getString("ModifiedBy"));
+                                        addMemberResult.setModifiedDate(jsonobject.getString("ModifiedDate"));
+                                        putStringSharedPreference(NewLoginActivity.this, "MemberID", jsonobject.getString("MemberID"));
+                                    }
+                                }
+                        }
+                        else if (addMember.getMessage().equalsIgnoreCase("ERROR")) {
+                            showAlert(NewLoginActivity.this, "Error", jobject.getString("result"), "OK");
+                        } else if (addMember.getMessage().equalsIgnoreCase("FAILURE")) {
+                            showAlert(NewLoginActivity.this, "Failed",jobject.getString("result"), "OK");
                         }
                     }
                 }
-            }catch (Exception e)
+            } catch (JSONException ex) {
+                ex.printStackTrace();
+                Crashlytics.logException(ex);
+            } catch (Exception e)
             {
-                Crashlytics.logException(e);
+             e.printStackTrace();
+             Crashlytics.logException(e);
             }
+
             return personEmail;
         }
 
@@ -667,11 +677,16 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             hideProgressDialog(NewLoginActivity.this);
-            getValidateMember(result);
-            /*if(result != -1 && result != 0)
-                showAlert(NewLoginActivity.this,"Success","Uploaded Successfully","OK");
-            else
-                showAlert(NewLoginActivity.this,"Failure","Upload failed","OK");*/
+            if(App.isNetworkAvailable())
+                getValidateMember(result);
+            else{
+                ChocoBar.builder().setView(binding.linearLayout)
+                        .setText("No Internet connection")
+                        .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                        //.setActionText(android.R.string.ok)
+                        .red()   // in built red ChocoBar
+                        .show();
+            }
         }
     }
 
@@ -736,7 +751,16 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                     }
                 }
             }
-            new AsyncTaskAddMember().execute();
+            if(App.isNetworkAvailable())
+                new AsyncTaskAddMember().execute();
+            else{
+                ChocoBar.builder().setView(binding.linearLayout)
+                        .setText("No Internet connection")
+                        .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                        //.setActionText(android.R.string.ok)
+                        .red()   // in built red ChocoBar
+                        .show();
+            }
         }
     }
 
@@ -962,38 +986,48 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                     try {
                         String  bodyString = new String(response.body().bytes());
                         Log.v("bodyString ::: ",bodyString);
+                        hideProgressDialog(NewLoginActivity.this);
                         if (response.isSuccessful()) {
-                            JSONArray jsonarray = new JSONArray(bodyString);
-                            for (int i = 0; i < jsonarray.length(); i++) {
-                                JSONObject jsonobject = jsonarray.getJSONObject(i);
-                                nStatus = jsonobject.getInt("Status");
-                            }
-                            hideProgressDialog(NewLoginActivity.this);
-                            if(nStatus == 0) {
-                                putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
-                                putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
+                            JSONObject jsonObject = new JSONObject(bodyString);
+                            //nStatus = jsonObject.getInt("status");
+                            if (jsonObject.has("message")) {
+                                String msg = jsonObject.getString("message");
+                                if(jsonObject.has("result"))
+                                {
+                                    JSONArray jsonArray = new JSONArray(jsonObject.getString("result"));
+                                    for (int i = 0; i<jsonArray.length();i++)
+                                    {
+                                        JSONObject jObject = jsonArray.getJSONObject(i);
+                                        if(jObject.has("Status"))
+                                            nStatus = jObject.getInt("Status");
+                                    }
+                                }
+                                if (nStatus == 0) {
+                                    putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
+                                    putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
 
-                                Toast.makeText(NewLoginActivity.this, "Successfully Registered", Toast.LENGTH_LONG);
-                                Intent intent = new Intent(NewLoginActivity.this, OTPVerificationActivity.class);
-                                startActivity(intent);
-                                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                                finish();
-                            }else if(nStatus == 1){
-                                putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
-                                putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
+                                    Toast.makeText(NewLoginActivity.this, "Successfully Registered", Toast.LENGTH_LONG);
+                                    Intent intent = new Intent(NewLoginActivity.this, OTPVerificationActivity.class);
+                                    startActivity(intent);
+                                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                                    finish();
+                                } else if (nStatus == 1) {
+                                    putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
+                                    putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
 
-                                Toast.makeText(NewLoginActivity.this, "Already Registered", Toast.LENGTH_LONG);
-                                Intent intent = new Intent(NewLoginActivity.this, MainActivity.class);
-                                startActivity(intent);
-                                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                                finish();
-                            }else
-                            {
-                                showAlert(NewLoginActivity.this,"Error","Something wrong fro our end","OK");
+                                    Toast.makeText(NewLoginActivity.this, "Already Registered", Toast.LENGTH_LONG);
+                                    Intent intent = new Intent(NewLoginActivity.this, MainActivity.class);
+                                    startActivity(intent);
+                                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                                    finish();
+                                } else {
+                                    showAlert(NewLoginActivity.this, "Error", "Something wrong fro our end", "OK");
+                                }
+                            } else {
+                                hideProgressDialog(NewLoginActivity.this);
+                                Crashlytics.log(response.body().toString());
+                                Toast.makeText(NewLoginActivity.this, "RESPONSE :: " + response.body().toString(), Toast.LENGTH_SHORT).show();
                             }
-                        } else {
-                            hideProgressDialog(NewLoginActivity.this);
-                            Toast.makeText(NewLoginActivity.this, "RESPONSE :: "+ response.body().toString(), Toast.LENGTH_SHORT).show();
                         }
                     } catch (IOException e) {
                         hideProgressDialog(NewLoginActivity.this);
@@ -1060,48 +1094,6 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         super.onStop();
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
-        }
-    }
-
-    private void handleSignInResult(GoogleSignInResult result) {
-        try{
-            if (result.isSuccess()) {
-
-                final GoogleSignInAccount acct = result.getSignInAccount();
-
-                String name = acct.getDisplayName();
-                final String mail = acct.getEmail();
-                // String photourl = acct.getPhotoUrl().toString();
-
-                final String givenname="",familyname="",displayname="",birthday="";
-
-               /* Plus.PeopleApi.load(mGoogleApiClient, acct.getId()).setResultCallback(new ResultCallback<People.LoadPeopleResult>() {
-                    @Override
-                    public void onResult(@NonNull People.LoadPeopleResult loadPeopleResult) {
-                        Person person = loadPeopleResult.getPersonBuffer().get(0);
-
-                        Log.d("GivenName ", person.getName().getGivenName());
-                        Log.d("FamilyName ",person.getName().getFamilyName());
-                        Log.d("DisplayName ",person.getDisplayName());
-                        Log.d("gender ", String.valueOf(person.getGender())); //0 = male 1 = female
-                        String gender="";
-                        if(person.getGender() == 0){
-                            gender = "Male";
-                        }else {
-                            gender = "Female";
-                        }
-                        Log.d("Gender ",gender);
-                        if(person.hasBirthday()) {
-                            Log.d("Birthday ", person.getBirthday());
-                        }
-                    }
-                });*/
-            } else {
-
-                Toast.makeText(this, "Login Failed", Toast.LENGTH_LONG).show();
-            }
-        }catch (Exception e) {
-            Crashlytics.logException(e);
         }
     }
 

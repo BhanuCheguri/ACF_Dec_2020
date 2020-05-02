@@ -48,6 +48,7 @@ import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.network.AppLocationService;
 import com.joinacf.acf.network.ServiceCall;
 import com.joinacf.acf.databinding.ActivityAddPetitionBinding;
+import com.joinacf.acf.utilities.App;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -55,6 +56,7 @@ import com.karumi.dexter.listener.DexterError;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.PermissionRequestErrorListener;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
+import com.pd.chocobar.ChocoBar;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -108,19 +110,22 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
     String strResponse = "";
     ServiceCall mServiceCall ;
 
-    List<OfficesModel> myOfficesResponse;
-    ArrayList<OfficesModel> lstOfficesData;
+    OfficesModel myOfficesResponse;
+    ArrayList<OfficesModel.Result> lstOfficesData;
     ArrayList<String> lstOfficesNames;
     HashMap<String,String> hshMapOffices;
 
-    List<SectionsModel> mySectionResponse;
-    ArrayList<SectionsModel> lstSectionData;
+    SectionsModel mySectionResponse;
+    ArrayList<SectionsModel.Result> lstSectionData;
     ArrayList<String> lstSectionNames;
     HashMap<String,String> hshMapSection;
     String strSectionID = "";
     String strSPID = "";
     private String TAG = "AddPetitionActivity.class";
     private ArrayList<String> lstPathURI;
+    String strOTP;
+    String strPID;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,13 +137,10 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
 
     private void  init() {
 
-        myOfficesResponse= new ArrayList<>();
         lstOfficesNames = new ArrayList<>();
         hshMapOffices = new HashMap<>();
         lstPathURI = new ArrayList<>();
 
-
-        mySectionResponse= new ArrayList<>();
         lstSectionNames = new ArrayList<>();
         hshMapSection = new HashMap<>();
 
@@ -151,7 +153,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         binding.imageView3.setOnClickListener(this);
         binding.imageView4.setOnClickListener(this);
         binding.imageView5.setOnClickListener(this);
-        binding.imageView6.setOnClickListener(this);
+        //binding.imageView6.setOnClickListener(this);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -198,53 +200,60 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
-                    new AsyncSubmitPetition().execute(jsonParam.toString()/*,ADD_PETITION*/);
+                    if(App.isNetworkAvailable())
+                        new AsyncSubmitPetition().execute(jsonParam.toString()/*,ADD_PETITION*/);
+                    else{
+                        ChocoBar.builder().setView(binding.mainLayout)
+                                .setText("No Internet connection")
+                                .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                                //.setActionText(android.R.string.ok)
+                                .red()   // in built red ChocoBar
+                                .show();
+                    }
                 }else
                     Toast.makeText(AddPetitionActivity.this, "Please fill all the fileds", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private ArrayList<OfficesModel> getOfficesbyGeoLocation(double lat, double lang)
+    private void getOfficesbyGeoLocation(double lat, double lang)
     {
         showProgressDialog(AddPetitionActivity.this);
         apiRetrofitClient = new APIRetrofitClient();
         Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
         APIInterface api = retrofit.create(APIInterface.class);
-        Call<List<OfficesModel>> call = api.getOfficesbyGeo(String.valueOf(lat), String.valueOf(lang));
+        Call<OfficesModel> call = api.getOfficesbyGeo(String.valueOf(lat), String.valueOf(lang));
 
-        call.enqueue(new Callback<List<OfficesModel>>() {
+        call.enqueue(new Callback<OfficesModel>() {
             @Override
-            public void onResponse(Call<List<OfficesModel>> call, Response<List<OfficesModel>> response) {
-                if(response != null) {
+            public void onResponse(Call<OfficesModel> call, Response<OfficesModel> response) {
+                hideProgressDialog(AddPetitionActivity.this);
+                if (response != null) {
                     myOfficesResponse = response.body();
-                    if(myOfficesResponse.size() > 0) {
-                        lstOfficesData = new ArrayList<OfficesModel>();
-                        for (Object object : myOfficesResponse) {
-                            lstOfficesData.add((OfficesModel) object);
+                    if (myOfficesResponse != null) {
+                        String status = myOfficesResponse.getStatus();
+                        String msg = myOfficesResponse.getMessage();
+                        if (msg.equalsIgnoreCase("SUCCESS")) {
+                            lstOfficesData = myOfficesResponse.getResult();
+                            loadOfficeAdapter(lstOfficesData);
+                        } else {
+                            hideProgressDialog(AddPetitionActivity.this);
                         }
-                        loadOfficeAdapter(lstOfficesData);
-                        hideProgressDialog(AddPetitionActivity.this);
-
-                    }else {
+                    } else {
                         hideProgressDialog(AddPetitionActivity.this);
                     }
-                }else {
-                    hideProgressDialog(AddPetitionActivity.this);
                 }
             }
 
             @Override
-            public void onFailure(Call<List<OfficesModel>> call, Throwable t) {
+            public void onFailure(Call<OfficesModel> call, Throwable t) {
                 Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
                 hideProgressDialog(AddPetitionActivity.this);
             }
         });
-        return lstOfficesData;
     }
 
-    private void loadOfficeAdapter(ArrayList<OfficesModel> lstOfficesData)
+    private void loadOfficeAdapter(ArrayList<OfficesModel.Result> lstOfficesData)
     {
         binding.spOffice.setEnabled(true);
         for(int i=0; i<lstOfficesData.size(); i++) {
@@ -267,51 +276,65 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String strOfficeName = binding.spOffice.getAdapter().getItem(position).toString();
                 strSPID = hshMapOffices.get(strOfficeName);
-                getSectionsbySPID(strSPID);
+                if(App.isNetworkAvailable())
+                    getSectionsbySPID(strSPID);
+                else{
+                    ChocoBar.builder().setView(binding.mainLayout)
+                            .setText("No Internet connection")
+                            .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                            //.setActionText(android.R.string.ok)
+                            .red()   // in built red ChocoBar
+                            .show();
+                }
             }
         });
 
     }
 
-    private ArrayList<SectionsModel> getSectionsbySPID(String strSPID)
+    private void getSectionsbySPID(String strSPID)
     {
         showProgressDialog(AddPetitionActivity.this);
         apiRetrofitClient = new APIRetrofitClient();
         Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
         APIInterface api = retrofit.create(APIInterface.class);
-        Call<List<SectionsModel>> call = api.getSections(strSPID);
+        Call<SectionsModel> call = api.getSections(strSPID);
 
-        call.enqueue(new Callback<List<SectionsModel>>() {
+        call.enqueue(new Callback<SectionsModel>() {
             @Override
-            public void onResponse(Call<List<SectionsModel>> call, Response<List<SectionsModel>> response) {
+            public void onResponse(Call<SectionsModel> call, Response<SectionsModel> response) {
                 if(response != null) {
                     mySectionResponse = response.body();
-                    if(mySectionResponse.size() > 0) {
-                        lstSectionData = new ArrayList<SectionsModel>();
+                    if(mySectionResponse != null) {
+                        /*lstSectionData = new ArrayList<SectionsModel>();
                         for (Object object : mySectionResponse) {
                             lstSectionData.add((SectionsModel) object);
+                        }*/
+                         String status = mySectionResponse.getStatus();
+                            String msg = mySectionResponse.getMessage();
+                            if (msg.equalsIgnoreCase("SUCCESS")) {
+                                lstSectionData = mySectionResponse.getResult();
+                                loadSectionAdapter(lstSectionData);
+                            } else {
+                                hideProgressDialog(AddPetitionActivity.this);
+                            }
+                        } else {
+                            hideProgressDialog(AddPetitionActivity.this);
                         }
-                        loadSectionAdapter(lstSectionData);
-                        hideProgressDialog(AddPetitionActivity.this);
-
-                    }else {
-                        hideProgressDialog(AddPetitionActivity.this);
-                    }
                 }else {
                     hideProgressDialog(AddPetitionActivity.this);
                 }
             }
 
             @Override
-            public void onFailure(Call<List<SectionsModel>> call, Throwable t) {
+            public void onFailure(Call<SectionsModel> call, Throwable t) {
                 Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
                 hideProgressDialog(AddPetitionActivity.this);
             }
         });
-        return lstSectionData;
     }
 
-    private void loadSectionAdapter(ArrayList<SectionsModel> lstSectionData) {
+    private void loadSectionAdapter(ArrayList<SectionsModel.Result> lstSectionData) {
+        hideProgressDialog(AddPetitionActivity.this);
         binding.spSelection.setEnabled(true);
         for(int i=0; i<lstSectionData.size(); i++) {
             lstSectionNames.add(lstSectionData.get(i).getName().toString().trim());
@@ -348,8 +371,17 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         }
         @Override
         protected String doInBackground(String... params) {
-
-            String strResponse = uploadPetition(params[0]/*,params[1]*/);
+            String strResponse="";
+            if(App.isNetworkAvailable())
+                strResponse = uploadPetition(params[0]/*,params[1]*/);
+            else{
+                ChocoBar.builder().setView(binding.mainLayout)
+                        .setText("No Internet connection")
+                        .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                        //.setActionText(android.R.string.ok)
+                        .red()   // in built red ChocoBar
+                        .show();
+            }
             System.out.println("Response ::: " + strResponse);
            // Toast.makeText(AddPetitionActivity.this, strResponse, Toast.LENGTH_SHORT).show();
             return strResponse;
@@ -360,21 +392,32 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
             super.onPostExecute(result);
             if(!result.equalsIgnoreCase("") && result != null){
                 try {
-                    JSONArray jsonArray = new JSONArray(result);
-                    for (int i=0; i<jsonArray.length();i++)
-                    {
-                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        int nPID = jsonObject.getInt("PID");
-                        int nOTP = jsonObject.getInt("OTP");
-                        CustomDialog(AddPetitionActivity.this,"Petition added Successfully","",String.valueOf("OTP : " +nOTP));
+                    JSONObject jobject = new JSONObject(result);
+                    if (result.length() > 0) {
+                        if (jobject.has("message")) {
+                            if (jobject.getString("message").equalsIgnoreCase("SUCCESS")) {
+                                if (jobject.has("result")) {
+                                    JSONArray jsonArray = new JSONArray(jobject.getString("result"));
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                        if (jsonObject.has("PID")) {
+                                            int nPID = jsonObject.getInt("PID");
+                                            strPID = String.valueOf(nPID);
+                                        }
+                                        if(jsonObject.has("OTP")) {
+                                            int nOTP = jsonObject.getInt("OTP");
+                                            strOTP = String.valueOf(nOTP);
+                                        }
+                                    }
+                                    CustomDialog(AddPetitionActivity.this,"Petition added Successfully","",String.valueOf("OTP : " + strOTP));
+                                }
+                            }
+                        }
                     }
                     binding.etTitle.setText("");
                     binding.etComment.setText("");
                     binding.spOffice.setText("");
                     binding.spSelection.setText("");
-                    new AsyncUploadImages().execute();
-
-
                 }catch (Exception e)
                 {
                     Crashlytics.logException(e);
@@ -474,7 +517,17 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
 
                         //String fullAddress = addressLine1 + ",  " + city + ",  " + state + ",  " + pinCode;
                         //binding.currentLocation.setText(addressLine1);
-                        getOfficesbyGeoLocation(17.363336,78.5270394);
+                        if(App.isNetworkAvailable())
+                            //getOfficesbyGeoLocation(latitude,longitude);
+                            getOfficesbyGeoLocation(17.363336,78.5270394);
+                        else{
+                            ChocoBar.builder().setView(binding.mainLayout)
+                                    .setText("No Internet connection")
+                                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                                    //.setActionText(android.R.string.ok)
+                                    .red()   // in built red ChocoBar
+                                    .show();
+                        }
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -577,7 +630,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                     lstPathURI.add(imagePath);
                 }
                 break;
-            case 6:
+            /*case 6:
                 if(resultCode == RESULT_OK) {
                     Bundle extras = data.getExtras();
                     photo = (Bitmap) extras.get("data");
@@ -586,7 +639,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                     String imagePath = dir + "/"+imgcurTime + ".jpg";
                     lstPathURI.add(imagePath);
                 }
-                break;
+                break;*/
         }
     }
 
@@ -611,9 +664,9 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
             case R.id.imageView5:
                 startActivityForResult(intent, 5);
                 break;
-            case R.id.imageView6:
+            /*case R.id.imageView6:
                 startActivityForResult(intent, 6);
-                break;
+                break;*/
         }
     }
 
@@ -628,10 +681,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
             Log.d(TAG, "file not found");
             e.printStackTrace();
         }
-        catch (IOException e) {
-            Log.d(TAG, "io exception");
-            e.printStackTrace();
-        } finally {
+        finally {
             try {
                 fos.close();
             } catch (IOException e) {
@@ -651,9 +701,10 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
             String result = null;
             if(!lstPathURI.isEmpty())
             {
-                result = mulipleFileUploadFile(lstPathURI);
+                result = mulipleFileUploadFile(lstPathURI,strings[0]);
             }
 
+            System.out.println("Upload Images Result::" + result);
             return result;
         }
 
@@ -662,8 +713,30 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
             super.onPostExecute(result);
             hideProgressDialog(AddPetitionActivity.this);
 
-            if(result != null && result.equalsIgnoreCase("")) {
-                CustomDialog(AddPetitionActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
+            if(result != null && !result.equalsIgnoreCase("")) {
+                if(result != null && !result.equalsIgnoreCase("")) {
+                    try {
+                        JSONObject jobject = new JSONObject(result);
+                        if (result.length() > 0) {
+                            if (jobject.has("message")) {
+                                if (jobject.getString("message").equalsIgnoreCase("SUCCESS")) {
+                                    if (jobject.has("result")) {
+                                        JSONArray jsonArray = new JSONArray(jobject.getString("result"));
+                                        for (int i = 0; i < jsonArray.length(); i++) {
+                                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                            showAlert(AddPetitionActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
+                                        /*if(jsonObject.has("Status")) {
+                                            int Status = jsonObject.getInt("Status");
+                                        }*/
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }else {
                 showAlert(AddPetitionActivity.this, "Failed to upload data", "Result:" + result, "OK");
             }
@@ -673,12 +746,12 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
             binding.imageView3.setImageResource(R.drawable.ic_add_item);
             binding.imageView4.setImageResource(R.drawable.ic_add_item);
             binding.imageView5.setImageResource(R.drawable.ic_add_item);
-            binding.imageView6.setImageResource(R.drawable.ic_add_item);
+            //binding.imageView6.setImageResource(R.drawable.ic_add_item);
         }
     }
 
 
-    private String mulipleFileUploadFile(ArrayList<String> fileUri) {
+    private String mulipleFileUploadFile(ArrayList<String> fileUri, String item) {
         try {
             OkHttpClient okHttpClient = new OkHttpClient();
             OkHttpClient clientWith30sTimeout = okHttpClient.newBuilder()
@@ -708,7 +781,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
             }
 
             //hear is the your json request
-            Call<ResponseBody> call = api.uploadImages(maps);
+            Call<ResponseBody> call = api.uploadPetitionImages(item,maps);
             call.enqueue(new Callback<ResponseBody>() {
                 @SuppressLint("LongLogTag")
                 @Override
@@ -726,7 +799,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                         e.printStackTrace();
                         Crashlytics.logException(e);
                         hideProgressDialog(AddPetitionActivity.this);
-                        showErrorAlert(AddPetitionActivity.this,"Failed to upload images");
+                        //showErrorAlert(AddPetitionActivity.this,"Failed to upload images");
                     }
                 }
 
@@ -1118,6 +1191,16 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
+                if(App.isNetworkAvailable())
+                    new AsyncUploadImages().execute(strPID);
+                else{
+                    ChocoBar.builder().setView(binding.mainLayout)
+                            .setText("No Internet connection")
+                            .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                            //.setActionText(android.R.string.ok)
+                            .red()   // in built red ChocoBar
+                            .show();
+                }
             }
         });
 

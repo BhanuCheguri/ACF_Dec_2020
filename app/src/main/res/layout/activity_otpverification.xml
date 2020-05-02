@@ -11,6 +11,7 @@
 
 <RelativeLayout android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/mainLayout"
     tools:context="com.joinacf.acf.Activities.OTPVerificationActivity">
 
             <RelativeLayout
@@ -37,10 +38,10 @@
                         android:id="@+id/ll_verify_mobile_no"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_marginBottom="20dp"
-                        android:layout_marginEnd="20dp"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="@dimen/dimen_20"
+                        android:layout_marginEnd="@dimen/dimen_20"
+                        android:layout_marginStart="@dimen/dimen_20"
+                        android:layout_marginTop="@dimen/dimen_20"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:visibility="visible">
@@ -48,8 +49,8 @@
                         <!-- android:background="@color/colorPaleGreen"-->
 
                         <ImageView
-                            android:layout_width="100dp"
-                            android:layout_height="100dp"
+                            android:layout_width="@dimen/dimen_100"
+                            android:layout_height="@dimen/dimen_100"
                             android:layout_gravity="center"
                             app:srcCompat="@mipmap/ic_launcher_icon" />
 
@@ -57,32 +58,32 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
+                            android:layout_marginTop="@dimen/dimen_10"
                             android:fontFamily="@font/montserrat_light"
                             android:textColor="@color/colorDarkBlue"
                             android:gravity="center"
-                            android:padding="5dp"
+                            android:padding="@dimen/dimen_5"
                             android:text="@string/verify_mobile_no"
-                            android:textSize="24sp"
+                            android:textSize="@dimen/dimen_24"
                             android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/textView"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="15dp"
+                            android:layout_marginTop="@dimen/dimen_5"
                             android:fontFamily="@font/montserrat_light"
-                            android:padding="5dp"
+                            android:padding="@dimen/dimen_5"
                             android:text="@string/verify_mobile_text"
-                            android:textSize="16dp" />
+                            android:textSize="@dimen/dimen_16" />
 
                         <EditText
                             android:id="@+id/et_MobileNo"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginLeft="5dp"
-                            android:layout_marginRight="5dp"
-                            android:layout_marginTop="15dp"
+                            android:layout_marginLeft="@dimen/dimen_5"
+                            android:layout_marginRight="@dimen/dimen_5"
+                            android:layout_marginTop="@dimen/dimen_5"
                             android:fontFamily="@font/montserrat_light"
                             android:inputType="number"
                             android:gravity="center"
@@ -93,10 +94,10 @@
                             android:id="@+id/btnContinue"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="30dp"
+                            android:layout_marginTop="@dimen/dimen_30"
                             android:background="@drawable/button_style"
                             android:fontFamily="@font/montserrat_light"
-                            android:padding="5dp"
+                            android:padding="@dimen/dimen_5"
                             android:text="@string/txt_continue"
                             android:textColor="@color/colorWhite" />
 
@@ -105,49 +106,49 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:layout_marginTop="30dp">
+                            android:layout_marginTop="@dimen/dimen_30">
 
                             <EditText
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
+                                android:layout_marginTop="@dimen/dimen_10"
                                 android:ems="1"
                                 android:fontFamily="@font/montserrat_light"
                                 android:layout_weight="1"
-                                android:layout_marginLeft="5dp"
-                                android:layout_marginRight="5dp"
+                                android:layout_marginLeft="@dimen/dimen_5"
+                                android:layout_marginRight="@dimen/dimen_5"
                                 android:inputType="number" />
 
                             <EditText
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
+                                android:layout_marginTop="@dimen/dimen_10"
                                 android:ems="1"
                                 android:fontFamily="@font/montserrat_light"
                                 android:layout_weight="1"
-                                android:layout_marginLeft="5dp"
-                                android:layout_marginRight="5dp"
+                                android:layout_marginLeft="@dimen/dimen_5"
+                                android:layout_marginRight="@dimen/dimen_5"
                                 android:inputType="number" />
 
                             <EditText
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
+                                android:layout_marginTop="@dimen/dimen_10"
                                 android:ems="1"
                                 android:fontFamily="@font/montserrat_light"
                                 android:layout_weight="1"
-                                android:layout_marginLeft="5dp"
-                                android:layout_marginRight="5dp"
+                                android:layout_marginLeft="@dimen/dimen_5"
+                                android:layout_marginRight="@dimen/dimen_5"
                                 android:inputType="number" />
 
                             <EditText
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
+                                android:layout_marginTop="@dimen/dimen_10"
                                 android:ems="1"
                                 android:fontFamily="@font/montserrat_light"
-                                android:layout_marginLeft="5dp"
-                                android:layout_marginRight="5dp"
+                                android:layout_marginLeft="@dimen/dimen_5"
+                                android:layout_marginRight="@dimen/dimen_5"
                                 android:layout_weight="1"
                                 android:inputType="number" />
                         </LinearLayout>-->
@@ -157,31 +158,31 @@
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
                             android:layout_gravity="center"
-                            android:layout_marginTop="10dp">
+                            android:layout_marginTop="@dimen/dimen_10">
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
+                                android:layout_marginTop="@dimen/dimen_10"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/montserrat_light"
                                 android:gravity="center"
-                                android:padding="5dp"
+                                android:padding="@dimen/dimen_5"
                                 android:text="@string/already_registered"
-                                android:textSize="16dp" />
+                                android:textSize="@dimen/dimen_16" />
 
                             <TextView
                                 android:id="@+id/tv_LoginHere"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
+                                android:layout_marginTop="@dimen/dimen_10"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/montserrat_semibold"
                                 android:gravity="left"
-                                android:padding="5dp"
+                                android:padding="@dimen/dimen_5"
                                 android:text="@string/login_here"
                                 android:textColor="@color/colorSkyBlue"
-                                android:textSize="16dp" />
+                                android:textSize="@dimen/dimen_16" />
                         </LinearLayout>-->
                     </LinearLayout>
 
@@ -192,14 +193,14 @@
                         android:orientation="vertical"
                         android:gravity="center"
                         android:visibility="gone"
-                        android:layout_marginBottom="20dp"
-                        android:layout_marginEnd="20dp"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginTop="20dp">
+                        android:layout_marginBottom="@dimen/dimen_20"
+                        android:layout_marginEnd="@dimen/dimen_20"
+                        android:layout_marginStart="@dimen/dimen_20"
+                        android:layout_marginTop="@dimen/dimen_20">
 
                         <ImageView
-                            android:layout_width="100dp"
-                            android:layout_height="100dp"
+                            android:layout_width="@dimen/dimen_100"
+                            android:layout_height="@dimen/dimen_100"
                             android:layout_gravity="center"
                             app:srcCompat="@mipmap/ic_launcher_icon" />
 
@@ -207,13 +208,13 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
+                            android:layout_marginTop="@dimen/dimen_10"
                             android:fontFamily="@font/montserrat_light"
                             android:gravity="center"
-                            android:padding="5dp"
+                            android:padding="@dimen/dimen_5"
                             android:text="@string/verifing_mobile_no"
                             android:textColor="@color/colorDarkBlue"
-                            android:textSize="24sp"
+                            android:textSize="@dimen/dimen_24"
                             android:textStyle="bold" />
 
 
@@ -221,28 +222,28 @@
                             android:id="@+id/verify_otp"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="15dp"
+                            android:layout_marginTop="@dimen/dimen_5"
                             android:fontFamily="@font/montserrat_light"
-                            android:padding="5dp"
+                            android:padding="@dimen/dimen_5"
                             android:gravity="center"
                             android:text="@string/verify_otp"
-                            android:textSize="16dp" />
+                            android:textSize="@dimen/dimen_16" />
 
                         <!--<TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/montserrat_light"
-                            android:padding="5dp"
+                            android:padding="@dimen/dimen_5"
                             android:gravity="center"
                             android:text="@string/enter_otp"
-                            android:textSize="16dp" />-->
+                            android:textSize="@dimen/dimen_16" />-->
 
                         <EditText
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginLeft="5dp"
-                            android:layout_marginRight="5dp"
-                            android:layout_marginTop="15dp"
+                            android:layout_marginLeft="@dimen/dimen_5"
+                            android:layout_marginRight="@dimen/dimen_5"
+                            android:layout_marginTop="@dimen/dimen_5"
                             android:fontFamily="@font/montserrat_light"
                             android:inputType="number"
                             android:gravity="center"
@@ -253,10 +254,10 @@
                             android:id="@+id/btnSubmit"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="20dp"
+                            android:layout_marginTop="@dimen/dimen_20"
                             android:background="@drawable/button_style"
                             android:fontFamily="@font/montserrat_light"
-                            android:padding="5dp"
+                            android:padding="@dimen/dimen_5"
                             android:text="@string/submit"
                             android:textColor="@color/colorWhite" />
 
@@ -265,12 +266,12 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/montserrat_light"
-                            android:padding="5dp"
+                            android:padding="@dimen/dimen_5"
                             android:gravity="center"
                             android:text="@string/or"
                             android:textStyle="bold"
-                            android:textSize="16dp"
-                            android:layout_marginTop="10dp"
+                            android:textSize="@dimen/dimen_16"
+                            android:layout_marginTop="@dimen/dimen_10"
                             android:textColor="@color/colorDarkBlue"/>
 
                         <TextView
@@ -278,12 +279,12 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/montserrat_light"
-                            android:padding="5dp"
+                            android:padding="@dimen/dimen_5"
                             android:gravity="center"
                             android:textStyle="bold"
                             android:textColor="@color/colorDarkBlue"
                             android:text="@string/change_mobile_no"
-                            android:textSize="16dp" />
+                            android:textSize="@dimen/dimen_16" />
 
                     </LinearLayout>
 

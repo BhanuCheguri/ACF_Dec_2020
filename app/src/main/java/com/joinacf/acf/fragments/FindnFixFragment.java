@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AbsListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -26,16 +28,19 @@ import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.joinacf.acf.activities.MainActivity;
 import com.joinacf.acf.activities.NewComplaintActivity;
 import com.joinacf.acf.activities.NewLoginActivity;
 import com.joinacf.acf.activities.ProfileActivity;
 import com.joinacf.acf.adapters.HomePageAdapter;
+import com.joinacf.acf.databinding.FragmentFindnfixBinding;
 import com.joinacf.acf.modelclasses.WallPostsModel;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.network.ServiceCall;
 import com.joinacf.acf.R;
-import com.joinacf.acf.databinding.FragmentFindnfixBinding;
+import com.joinacf.acf.utilities.App;
+import com.pd.chocobar.ChocoBar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,11 +61,13 @@ public class FindnFixFragment extends BaseFragment {
 
     FragmentFindnfixBinding dataBiding;
     APIRetrofitClient apiRetrofitClient;
-    ArrayList<WallPostsModel> lstWallPost;
+    ArrayList<WallPostsModel.Result> lstWallPost;
     HomePageAdapter adapter;
     List<WallPostsModel> myProfileData;
     boolean bFirst;
     String strPersonName,strPersonEmail,strLoginType;
+    int mLastFirstVisibleItem;
+    int mLastVisibleItemCount;
 
     public static FindnFixFragment newInstance() {
         return new FindnFixFragment();
@@ -95,6 +102,36 @@ public class FindnFixFragment extends BaseFragment {
 
         setHasOptionsMenu(true);
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+
+        //((MainActivity)getActivity()).showBottomNavigation();
+
+        dataBiding.lvFindnFixFeed.setOnScrollListener(new AbsListView.OnScrollListener() {
+            int last_item;
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem,
+                                 int visibleItemCount, int totalItemCount) {
+                if (mLastFirstVisibleItem > firstVisibleItem) {
+                    Log.e(getClass().toString(), "scrolling up");
+                    ((MainActivity)getActivity()).hideBottomNavigation();
+                } else if (mLastFirstVisibleItem < firstVisibleItem) {
+                    Log.e(getClass().toString(), "scrolling down");
+                    ((MainActivity)getActivity()).showBottomNavigation();
+                } else if (mLastVisibleItemCount < visibleItemCount) {
+                    Log.e(getClass().toString(), "scrolling down");
+                    ((MainActivity)getActivity()).showBottomNavigation();
+                } else if (mLastVisibleItemCount > visibleItemCount) {
+                    Log.e(getClass().toString(), "scrolling up");
+                    ((MainActivity)getActivity()).hideBottomNavigation();
+                }
+                mLastFirstVisibleItem = firstVisibleItem;
+                mLastVisibleItemCount = visibleItemCount;
+            }
+        });
     }
 
     private void loadSharedPrefference() {
@@ -111,8 +148,17 @@ public class FindnFixFragment extends BaseFragment {
 
     private void LoadAdapter()
     {
-        getWallPostDetails("4","-1");
-
+        showProgressDialog(getActivity());
+        if(App.isNetworkAvailable())
+            getWallPostDetails("4","-1");
+        else{
+            ChocoBar.builder().setView(dataBiding.mainLayout)
+                    .setText("No Internet connection")
+                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                    //.setActionText(android.R.string.ok)
+                    .red()   // in built red ChocoBar
+                    .show();
+        }
         dataBiding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -121,45 +167,53 @@ public class FindnFixFragment extends BaseFragment {
             }
         });
     }
-    public ArrayList<WallPostsModel> getWallPostDetails(String categoryID, String Days) {
+
+    public void getWallPostDetails(String categoryID, String Days) {
         apiRetrofitClient = new APIRetrofitClient();
         Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
         APIInterface api = retrofit.create(APIInterface.class);
-        Call<List<WallPostsModel>> call = api.getWallPostDetails(categoryID, Days);
+        Call<WallPostsModel> call = api.getWallPostDetails(categoryID, Days);
 
-        call.enqueue(new Callback<List<WallPostsModel>>() {
+        call.enqueue(new Callback<WallPostsModel>() {
             @Override
-            public void onResponse(Call<List<WallPostsModel>> call, Response<List<WallPostsModel>> response) {
+            public void onResponse(Call<WallPostsModel> call, Response<WallPostsModel> response) {
                 if(response != null) {
-                    myProfileData = response.body();
-                    if(myProfileData.size() > 0) {
+                    WallPostsModel myWallData  = response.body();
+                    if(myWallData != null) {
                         dataBiding.llNoData.setVisibility(View.GONE);
-                        lstWallPost = new ArrayList<WallPostsModel>();
-                        for (Object object : myProfileData) {
-                            lstWallPost.add((WallPostsModel) object);
+                        String status = myWallData.getStatus();
+                        String msg = myWallData.getMessage();
+                        if(msg.equalsIgnoreCase("SUCCESS")) {
+                            lstWallPost = myWallData.getResult();
+                            populateListView(lstWallPost);
+                        }else
+                        {
+                            dataBiding.llNoData.setVisibility(View.VISIBLE);
+                            hideProgressDialog(getActivity());
                         }
-                        populateListView(lstWallPost);
                     }else {
                         dataBiding.llNoData.setVisibility(View.VISIBLE);
-                        //Toast.makeText(getActivity(), "No NewsFeed for the selected Category", Toast.LENGTH_SHORT).show();
+                        hideProgressDialog(getActivity());
                     }
                 }else {
                     dataBiding.llNoData.setVisibility(View.VISIBLE);
-                    //Toast.makeText(getActivity(), "No NewsFeed for the selected Category", Toast.LENGTH_SHORT).show();
+                    hideProgressDialog(getActivity());
                 }
             }
 
             @Override
-            public void onFailure(Call<List<WallPostsModel>> call, Throwable t) {
+            public void onFailure(Call<WallPostsModel> call, Throwable t) {
                 Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                hideProgressDialog(getActivity());
             }
         });
-        return lstWallPost;
+        // return lstWallPost;
     }
 
-    private void populateListView(ArrayList<WallPostsModel> wallPostData) {
+    private void populateListView(ArrayList<WallPostsModel.Result> wallPostData) {
         adapter = new HomePageAdapter(getActivity(),wallPostData);
         dataBiding.lvFindnFixFeed.setAdapter(adapter);
+        hideProgressDialog(getActivity());
     }
 
     @Override

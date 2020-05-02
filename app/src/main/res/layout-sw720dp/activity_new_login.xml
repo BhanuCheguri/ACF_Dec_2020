@@ -21,7 +21,7 @@
             <RelativeLayout
                 android:id="@+id/layoutTop"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/dimen_200"
+                android:layout_height="300dp"
                 android:background="@drawable/gradient_theme"></RelativeLayout>
 
             <RelativeLayout
@@ -41,9 +41,9 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="@dimen/dimen_200"
+                        android:layout_height="400dp"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="@dimen/dimen_10">
+                        android:layout_marginBottom="10dp">
 
                         <VideoView
                             android:id="@+id/videoView"
@@ -55,7 +55,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:padding="@dimen/dimen_10"
+                        android:padding="15dp"
                         android:fontFamily="@font/montserrat_light"
                         android:background="@android:color/transparent"
                         android:text="SIGN IN" />
@@ -69,12 +69,13 @@
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/rippleeffect">
+                        android:background="@drawable/rippleeffect"
+                        android:padding="15dp">
 
                         <com.google.android.gms.common.SignInButton
                             android:id="@+id/sign_in_button"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:fontFamily="@font/montserrat_light"
                             android:visibility="invisible"
                             android:background="@color/colorWhite"
@@ -101,7 +102,7 @@
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        >
+                        android:padding="15dp">
 
                         <com.facebook.login.widget.LoginButton
                             android:id="@+id/login_button"
@@ -114,7 +115,7 @@
 
                         <Button
                             android:id="@+id/facebook"
-                            android:layout_width="fill_parent"
+                            android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:foreground ="@drawable/rippleeffect"                            android:onClick="onClick"
                             android:text="FaceBook"
@@ -136,8 +137,8 @@
                         android:text="@string/termsNconditions"
                         android:background="#DCDCDC"
                         android:gravity="center"
-                        android:textSize="@dimen/dimen_10"
-                        android:padding="@dimen/dimen_10"/>
+                        android:textSize="10dp"
+                        android:padding="15dp"/>
 
                    <!-- xmlns:facebook="http://schemas.android.com/apk/res-auto"
                     facebook:com_facebook_login_text="Facebook"
@@ -148,8 +149,8 @@
 
             <ImageView
                 android:id="@+id/profileImage"
-                android:layout_width="@dimen/dimen_200"
-                android:layout_height="@dimen/dimen_200"
+                android:layout_width="300dp"
+                android:layout_height="250dp"
                 android:layout_above="@id/layoutBottom"
                 android:layout_centerHorizontal="true"
                 android:layout_marginBottom="-80dp"

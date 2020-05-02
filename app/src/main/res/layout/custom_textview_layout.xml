@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="TextView"
-        android:textSize="15dp"
+        android:textSize="@dimen/dimen_15"
         android:fontFamily="@font/montserrat_light"
         android:textColor="@android:color/black"
         android:padding="10dp"/>

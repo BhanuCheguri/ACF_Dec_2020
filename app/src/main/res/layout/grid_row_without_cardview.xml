@@ -8,22 +8,22 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center|top"
-        android:padding="5dp">
+        android:padding="@dimen/dimen_5">
 
         <ImageView
             android:id="@+id/grid_img"
             android:src="@mipmap/ic_launcher"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="@dimen/dimen_50"
+            android:layout_height="@dimen/dimen_50"
             />
 
         <TextView
             android:id="@+id/grid_text"
-            android:textSize="12dp"
+            android:textSize="@dimen/dimen_12"
             android:textStyle="bold"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="@dimen/dimen_10"
             android:fontFamily="@font/montserrat_light"
             android:gravity="center"/>
     </LinearLayout>

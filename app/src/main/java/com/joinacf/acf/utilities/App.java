@@ -3,7 +3,12 @@ package com.joinacf.acf.utilities;
 
 import android.app.Application;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.util.Log;
+import android.view.View;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.joinacf.acf.sms_verification.AppSignatureHelper;
 
 /**
@@ -12,14 +17,36 @@ import com.joinacf.acf.sms_verification.AppSignatureHelper;
  */
 public class App extends Application {
     private static Context context;
+    ConnectivityManager connectivityManager;
+    boolean isConnected;
+
+
     public static Context getAppContext() {
         return App.context;
     }
-
     @Override
-  public void onCreate() {
-    super.onCreate();
-    AppSignatureHelper appSignatureHelper = new AppSignatureHelper(this);
-    appSignatureHelper.getAppSignatures();
-  }
+    public void onCreate() {
+        super.onCreate();
+        App.context = getApplicationContext();
+
+        AppSignatureHelper appSignatureHelper = new AppSignatureHelper(this);
+        appSignatureHelper.getAppSignatures();
+   }
+
+    public static boolean isNetworkAvailable() {
+        final ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (connMgr != null) {
+            NetworkInfo activeNetworkInfo = connMgr.getActiveNetworkInfo();
+
+            if (activeNetworkInfo != null) { // connected to the internet
+                // connected to the mobile provider's data plan
+                if (activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                    // connected to wifi
+                    return true;
+                } else return activeNetworkInfo.getType() == ConnectivityManager.TYPE_MOBILE;
+            }
+        }
+        return false;
+    }
 }

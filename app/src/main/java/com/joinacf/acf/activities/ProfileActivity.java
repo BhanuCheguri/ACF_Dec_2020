@@ -28,12 +28,14 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProfileActivity extends BaseActivity {
     APIRetrofitClient apiRetrofitClient;
     ActivityProfileBinding binding;
     String strLoginType;
+    ArrayList<MyProfileModel.Result> myProfileResult;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,32 +58,49 @@ public class ProfileActivity extends BaseActivity {
                 .into(binding.profileImage);
 
         String strMobileNo = getStringSharedPreference(ProfileActivity.this,"mobile");
-        Call<List<MyProfileModel>> call = api.getProfileDetails(strMobileNo);
+        String strEmailId = getStringSharedPreference(ProfileActivity.this,"personEmail");
+        System.out.println("Email::" + strEmailId);
+        System.out.println("MobileNo::" + strMobileNo);
+        Call<MyProfileModel> call = api.getProfileDetailsbyEmail(strEmailId);
 
-        call.enqueue(new Callback<List<MyProfileModel>>() {
+        call.enqueue(new Callback<MyProfileModel>() {
             @Override
-            public void onResponse(Call<List<MyProfileModel>> call, Response<List<MyProfileModel>> response) {
-                List<MyProfileModel> myProfileData = response.body();
-
-                String[] heroes = new String[myProfileData.size()];
-
-                //looping through all the heroes and inserting the names inside the string array
-                for (int i = 0; i < myProfileData.size(); i++) {
-                    //heroes[i] = myProfileData.get(i).getFullName();
-                    binding.email.setText(myProfileData.get(i).getEmail());
-                    binding.name.setText(myProfileData.get(i).getFullName());
-                    binding.mobileNo.setText(myProfileData.get(i).getMobile());
-                    if(myProfileData.get(i).getGender().equalsIgnoreCase("M"))
-                        binding.gender.setText("Male");
-                    else if(myProfileData.get(i).getGender().equalsIgnoreCase("F"))
-                        binding.gender.setText("Female");
-                    putStringSharedPreference(ProfileActivity.this,"MemberID",myProfileData.get(i).getMemberID());
-
+            public void onResponse(Call<MyProfileModel> call, Response<MyProfileModel> response) {
+                hideProgressDialog(ProfileActivity.this);
+                MyProfileModel myProfileData = response.body();
+                if(myProfileData != null) {
+                    String status = myProfileData.getStatus();
+                    String msg = myProfileData.getMessage();
+                    if (msg.equalsIgnoreCase("SUCCESS")) {
+                        myProfileResult = myProfileData.getResult();
+                        for (int i = 0; i < myProfileResult.size(); i++) {
+                            binding.email.setText(myProfileResult.get(i).getEmail());
+                            binding.name.setText(myProfileResult.get(i).getFullName());
+                            if(!myProfileResult.get(i).getMobile().equalsIgnoreCase(""))
+                                binding.mobileNo.setText(myProfileResult.get(i).getMobile());
+                            else
+                                binding.mobileNo.setText("XXXXXXXXXX");
+                            if(myProfileResult.get(i).getGender().equalsIgnoreCase("M"))
+                                binding.gender.setText("Male");
+                            else if(myProfileResult.get(i).getGender().equalsIgnoreCase("F"))
+                                binding.gender.setText("Female");
+                            else
+                                binding.gender.setText("");
+                            putStringSharedPreference(ProfileActivity.this,"MemberID",myProfileResult.get(i).getMemberID());
+                        }
+                    } else {
+                        showAlert(ProfileActivity.this,"Alert","No record with this Mobile Number","OK");
+                        binding.email.setText("");
+                        binding.name.setText("");
+                        binding.mobileNo.setText("");
+                        binding.gender.setText("");
+                        putStringSharedPreference(ProfileActivity.this,"MemberID","");
+                    }
                 }
             }
 
             @Override
-            public void onFailure(Call<List<MyProfileModel>> call, Throwable t) {
+            public void onFailure(Call<MyProfileModel> call, Throwable t) {
                 Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
@@ -90,6 +109,7 @@ public class ProfileActivity extends BaseActivity {
     public void init()
     {
         apiRetrofitClient = new APIRetrofitClient();
+        showProgressDialog(ProfileActivity.this);
         getProfileDetails();
         strLoginType = getStringSharedPreference(ProfileActivity.this, "LoginType");
 

@@ -22,14 +22,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-public class HomePageAdapter  extends ArrayAdapter<WallPostsModel> {
-    public ArrayList<WallPostsModel> dataSet;
+public class HomePageAdapter  extends ArrayAdapter<WallPostsModel.Result> {
+    public ArrayList<WallPostsModel.Result> dataSet;
     Activity context;
     private static LayoutInflater inflater=null;
-    ArrayList<WallPostsModel> filteredList;
+    ArrayList<WallPostsModel.Result> filteredList;
     ValueFilter valueFilter;
 
-    public HomePageAdapter(Activity context, ArrayList<WallPostsModel> data) {
+    public HomePageAdapter(Activity context, ArrayList<WallPostsModel.Result> data) {
         super(context, R.layout.custom_home_layout, data);
         this.dataSet = data;
         this.context = context;
@@ -61,7 +61,7 @@ public class HomePageAdapter  extends ArrayAdapter<WallPostsModel> {
     }
 
     @Override
-    public WallPostsModel getItem(int position) {
+    public WallPostsModel.Result getItem(int position) {
         return filteredList.get(position);
     }
 
@@ -76,7 +76,7 @@ public class HomePageAdapter  extends ArrayAdapter<WallPostsModel> {
         ViewHolder holder = null; // view lookup cache stored in tag
         View rowView = null;
 
-        WallPostsModel dataModel = (WallPostsModel) getItem(position);
+        WallPostsModel.Result dataModel = (WallPostsModel.Result) getItem(position);
 
         holder = new ViewHolder();
         LayoutInflater inflater = LayoutInflater.from(getContext());
@@ -132,8 +132,6 @@ public class HomePageAdapter  extends ArrayAdapter<WallPostsModel> {
                 holder.imgFilePath.setVisibility(View.GONE);
         }else
             holder.imgFilePath.setVisibility(View.GONE);
-
-
         final ViewHolder finalHolder = holder;
 
         rowView.setOnClickListener(new View.OnClickListener() {
@@ -222,12 +220,12 @@ public class HomePageAdapter  extends ArrayAdapter<WallPostsModel> {
             FilterResults results = new FilterResults();
 
             if (constraint != null && constraint.length() > 0) {
-                ArrayList<WallPostsModel> filterList = new ArrayList<>();
+                ArrayList<WallPostsModel.Result> filterList = new ArrayList<>();
                 String searchStr = constraint.toString();
 
-                for(WallPostsModel itemsModel:dataSet){
+                for(WallPostsModel.Result itemsModel:dataSet){
                     if(/*itemsModel.getDescription().contains(searchStr) ||*/ itemsModel.getTitle().toLowerCase().contains(searchStr)){
-                        filterList.add(itemsModel);
+                         filterList.add(itemsModel);
                     }
                     results.count = filterList.size();
                     results.values = filterList;
@@ -252,7 +250,7 @@ public class HomePageAdapter  extends ArrayAdapter<WallPostsModel> {
                 add(filteredList.get(i));
             notifyDataSetInvalidated();*/
 
-            filteredList = (ArrayList<WallPostsModel>) results.values;
+            filteredList = (ArrayList<WallPostsModel.Result>) results.values;
             notifyDataSetChanged();
         }
     }
