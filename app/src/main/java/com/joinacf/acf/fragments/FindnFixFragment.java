@@ -103,7 +103,7 @@ public class FindnFixFragment extends BaseFragment {
         setHasOptionsMenu(true);
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-        //((MainActivity)getActivity()).showBottomNavigation();
+        ((MainActivity)getActivity()).showBottomNavigation();
 
         dataBiding.lvFindnFixFeed.setOnScrollListener(new AbsListView.OnScrollListener() {
             int last_item;
@@ -163,6 +163,7 @@ public class FindnFixFragment extends BaseFragment {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), NewComplaintActivity.class);
+                intent.putExtra("Category","Find n Fix");
                 getActivity().startActivity(intent);
             }
         });

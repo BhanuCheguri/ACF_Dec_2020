@@ -160,6 +160,7 @@ public class CorruptionFragment extends BaseFragment {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), NewComplaintActivity.class);
+                intent.putExtra("Category","Corruption");
                 getActivity().startActivity(intent);
             }
         });

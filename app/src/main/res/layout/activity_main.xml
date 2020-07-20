@@ -36,7 +36,7 @@
         app:layout_behavior="com.joinacf.acf.BottomLayoutBehavior"
         android:layout_gravity="bottom"
         app:layout_insetEdge="bottom"
-        />
+        android:textSize="@dimen/dimen_10"/>
 
     <!--<com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"

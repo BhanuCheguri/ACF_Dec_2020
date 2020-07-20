@@ -1,11 +1,9 @@
 package com.joinacf.acf.modelclasses;
-
+import java.util.ArrayList;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import java.util.ArrayList;
-
-public class MyPostingModel {
+public class ModeratorListModel {
 
     @SerializedName("status")
     @Expose
@@ -41,8 +39,8 @@ public class MyPostingModel {
         this.result = result;
     }
 
-    public class Result {
 
+    public class Result {
         @SerializedName("ItemID")
         @Expose
         private String itemID;
@@ -52,9 +50,9 @@ public class MyPostingModel {
         @SerializedName("Description")
         @Expose
         private String description;
-        @SerializedName("CategoryID")
+        @SerializedName("Category")
         @Expose
-        private Integer categoryID;
+        private String category;
         @SerializedName("PostedDate")
         @Expose
         private String postedDate;
@@ -67,12 +65,21 @@ public class MyPostingModel {
         @SerializedName("Langitude")
         @Expose
         private String langitude;
-        @SerializedName("Status")
+        @SerializedName("MOD SATUS")
         @Expose
-        private String status;
+        private String mODSATUS;
+        @SerializedName("AssignedTo")
+        @Expose
+        private String assignedTo;
+        @SerializedName("Assigned_Date")
+        @Expose
+        private String assignedDate;
+        @SerializedName("Accepted_Date")
+        @Expose
+        private String acceptedDate;
         @SerializedName("FilePath")
         @Expose
-        private String FilePath;
+        private String filePath;
 
         public String getItemID() {
             return itemID;
@@ -98,12 +105,12 @@ public class MyPostingModel {
             this.description = description;
         }
 
-        public Integer getCategoryID() {
-            return categoryID;
+        public String getCategory() {
+            return category;
         }
 
-        public void setCategoryID(Integer categoryID) {
-            this.categoryID = categoryID;
+        public void setCategory(String category) {
+            this.category = category;
         }
 
         public String getPostedDate() {
@@ -138,20 +145,44 @@ public class MyPostingModel {
             this.langitude = langitude;
         }
 
-        public String getStatus() {
-            return status;
+        public String getMODSATUS() {
+            return mODSATUS;
         }
 
-        public void setStatus(String status) {
-            this.status = status;
+        public void setMODSATUS(String mODSATUS) {
+            this.mODSATUS = mODSATUS;
+        }
+
+        public String getAssignedTo() {
+            return assignedTo;
+        }
+
+        public void setAssignedTo(String assignedTo) {
+            this.assignedTo = assignedTo;
+        }
+
+        public String getAssignedDate() {
+            return assignedDate;
+        }
+
+        public void setAssignedDate(String assignedDate) {
+            this.assignedDate = assignedDate;
+        }
+
+        public String getAcceptedDate() {
+            return acceptedDate;
+        }
+
+        public void setAcceptedDate(String acceptedDate) {
+            this.acceptedDate = acceptedDate;
         }
 
         public String getFilePath() {
-            return FilePath;
+            return filePath;
         }
 
         public void setFilePath(String filePath) {
-            FilePath = filePath;
+            this.filePath = filePath;
         }
     }
 }

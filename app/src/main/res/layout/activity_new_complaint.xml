@@ -24,6 +24,7 @@
             android:layout_alignParentBottom="true"
             android:background="@drawable/button_style"
             android:text="@string/submit"
+            android:visibility="visible"
             android:textColor="@color/colorWhite" />
 
 

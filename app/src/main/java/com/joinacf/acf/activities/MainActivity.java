@@ -103,8 +103,9 @@ public class MainActivity extends BaseActivity {
                 case R.id.navigation_findnfix:
                     loadFinnFixFragment();
                     return true;
-                case R.id.navigation_socialevil:
-                    loadSocialEvilFragment();
+                case R.id.navigation_mypetitions:
+                    //loadSocialEvilFragment();
+                    loadMyPetitionsFragment();
                     return true;
                 case R.id.navigation_more:
                     loadMoreFragment();
@@ -147,6 +148,14 @@ public class MainActivity extends BaseActivity {
         ft.commit();
     }
 
+    private void loadMyPetitionsFragment() {
+
+        MyPetitionListActivity fragment = MyPetitionListActivity.newInstance();
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_frame, fragment);
+        ft.commit();
+    }
+
     private void loadMoreFragment() {
 
         MoreGridFragment fragment = MoreGridFragment.newInstance();
@@ -166,7 +175,7 @@ public class MainActivity extends BaseActivity {
         navigation = (BottomNavigationViewNew) findViewById(R.id.bottom_navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navigation.setVisibility(View.VISIBLE);
-
+        showBottomNavigation();
         boolean isLocationEnabled = isLocationEnabled(MainActivity.this);
         if(isLocationEnabled){
            getCurrentLocation();
@@ -262,6 +271,7 @@ public class MainActivity extends BaseActivity {
             super.onPostExecute(result);
             System.out.println(result);
             hideProgressDialog(MainActivity.this);
+            showBottomNavigation();
             int nStatus = -2;
             if(result != null && !result.equalsIgnoreCase(""))
             {

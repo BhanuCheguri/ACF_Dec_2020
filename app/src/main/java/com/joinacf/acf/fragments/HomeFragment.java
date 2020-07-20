@@ -63,7 +63,6 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 public class HomeFragment extends BaseFragment implements SearchView.OnQueryTextListener {
 
     FragmentHomeBinding dataBiding;
-    boolean bFirst;
     String strPersonName,strPersonEmail,strLoginType;
     int mLastFirstVisibleItem;
     int mLastVisibleItemCount;
@@ -91,37 +90,11 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
         return dataBiding.getRoot();
     }
 
-    private void showWelcomeAlert(String strPersonName) {
-
-        ViewGroup viewGroup = getActivity().findViewById(android.R.id.content);
-        View dialogView = LayoutInflater.from(getActivity()).inflate(R.layout.custom_dialog, viewGroup, false);
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setView(dialogView);
-        final AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-
-        TextView login_name = (TextView) dialogView.findViewById(R.id.tv_title);
-        login_name.setText(strPersonName);
-
-        Handler mHandler = new Handler();
-        Runnable mRunnable = new Runnable () {
-
-            public void run() {
-                if(alertDialog != null && alertDialog.isShowing()) alertDialog.dismiss();
-            }
-        };
-        mHandler.postDelayed(mRunnable,2000);
-    }
-
     private void loadSharedPrefference() {
 
-        bFirst = getBooleanSharedPreference(getActivity(), "FirstTime");
         strLoginType = getStringSharedPreference(getActivity(), "LoginType");
         strPersonName = getStringSharedPreference(getActivity(), "PersonName");
         strPersonEmail = getStringSharedPreference(getActivity(), "personEmail");
-        if (bFirst) {
-            //showWelcomeAlert(strPersonName);
-        }
     }
 
     private void  init() {
@@ -134,7 +107,7 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
         setHasOptionsMenu(true);
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-       // ((MainActivity)getActivity()).showBottomNavigation();
+        ((MainActivity)getActivity()).showBottomNavigation();
 
         dataBiding.lvHomeFeed.setOnScrollListener(new AbsListView.OnScrollListener() {
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
@@ -178,6 +151,7 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
             public void onClick(View view) {
 
                 Intent intent = new Intent(getActivity(), NewComplaintActivity.class);
+                intent.putExtra("Category","");
                 getActivity().startActivity(intent);
             }
         });
@@ -216,7 +190,6 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
                 hideProgressDialog(getActivity());
             }
         });
-       // return lstWallPost;
     }
 
     private void populateListView(ArrayList<WallPostsModel.Result> wallPostData) {
@@ -227,8 +200,6 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        //inflater.inflate(R.menu.menu, menu);
-        //super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu, menu);
         final MenuItem searchItem = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
@@ -239,7 +210,6 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
             public boolean onQueryTextSubmit(String query) {
                 return true;
             }
-
             @Override
             public boolean onQueryTextChange(String newText) {
                 if(adapter != null)
@@ -254,7 +224,6 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
         switch (item.getItemId())
         {
             case android.R.id.home:
-
                 break;
             case R.id.myprofile:
                 Intent intent = null;

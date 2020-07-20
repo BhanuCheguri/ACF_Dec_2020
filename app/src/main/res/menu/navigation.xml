@@ -12,14 +12,14 @@
         android:title="Corruption" />
 
     <item
-        android:id="@+id/navigation_socialevil"
-        android:icon="@mipmap/ic_social_evil"
-        android:title="Social Evil" />
-
-    <item
         android:id="@+id/navigation_findnfix"
         android:icon="@mipmap/ic_findnfix"
-        android:title="Find N Fix" />
+        android:title="Find N Fix"/>
+
+    <item
+        android:id="@+id/navigation_mypetitions"
+        android:icon="@mipmap/ic_petition_list"
+        android:title="@string/title_mypetition" />
 
     <item
         android:id="@+id/navigation_more"

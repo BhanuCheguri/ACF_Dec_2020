@@ -17,7 +17,6 @@ import com.joinacf.acf.R;
 import com.joinacf.acf.modelclasses.MyProfileModel;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
-import com.joinacf.acf.petitions.MyPetitionListActivity;
 import com.joinacf.acf.databinding.ActivityProfileBinding;
 import com.crashlytics.android.Crashlytics;
 import com.facebook.FacebookSdk;
@@ -27,9 +26,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 public class ProfileActivity extends BaseActivity {
     APIRetrofitClient apiRetrofitClient;

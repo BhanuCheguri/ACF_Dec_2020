@@ -15,4 +15,7 @@
     <files-path
         name="files"
         path="." />
+    <root-path
+        name="external_files"
+        path="/storage/"/>
 </paths>

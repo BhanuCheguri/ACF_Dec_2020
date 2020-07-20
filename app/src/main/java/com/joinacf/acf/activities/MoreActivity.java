@@ -13,6 +13,13 @@ import android.view.WindowManager;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.joinacf.acf.R;
 import com.joinacf.acf.adapters.HomePageAdapter;
 import com.joinacf.acf.network.APIInterface;
@@ -41,6 +48,7 @@ public class MoreActivity extends BaseActivity {
     String strName = "";
     HomePageAdapter adapter;
     List<WallPostsModel> myProfileData;
+    String strLoginType="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +96,7 @@ public class MoreActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MoreActivity.this, NewComplaintActivity.class);
+                intent.putExtra("Category",strName);
                 startActivity(intent);
             }
         });
@@ -140,7 +149,7 @@ public class MoreActivity extends BaseActivity {
         hideProgressDialog(MoreActivity.this);
     }
 
-    @Override
+   /* @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
@@ -179,10 +188,49 @@ public class MoreActivity extends BaseActivity {
                 startActivity(intent);
                 break;
 
-            /*case R.id.logout:
-                signOut();
-                return true;*/
+            case R.id.logout:
+                //signOut();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
+
+    public void signOut()
+    {
+        try {
+            strLoginType = getStringSharedPreference(MoreActivity.this, "LoginType");
+            if (strLoginType.equalsIgnoreCase("Google")) {
+                GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestEmail()
+                        .build();
+                GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(MoreActivity.this, gso);
+                googleSignInClient.signOut();
+                putBooleanSharedPreference(MoreActivity.this, "LoggedIn",false);
+                Toast.makeText(getApplicationContext(), "User Logged out successfully", Toast.LENGTH_LONG).show();
+
+                Intent intent = new Intent(MoreActivity.this, NewLoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+            } else {
+                FacebookSdk.sdkInitialize(getApplicationContext());
+                AppEventsLogger.activateApp(MoreActivity.this);
+                LoginManager.getInstance().logOut();
+                putBooleanSharedPreference(MoreActivity.this, "LoggedIn",false);
+
+                Intent intent = new Intent(MoreActivity.this, NewLoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+            }
+            putBooleanSharedPreference(MoreActivity.this, "FirstTime", false);
+            putStringSharedPreference(MoreActivity.this, "LoginType", "");
+            putStringSharedPreference(MoreActivity.this, "personName", "");
+            putStringSharedPreference(MoreActivity.this, "personEmail", "");
+            putStringSharedPreference(MoreActivity.this, "personId", "");
+        }catch (Exception e)
+        {
+            Crashlytics.logException(e);
+        }
+    }*/
 }

@@ -5,8 +5,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 
-public class StatusModel {
-
+public class ResultModel {
     @SerializedName("status")
     @Expose
     private String status;
@@ -15,7 +14,7 @@ public class StatusModel {
     private String message;
     @SerializedName("result")
     @Expose
-    private ArrayList<Result> result = null;
+    private ArrayList<ResultModel.Result> result = null;
 
     public String getStatus() {
         return status;
@@ -33,26 +32,26 @@ public class StatusModel {
         this.message = message;
     }
 
-    public ArrayList<Result> getResult() {
+    public ArrayList<ResultModel.Result> getResult() {
         return result;
     }
 
-    public void setResult(ArrayList<Result> result) {
+    public void setResult(ArrayList<ResultModel.Result> result) {
         this.result = result;
     }
 
     public class Result {
 
-        @SerializedName("STATUS")
+        @SerializedName("RES")
         @Expose
-        private Integer Status;
+        private Integer RES;
 
-        public Integer getSTATUS() {
-            return Status;
+        public Integer getRES() {
+            return RES;
         }
 
-        public void setSTATUS(Integer status) {
-            this.Status = status;
+        public void setSTATUS(Integer res) {
+            this.RES = res;
         }
     }
 }

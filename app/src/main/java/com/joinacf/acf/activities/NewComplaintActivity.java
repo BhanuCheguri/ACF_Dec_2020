@@ -2,6 +2,7 @@ package com.joinacf.acf.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
@@ -15,7 +16,7 @@ import android.database.Cursor;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
-
+import org.apache.commons.io.FileUtils;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -41,6 +42,7 @@ import androidx.appcompat.app.AlertDialog;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -60,21 +62,23 @@ import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.crashlytics.android.BuildConfig;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.joinacf.acf.BuildConfig;
 import com.joinacf.acf.R;
 import com.joinacf.acf.adapters.ImageListAdapter;
 import com.joinacf.acf.databinding.ActivityNewComplaintBinding;
@@ -102,6 +106,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -123,9 +128,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
-public class NewComplaintActivity extends BaseActivity {
+public class NewComplaintActivity extends BaseActivity /*implements View.OnFocusChangeListener*/ {
 
     private static Uri contentUri = null;
     public static String TAG = "NewComplaintActivity.Class";
@@ -156,10 +162,12 @@ public class NewComplaintActivity extends BaseActivity {
     ArrayList<DashboardCategories.Result> lstCatagories;
     ArrayList<String> lstCatagoriesNames;
     ArrayList<String> lstPathURI;
+    ArrayList<Uri> lstPathUri;
     HashMap<String,String> hshMapCategoryLst ;
     String strResponse = "";
     CustomImageAdapter customImageAdapter;
-
+    Bundle b;
+    ArrayList<Integer> lstAutoEmpty;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -250,10 +258,31 @@ public class NewComplaintActivity extends BaseActivity {
         lstCatagoriesNames = new ArrayList<>();
         hshMapCategoryLst = new HashMap<>();
         lstPathURI = new ArrayList<>();
+        lstPathUri = new ArrayList<>();
+        lstAutoEmpty = new ArrayList<>();
         appLocationService = new AppLocationService(NewComplaintActivity.this);
 
         currentTime = new SimpleDateFormat("hh:mm a", Locale.US).format(new Date());
         //binding.currentDate.setText(currentTime);
+        showProgressDialog(NewComplaintActivity.this);
+        if(App.isNetworkAvailable())
+            getDashboardCategories();
+        else{
+            ChocoBar.builder().setView(binding.mainLayout)
+                    .setText("No Internet connection")
+                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                    //.setActionText(android.R.string.ok)
+                    .red()   // in built red ChocoBar
+                    .show();
+        }
+
+        b = getIntent().getExtras();
+        if(b != null){
+            if(!b.getString("Category").equalsIgnoreCase("") && b.getString("Category") != null) {
+                binding.spinner.setText(b.getString("Category"));
+                binding.etTitle.requestFocus();
+            }
+        }
 
 
         binding.spinner.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -284,17 +313,7 @@ public class NewComplaintActivity extends BaseActivity {
             }
         });
 
-        showProgressDialog(NewComplaintActivity.this);
-        if(App.isNetworkAvailable())
-            getDashboardCategories();
-        else{
-            ChocoBar.builder().setView(binding.mainLayout)
-                    .setText("No Internet connection")
-                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
-                    //.setActionText(android.R.string.ok)
-                    .red()   // in built red ChocoBar
-                    .show();
-        }
+
     }
 
 
@@ -317,7 +336,6 @@ public class NewComplaintActivity extends BaseActivity {
                         }
                     }
                     loadCategoriesData(lstCatagories);
-
                 }
 
                 @Override
@@ -341,6 +359,12 @@ public class NewComplaintActivity extends BaseActivity {
                 lstCatagoriesNames.add(lstData.get(i).getName().toString().trim());
                 hshMapCategoryLst.put(lstData.get(i).getName().toString().trim(), lstData.get(i).getCategoryID().toString().trim());
             }
+
+            if(!b.getString("Category").equalsIgnoreCase("") && b.getString("Category") != null){
+                String categoryID = hshMapCategoryLst.get(b.getString("Category"));
+                category = Integer.valueOf(categoryID);
+            }
+
             ArrayAdapter adapter = new ArrayAdapter(this,R.layout.custom_textview_layout,R.id.text,lstCatagoriesNames);
             adapter.setDropDownViewResource(android.R.layout.select_dialog_item);
             binding.spinner.setAdapter(adapter);
@@ -536,10 +560,14 @@ public class NewComplaintActivity extends BaseActivity {
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inPreferredConfig = Bitmap.Config.ARGB_8888;
                     Bitmap bm = android.provider.MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentURI);
-                    Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(imagePath));
+                    //Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(imagePath));
                     cursor.close();
-
-                    setAttachmentData(path,path,uri,getExtensionType(contentURI),bm);
+                    File file = new File(contentURI.getPath().toString());
+                    Log.d("", "File : " + file.getName());
+                    StringTokenizer tokens = new StringTokenizer(file.getName(), ":");
+                    String first = tokens.nextToken();
+                    String file_1 = tokens.nextToken().trim();
+                    setAttachmentData(path,path,contentURI,getExtensionType(contentURI),bm);
 
                 }
             }catch (Exception e) {
@@ -549,6 +577,7 @@ public class NewComplaintActivity extends BaseActivity {
 
         } else if (requestCode == CAMERA) {
             try {
+                Uri contentURI = data.getData();
                 Bitmap photo = (Bitmap) data.getExtras().get("data");
                 String imgcurTime = dateFormat.format(new Date());
                 saveFile(NewComplaintActivity.this,photo,imgcurTime + ".jpg");
@@ -561,11 +590,11 @@ public class NewComplaintActivity extends BaseActivity {
                     photo.compress(Bitmap.CompressFormat.JPEG, 90, out);
                     out.close();
 
-                    Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", file);
+                    //Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", file);
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inSampleSize = 4;
                     Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
-                    setAttachmentData(imagePath,imagePath,uri,"jpg",bitmap);
+                    setAttachmentData(imagePath,imagePath,contentURI,"jpg",bitmap);
                 }else
                     Toast.makeText(this, "Not able to create image path", Toast.LENGTH_SHORT).show();
 
@@ -586,9 +615,9 @@ public class NewComplaintActivity extends BaseActivity {
                 Cursor cursor = getContentResolver().query(contentURI, filePath, null, null, null);
                 cursor.moveToFirst();
                 String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
-                Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(imagePath));
+                //Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(imagePath));
 
-                setAttachmentData(recordedVideoPath,imagePath,uri,getExtensionType(contentURI),null);
+                setAttachmentData(recordedVideoPath,imagePath,contentURI,getExtensionType(contentURI),null);
 
             }catch (Exception e) {
                 e.printStackTrace();
@@ -597,11 +626,12 @@ public class NewComplaintActivity extends BaseActivity {
 
         }else if(requestCode == PICKFILE_RESULT_CODE) {
             Uri contentURI = data.getData();
+
             try {
                 String uriString = contentURI.toString();
                 File myFile = new File(uriString);
-                String path = myFile.getAbsolutePath();
-
+                //String path = myFile.getAbsolutePath();
+                String path = getPathFromUri(NewComplaintActivity.this,contentURI);
                 String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtensionType(contentURI));
 
                 setAttachmentData(path,path,contentURI,mimeType,null);
@@ -641,6 +671,7 @@ public class NewComplaintActivity extends BaseActivity {
         lstModelData.add(model);
 
         lstPathURI.add(Content);
+        lstPathUri.add(contentURI);
         customImageAdapter = new CustomImageAdapter(this, lstModelData);
         binding.grid.setAdapter(customImageAdapter);
     }
@@ -707,6 +738,47 @@ public class NewComplaintActivity extends BaseActivity {
                 .check();
     }
 
+   /* @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        if(!hasFocus) {
+            //do job here owhen Edittext lose focus
+            if(v instanceof EditText) {
+                if (!((EditText)v).getText().equals("")) {
+                    if(lstAutoEmpty.contains(v.getId()))
+                    {
+                        lstAutoEmpty.remove(v.getId());
+                    }
+                }else{
+                    if(!lstAutoEmpty.contains(v.getId()))
+                    {
+                        lstAutoEmpty.add(v.getId());
+                    }
+                }
+                if(lstAutoEmpty.size() < 0)
+                {
+                    binding.btnSubmit.setVisibility(View.VISIBLE);
+                }
+            }else if(v instanceof AutoCompleteTextView)
+            {
+                if (!((AutoCompleteTextView)v).getText().equals("")) {
+                    if(lstAutoEmpty.contains(v.getId()))
+                    {
+                        lstAutoEmpty.remove(v.getId());
+                    }
+                }else{
+                    if(!lstAutoEmpty.contains(v.getId()))
+                    {
+                        lstAutoEmpty.add(v.getId());
+                    }
+                }
+                if(lstAutoEmpty.size() < 0)
+                {
+                    binding.btnSubmit.setVisibility(View.VISIBLE);
+                }
+            }
+        }
+    }*/
+
     public class CustomImageAdapter extends BaseAdapter
     {
         private Context context;
@@ -718,6 +790,11 @@ public class NewComplaintActivity extends BaseActivity {
             context = c;
             lstModelData = lstData;
             inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        }
+
+        public void clear(){
+            lstModelData.clear();
+            this.notifyDataSetChanged();
         }
 
         public int getCount() {
@@ -834,7 +911,7 @@ public class NewComplaintActivity extends BaseActivity {
 
     public void SubmitDialog()
     {
-        if (!strDescription.equalsIgnoreCase("") && !strTitle.equalsIgnoreCase("") && category != -1) {
+        if (!strDescription.equalsIgnoreCase("") && !strTitle.equalsIgnoreCase("")) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("New Post Upload");
             builder.setMessage("Do you want to upload the complaint?")
@@ -912,16 +989,9 @@ public class NewComplaintActivity extends BaseActivity {
             hideProgressDialog(NewComplaintActivity.this);
 
             if(result != -1 && result != 0) {
-                CustomDialog(NewComplaintActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
+                showSuccessAlert(NewComplaintActivity.this,"Success","Data Successfully uploaded","OK");
             }else
                 showAlert(NewComplaintActivity.this,"Failed to upload data","Result:"+result,"OK");
-
-            binding.etTitle.setText("");
-            binding.etDescription.setText("");
-            binding.spinner.setText("");
-            getLocation();
-            binding.currentDate.setText(currentTime);
-
         }
     }
 
@@ -937,8 +1007,9 @@ public class NewComplaintActivity extends BaseActivity {
             String result = null;
             if(!lstPathURI.isEmpty())
             {
-                result = mulipleFileUploadFile(lstPathURI,strings[0]);
+                uploadMultiFile(lstPathURI);
             }
+
             System.out.println("Upload Images Result::" + result);
             return result;
         }
@@ -948,7 +1019,7 @@ public class NewComplaintActivity extends BaseActivity {
             super.onPostExecute(result);
             hideProgressDialog(NewComplaintActivity.this);
 
-            if(result != null && !result.equalsIgnoreCase("")) {
+            /*if(result != null && !result.equalsIgnoreCase("")) {
                 try{
                     JSONObject jobject = new JSONObject(result);
                     if (result.length() > 0) {
@@ -959,9 +1030,9 @@ public class NewComplaintActivity extends BaseActivity {
                                     for (int i = 0; i < jsonArray.length(); i++) {
                                         JSONObject jsonObject = jsonArray.getJSONObject(i);
                                         CustomDialog(NewComplaintActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
-                                        /*if(jsonObject.has("Status")) {
+                                        *//*if(jsonObject.has("Status")) {
                                             int Status = jsonObject.getInt("Status");
-                                        }*/
+                                        }*//*
                                     }
                                 }
                             }
@@ -973,11 +1044,40 @@ public class NewComplaintActivity extends BaseActivity {
                 }
             }else {
                 showAlert(NewComplaintActivity.this, "Failed to upload data", "Result:" + result, "OK");
-            }
-            binding.grid.setAdapter(null);
+            }*/
+            //binding.grid.setAdapter(null);
         }
     }
 
+    public void showSuccessAlert(Activity activity, String Title, String strMsg, String Positive)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        // Get the layout inflater
+        LayoutInflater inflater = (activity).getLayoutInflater();
+        // Inflate and set the layout for the dialog
+        // Pass null as the parent view because its going in the
+        // dialog layout
+        builder.setTitle(Title);
+        builder.setMessage(strMsg);
+        builder.setCancelable(false);
+        builder.setPositiveButton(Positive, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int i) {
+                dialog.dismiss();
+                if(App.isNetworkAvailable())
+                    new AsyncUploadImages().execute(String.valueOf(strResult));
+                else{
+                    ChocoBar.builder().setView(binding.mainLayout)
+                            .setText("No Internet connection")
+                            .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                            .red()
+                            .show();
+                }
+            }
+        });
+        builder.create();
+        builder.show();
+    }
 
     public void CustomDialog(Context context,String title,String msg,String subMsg)
     {
@@ -1013,16 +1113,6 @@ public class NewComplaintActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
-                if(App.isNetworkAvailable())
-                    new AsyncUploadImages().execute(String.valueOf(strResult));
-                else{
-                    ChocoBar.builder().setView(binding.mainLayout)
-                            .setText("No Internet connection")
-                            .setDuration(ChocoBar.LENGTH_INDEFINITE)
-                            //.setActionText(android.R.string.ok)
-                            .red()   // in built red ChocoBar
-                            .show();
-                }
             }
         });
 
@@ -1045,7 +1135,15 @@ public class NewComplaintActivity extends BaseActivity {
                 Writer writer = new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), "UTF-8"));
                 writer.write(jsonParam);
                 writer.close();
-                InputStream inputStream = urlConnection.getInputStream();
+                InputStream inputStream;
+                int status = urlConnection.getResponseCode();
+
+                if (status != HttpURLConnection.HTTP_OK)  {
+                    inputStream = urlConnection.getErrorStream();
+                }
+                else  {
+                    inputStream = urlConnection.getInputStream();
+                }
                 //input stream
                 StringBuffer buffer = new StringBuffer();
                 if (inputStream == null) {
@@ -1127,26 +1225,27 @@ public class NewComplaintActivity extends BaseActivity {
         return null;
     }
 
-    private NewComplaintDataRequest prepareJSON() {
+    private JsonObject prepareJSON() {
         JsonObject jsonParam = null;
         NewComplaintDataRequest request = new NewComplaintDataRequest();
         try {
             String postedBy = getStringSharedPreference(NewComplaintActivity.this,"MemberID");
-            request.setCategoryID(category);
+            /*request.setCategoryID(category);
             request.setDescription(strDescription);
             request.setTitle(strTitle);
             request.setPostedBy(Integer.valueOf(postedBy));
             request.setLangitude(String.valueOf(latitude));
             request.setLangitude(String.valueOf(longitude));
             request.setItemID(-1);
-            request.setLocation(strLocation);
-            //jsonParam = prepareAddNewPostJSON(category, strTitle, strDescription, postedBy,strLocation, String.valueOf(latitude),String.valueOf(longitude));
+            request.setLocation(strLocation);*/
+            jsonParam = prepareAddNewPostJSON(category, strTitle, strDescription, postedBy,strLocation, String.valueOf(latitude),String.valueOf(longitude));
         }catch (Exception e)
         {
             e.printStackTrace();
         }
-       // return jsonParam;
-        return request;
+        System.out.println("JSON Data ::"+jsonParam.toString());
+        return jsonParam;
+        //return request;
     }
 
     private JsonObject prepareAddNewPostJSON(int strComplaintType, String strTitle, String strDescription, String postedBy, String strLocation, String latitude, String longitude){
@@ -1170,6 +1269,120 @@ public class NewComplaintActivity extends BaseActivity {
         }
 
         return null;
+    }
+
+    /*public void uploadAlbum(ArrayList<String> filePaths ){
+
+        try {
+            OkHttpClient client = new OkHttpClient().newBuilder()
+                    .build();
+            //MediaType mediaType = MediaType.parse("text/plain");
+            RequestBody body = null;
+            Request request = null ;
+            for (int i = 0; i < filePaths.size(); i++) {
+                File file = new File(filePaths.get(i));
+                body = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                        .addFormDataPart("file", file.getAbsolutePath(),
+                                RequestBody.create(MediaType.parse("application/octet-stream"),
+                                        new File(file.getAbsolutePath()))).build();
+                request  = new Request.Builder()
+                        .url("http://api.ainext.in/posts/upload")
+                        .method("POST", body)
+                        .build();
+            }
+
+            okhttp3.Response response = client.newCall(request).execute();
+            System.out.println("Response :::: "+response.body());
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }*/
+       /* List<MultipartBody.Part> list = new ArrayList<>();
+        int i = 0;
+        for (Uri uri : filePaths) {
+            MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(),
+                    RequestBody.create(MediaType.parse("multipart/form-data"), bos.toByteArray()));
+            list.add(fileToUpload);
+        }
+        Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
+        APIInterface api = retrofit.create(APIInterface.class);
+
+        Call<ResponseBody> call = api.uploadAlbum(list);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                Log.e("main", "the message is ----> " + response.body());
+                Log.e("main", "the error is ----> " + response.body());
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable throwable) {
+                Log.e("main", "on error is called and the error is  ----> " + throwable.getMessage());
+
+            }
+        });*/
+
+    //}
+
+    private void uploadMultiFile(ArrayList<String> filePaths ) {
+        OkHttpClient okHttpClient = new OkHttpClient();
+        OkHttpClient clientWith30sTimeout = okHttpClient.newBuilder()
+                .readTimeout(30, TimeUnit.SECONDS)
+                .build();
+
+        Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
+        APIInterface api = retrofit.create(APIInterface.class);
+
+        MultipartBody.Builder builder = new MultipartBody.Builder();
+        builder.setType(MultipartBody.FORM);
+        List<MultipartBody.Part> list = new ArrayList<>();
+        // Multiple Images
+        for (int i = 0; i < filePaths.size(); i++) {
+            File file = new File(filePaths.get(i));
+            /*Bitmap bmp = BitmapFactory.decodeFile(file.getAbsolutePath());
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.PNG, 30, bos);*/
+            //RequestBody requestBody = RequestBody.create(MediaType.parse("*///*"), file);
+
+            /*MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(),
+                    RequestBody.create(MediaType.parse("application/octet-stream"), bos.toByteArray()));*/
+            MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(),
+                    RequestBody.create(MediaType.parse("application/octet-stream"), file));
+            builder.addPart(fileToUpload);
+            //list.add(fileToUpload);
+            //builder.addFormDataPart("file", file.getName(), RequestBody.create(MultipartBody.FORM, bos.toByteArray()));
+        }
+
+        MultipartBody requestBody = builder.build();
+
+        Call<JSONObject> call = api.uploadMultiFile("1",requestBody);
+        call.enqueue(new Callback<JSONObject>() {
+            @Override
+            public void onResponse(Call<JSONObject> call, Response<JSONObject> response) {
+               // showAlert(NewComplaintActivity.this, "Uploaded Successfully", "OK", "OK");
+                CustomDialog(NewComplaintActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
+                binding.etTitle.setText("");
+                binding.etDescription.setText("");
+                binding.spinner.setText("");
+                getLocation();
+                binding.currentDate.setText(currentTime);
+                customImageAdapter.notifyDataSetChanged();
+                customImageAdapter.clear();
+            }
+
+            @Override
+            public void onFailure(Call<JSONObject> call, Throwable t) {
+                Log.d(TAG, "Error " + t.getMessage());
+                showAlert(NewComplaintActivity.this, "Failed to upload data", "Result:" + t.getMessage(), "OK");
+            }
+        });
+    }
+
+    private MultipartBody.Part prepareFilePart(String partName, Uri fileUri){
+        File file = new File(getPath(fileUri));
+        RequestBody requestBody = RequestBody.create(MediaType.parse(getContentResolver().getType(fileUri)), file);
+        return MultipartBody.Part.createFormData(partName, file.getName(),requestBody);
     }
 
 
@@ -1212,88 +1425,7 @@ public class NewComplaintActivity extends BaseActivity {
         return file.getPath();
     }
 
-    private String mulipleFileUploadFile(ArrayList<String> fileUri, String item) {
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-            OkHttpClient clientWith30sTimeout = okHttpClient.newBuilder()
-                    .readTimeout(30, TimeUnit.SECONDS)
-                    .build();
 
-            Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
-            APIInterface api = retrofit.create(APIInterface.class);
-            /*Map<String, RequestBody> maps = new HashMap<>();
-
-
-            if (fileUri != null && fileUri.size() > 0) {
-                for (int i = 0; i < fileUri.size(); i++) {
-
-                    Uri contentURI = Uri.fromFile(new File(fileUri.get(i).toString()));
-                    String filePath = getPathFromUri(NewComplaintActivity.this,contentURI );
-                    File file1 = new File(filePath);
-
-                    if (filePath != null && filePath.length() > 0) {
-                        if (file1.exists()) {
-                            okhttp3.RequestBody requestFile = okhttp3.RequestBody.create(okhttp3.MediaType.parse("multipart/form-data"), file1);
-                            String filename = "imagePath" + i; //key for upload file like : imagePath0
-                            maps.put(filename + "\"; filename=\"" + file1.getName(), requestFile);
-                        }
-                    }
-                }
-            }*/
-            MultipartBody.Builder builder = new MultipartBody.Builder();
-            if (fileUri != null && fileUri.size() > 0) {
-                for (int i = 0; i < fileUri.size(); i++) {
-                    Uri contentURI = Uri.fromFile(new File(fileUri.get(i).toString()));
-                    String filePath = getPathFromUri(NewComplaintActivity.this,contentURI );
-                    File file = new File(filePath);
-                    if (file.exists()) {
-                        builder.setType(MultipartBody.FORM);
-                        builder.addFormDataPart("files", file.getName(), RequestBody.create(MediaType.parse("image/*"), file));
-                    }
-                }
-            }
-
-            MultipartBody requestBody = builder.build();
-
-            //hear is the your json request
-            Call<ResponseBody> call = api.uploadImages(item,requestBody);
-            call.enqueue(new Callback<ResponseBody>() {
-                @SuppressLint("LongLogTag")
-                @Override
-                public void onResponse(Call<ResponseBody> call,
-                                       Response<ResponseBody> response) {
-                    try {
-                        Log.i(TAG, "success");
-                        strResponse = response.body().toString();
-                        Log.d("body==>", response.body().toString() + "");
-                        System.out.println("body==>" + response.body().toString());
-
-                    }catch (Exception e)
-                    {
-                        strResponse = "";
-                        e.printStackTrace();
-                        Crashlytics.logException(e);
-                        hideProgressDialog(NewComplaintActivity.this);
-                        //showErrorAlert(NewComplaintActivity.this,"Failed to upload images");
-                    }
-                }
-
-                @SuppressLint("LongLogTag")
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Log.e(TAG, t.getMessage());
-                    hideProgressDialog(NewComplaintActivity.this);
-                    showErrorAlert(NewComplaintActivity.this,t.toString());
-                }
-            });
-        }catch (Exception e)
-        {
-            hideProgressDialog(NewComplaintActivity.this);
-            e.printStackTrace();
-            Crashlytics.logException(e);
-        }
-        return strResponse;
-    }
 
     public static String getPathFromUri(final Context context, final Uri uri) {
 
@@ -1689,3 +1821,114 @@ public class NewComplaintActivity extends BaseActivity {
         }
     }
 }
+
+
+/*public int uploadFile(String sourceFileUri) {
+
+        String fileName=sourceFileUri;
+        HttpURLConnection conn = null;
+        DataOutputStream dos = null;
+        String lineEnd = "\r\n";
+        String twoHyphens = "--";
+        String boundary = "------hellojosh";
+        int bytesRead, bytesAvailable, bufferSize;
+        byte[] buffer;
+        int maxBufferSize = 1 * 1024 * 1024;
+        File sourceFile = new File(fileName);
+        Log.e("joshtag", "Uploading: sourcefileURI, "+fileName);
+
+        if (!sourceFile.isFile()) {
+            Log.e("uploadFile", "Source File not exist :"+ appSingleton.getInstance().photouri);//FullPath);
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    //messageText.setText("Source File not exist :"
+                }
+            });
+            return 0;  //RETURN #1
+        }
+        else{
+            try{
+
+                FileInputStream fileInputStream = new FileInputStream(sourceFile);
+                URL url = new URL(upLoadServerUri);
+                Log.v("joshtag",url.toString());
+
+                // Open a HTTP  connection to  the URL
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setDoInput(true); // Allow Inputs
+                conn.setDoOutput(true); // Allow Outputs
+                conn.setUseCaches(false); // Don't use a Cached Copy            s
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Connection", "Keep-Alive");
+                conn.setRequestProperty("ENCTYPE", "multipart/form-data");
+                conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+                conn.setRequestProperty("file", fileName);
+                conn.setRequestProperty("user", user_id));
+
+                dos = new DataOutputStream(conn.getOutputStream());
+                dos.writeBytes(twoHyphens + boundary + lineEnd);
+                dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\"" + fileName + "\"" + lineEnd);
+                dos.writeBytes(lineEnd);
+
+                // create a buffer of  maximum size
+                bytesAvailable = fileInputStream.available();
+                bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                buffer = new byte[bufferSize];
+                // read file and write it into form...
+                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+                while (bytesRead > 0) {
+                    dos.write(buffer, 0, bufferSize);
+                    bytesAvailable = fileInputStream.available();
+                    bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                    bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+                    Log.i("joshtag","->");
+                }
+
+                // send multipart form data necesssary after file data...
+                dos.writeBytes(lineEnd);
+                dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+
+                // Responses from the server (code and message)
+                serverResponseCode = conn.getResponseCode();
+                String serverResponseMessage = conn.getResponseMessage().toString();
+                Log.i("joshtag", "HTTP Response is : "  + serverResponseMessage + ": " + serverResponseCode);
+
+                // ------------------ read the SERVER RESPONSE
+                DataInputStream inStream;
+                try {
+                    inStream = new DataInputStream(conn.getInputStream());
+                    String str;
+                    while ((str = inStream.readLine()) != null) {
+                        Log.e("joshtag", "SOF Server Response" + str);
+                    }
+                    inStream.close();
+                }
+                catch (IOException ioex) {
+                    Log.e("joshtag", "SOF error: " + ioex.getMessage(), ioex);
+                }
+
+                //close the streams //
+                fileInputStream.close();
+                dos.flush();
+                dos.close();
+
+                if(serverResponseCode == 200){
+                    //Do something
+                }//END IF Response code 200
+
+                dialog.dismiss();
+            }//END TRY - FILE READ
+            catch (MalformedURLException ex) {
+                ex.printStackTrace();
+                Log.e("joshtag", "UL error: " + ex.getMessage(), ex);
+            } //CATCH - URL Exception
+
+            catch (Exception e) {
+                e.printStackTrace();
+                Log.e("Upload file to server Exception", "Exception : "+ e.getMessage(), e);
+            } //
+
+            return serverResponseCode; //after try
+        }//END ELSE, if file exists.
+    }*/

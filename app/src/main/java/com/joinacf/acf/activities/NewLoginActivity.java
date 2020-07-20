@@ -22,14 +22,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.webkit.URLUtil;
 import android.widget.MediaController;
 import android.widget.Toast;
 
-import com.facebook.login.LoginBehavior;
-import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -138,12 +134,27 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         Fabric.with(this, new Crashlytics());
         try {
             boolean bLoggedIn = getBooleanSharedPreference(NewLoginActivity.this, "LoggedIn");
+            boolean bAdminLogIn = getBooleanSharedPreference(NewLoginActivity.this, "AdminLogin");
+
             if (bLoggedIn) {
                 putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", false);
                 Intent intent = new Intent(NewLoginActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
-            } else {
+            }else if(bAdminLogIn){
+                boolean bMLogIn = getBooleanSharedPreference(NewLoginActivity.this, "AdminLoginForM");
+                boolean bSPLogIn = getBooleanSharedPreference(NewLoginActivity.this, "AdminLoginForSP");
+                if(bSPLogIn)
+                {
+                    Intent intent = new Intent(NewLoginActivity.this,ServiceProviderActivity.class);
+                    startActivity(intent);
+                    finish();
+                }else if(bMLogIn){
+                    Intent intent = new Intent(NewLoginActivity.this, ModeratorActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            }else {
                 FacebookSdk.sdkInitialize(this.getApplicationContext());
                 callbackManager = CallbackManager.Factory.create();
 
@@ -211,6 +222,9 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         {
             Crashlytics.logException(e);
         }
+
+        binding.notaMember.setOnClickListener(this);
+
     }
 
 
@@ -438,6 +452,11 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
     public void onClick(View view) {
 
         switch (view.getId()) {
+            case R.id.notaMember:
+                Intent intent = new Intent(NewLoginActivity.this, AdminLogin.class);
+                startActivity(intent);
+                finish();
+                break;
             case R.id.login_button:
             case R.id.facebook:
                 try {

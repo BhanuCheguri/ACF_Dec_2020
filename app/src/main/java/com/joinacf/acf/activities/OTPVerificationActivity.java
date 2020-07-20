@@ -34,8 +34,6 @@ import android.widget.Toast;
 
 import com.joinacf.acf.R;
 import com.joinacf.acf.custom_dialogs.CustomProgressDialog;
-import com.joinacf.acf.modelclasses.AddMemberResult;
-import com.joinacf.acf.modelclasses.StatusModel;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.network.ServiceCall;
@@ -87,9 +85,6 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
     private int MY_PERMISSIONS_REQUEST_SMS_RECEIVE = 10;
     String ADD_MEMBERS =  "http://api.ainext.in/members/addmember";
     String message = "";
-    List<StatusModel> statusData;
-    ArrayList<StatusModel>  lstStatusModel;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

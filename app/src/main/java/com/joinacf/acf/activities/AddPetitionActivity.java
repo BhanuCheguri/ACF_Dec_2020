@@ -1,5 +1,6 @@
 package com.joinacf.acf.activities;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.databinding.DataBindingUtil;
@@ -26,6 +27,9 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -104,7 +108,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
     private int locationRequestCode = 1000;
     String lat,lang = "";
     String currentAddress="";
-    String strTitle,strComments ="";
+    String strTitle/*,strComments*/ ="";
     AppLocationService appLocationService;
     APIRetrofitClient apiRetrofitClient;
     String strResponse = "";
@@ -162,7 +166,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-        getSupportActionBar().setTitle("Tag your Petition");
+        getSupportActionBar().setTitle("");
 
         requestMultiplePermissions();
         getCurrentLocation();
@@ -173,10 +177,10 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         binding.btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                strTitle = binding.etComment.getText().toString();
-                strComments = binding.etTitle.getText().toString();
+                strTitle = binding.etTitle.getText().toString();
+                //strComments = binding.etCimment.getText().toString();
                 int petitionID = -1;
-                if(!strTitle.equalsIgnoreCase("") && !strComments.equalsIgnoreCase("") && !strSectionID.equalsIgnoreCase("") && !strSPID.equalsIgnoreCase("")) {
+                if(!strTitle.equalsIgnoreCase("") && /*!strComments.equalsIgnoreCase("") &&*/ !strSectionID.equalsIgnoreCase("") && !strSPID.equalsIgnoreCase("")) {
                     String MemberID = getStringSharedPreference(AddPetitionActivity.this, "MemberID");
                     int createBy = Integer.valueOf(MemberID);
                     JSONObject jsonParam = new JSONObject();
@@ -195,7 +199,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                         jsonParam.put("location", currentAddress);
                         jsonParam.put("latitude", lat);
                         jsonParam.put("langitude", lang);
-                        jsonParam.put("remarks", strComments);
+                        jsonParam.put("remarks", "");
                         Log.i("JSON", jsonParam.toString());
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -409,13 +413,13 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                                             strOTP = String.valueOf(nOTP);
                                         }
                                     }
-                                    CustomDialog(AddPetitionActivity.this,"Petition added Successfully","",String.valueOf("OTP : " + strOTP));
+                                    CustomDialog(AddPetitionActivity.this,"Petition added Successfully","",String.valueOf("Verification Code : " + strOTP));
                                 }
                             }
                         }
                     }
                     binding.etTitle.setText("");
-                    binding.etComment.setText("");
+                   // binding.etComment.setText("");
                     binding.spOffice.setText("");
                     binding.spSelection.setText("");
                 }catch (Exception e)
@@ -1191,7 +1195,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
-                if(App.isNetworkAvailable())
+                /*if(App.isNetworkAvailable())
                     new AsyncUploadImages().execute(strPID);
                 else{
                     ChocoBar.builder().setView(binding.mainLayout)
@@ -1200,10 +1204,31 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                             //.setActionText(android.R.string.ok)
                             .red()   // in built red ChocoBar
                             .show();
-                }
+                }*/
             }
         });
 
         dialog.show();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.tag_petition, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        switch (item.getItemId())
+        {
+            case android.R.id.home:
+                break;
+            case R.id.help:
+                Toast.makeText(AddPetitionActivity.this, "Help", Toast.LENGTH_SHORT).show();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

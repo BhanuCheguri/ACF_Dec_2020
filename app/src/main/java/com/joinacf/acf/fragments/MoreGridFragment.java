@@ -24,18 +24,17 @@ import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.joinacf.acf.activities.AddPetitionActivity;
 import com.joinacf.acf.activities.MainActivity;
 import com.joinacf.acf.activities.MoreActivity;
 import com.joinacf.acf.activities.NewLoginActivity;
 import com.joinacf.acf.activities.ProfileActivity;
 import com.joinacf.acf.modelclasses.DashboardCategories;
-import com.joinacf.acf.modelclasses.WallPostsModel;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.R;
 import com.joinacf.acf.databinding.FragmentGridBinding;
 import com.crashlytics.android.Crashlytics;
+import com.joinacf.acf.activities.MyPetitionListActivity;
 import com.joinacf.acf.utilities.App;
 import com.pd.chocobar.ChocoBar;
 
@@ -44,7 +43,6 @@ import androidx.databinding.DataBindingUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -63,13 +61,13 @@ public class MoreGridFragment extends BaseFragment {
 
     int[] imageId = {
             R.mipmap.ic_adulteration,
+            R.mipmap.ic_social_evil,
             R.mipmap.ic_women_saftey,
             R.mipmap.ic_human_trafficking,
             R.mipmap.ic_medical_emergency,
             R.mipmap.ic_law_n_order,
             R.mipmap.ic_information,
-            R.mipmap.ic_law_n_order,
-            R.mipmap.ic_my_petitions,
+            R.mipmap.ic_law_n_order
     };
     private APIRetrofitClient apiRetrofitClient;
     ArrayList<String> lstCategories;
@@ -309,7 +307,7 @@ public class MoreGridFragment extends BaseFragment {
         lstExistsCategories.add("Home");
         lstExistsCategories.add("Corruption");
         lstExistsCategories.add("Find n Fix");
-        lstExistsCategories.add("Social Evil");
+        lstExistsCategories.add("My Petitions");
 
         lstDashboardCatagories = lstData;
         for(int i=0; i<lstDashboardCatagories.size(); i++) {
@@ -329,22 +327,15 @@ public class MoreGridFragment extends BaseFragment {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
 
-                if(!hshMapDashBoardsLst.get(lstCategories.get(position)).equalsIgnoreCase("11")){
+                //if(!hshMapDashBoardsLst.get(lstCategories.get(position)).equalsIgnoreCase("11")){
                     Intent intent = new Intent(getActivity(), MoreActivity.class);
                     intent.putExtra("CatergoryID",hshMapDashBoardsLst.get(lstCategories.get(position)));
                     intent.putExtra("Name",lstCategories.get(position));
-                    startActivity(intent);
-                }
-                else
-                {
-                    Intent intent = new Intent(getActivity(), AddPetitionActivity.class);
-                    intent.putExtra("CatergoryID",hshMapDashBoardsLst.get(lstCategories.get(position)));
-                    intent.putExtra("Name",lstCategories.get(position));
-                    startActivity(intent);
-                }
-
-               // Toast.makeText(getActivity(), "You Clicked at " + hshMapDashBoardsLst.get(lstCategories.get(position)), Toast.LENGTH_SHORT).show();
+                    getActivity().startActivity(intent);
+                    //getActivity().finish();
             }
         });
     }
+
+
 }

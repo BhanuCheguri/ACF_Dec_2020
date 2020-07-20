@@ -112,7 +112,8 @@
                             android:drawablePadding="@dimen/dimen_5"
                             android:fontFamily="@font/montserrat_light"
                             android:text="KPHB,Hyderabad"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            android:textSize="@dimen/dimen_14"/>
 
                         <TextView
                             android:id="@+id/tv_DateTime"
@@ -124,41 +125,87 @@
                             android:drawableLeft="@drawable/ic_clock_16"
                             android:drawablePadding="@dimen/dimen_5"
                             android:fontFamily="@font/montserrat_light"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            android:textSize="@dimen/dimen_14"/>
 
                     </LinearLayout>
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/dimen_8"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:padding="@dimen/dimen_2"
+                        android:background="@drawable/editbox_blueborder">
 
-                        <TextView
-                            android:id="@+id/tv_Category"
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_margin="@dimen/dimen_5"
-                            android:layout_marginTop="@dimen/dimen_5"
-                            android:layout_weight="0.5"
-                            android:fontFamily="@font/montserrat_light"
-                            android:text="Category"
-                            android:textStyle="bold"
-                            android:textSize="@dimen/dimen_18"/>
+                            android:orientation="horizontal">
 
-                        <TextView
-                            android:id="@+id/tv_Status"
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="@dimen/dimen_5"
+                                android:fontFamily="@font/montserrat_light"
+                                android:text="Status :"
+                                android:layout_weight="0.7"
+                                android:textStyle="bold"
+                                android:textSize="@dimen/dimen_14"/>
+
+                            <Spinner
+                                android:id="@+id/sp_ModeratorStatus"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="@dimen/dimen_5"
+                                android:layout_marginTop="@dimen/dimen_5"
+                                android:fontFamily="@font/montserrat_light"
+                                android:textStyle="bold"
+                                android:layout_weight="0.3"
+                                android:textSize="@dimen/dimen_14" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_margin="@dimen/dimen_5"
-                            android:layout_marginTop="@dimen/dimen_5"
-                            android:layout_weight="0.5"
-                            android:fontFamily="@font/montserrat_light"
-                            android:textStyle="bold"
-                            android:textSize="@dimen/dimen_18"
-                            android:text="Status: Pending"/>
+                            android:orientation="horizontal">
 
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="@dimen/dimen_5"
+                                android:fontFamily="@font/montserrat_light"
+                                android:text="Provider :"
+                                android:textStyle="bold"
+                                android:layout_weight="0.7"
+                                android:textSize="@dimen/dimen_14"/>
+
+                            <Spinner
+                                android:id="@+id/sp_ModeratorProvider"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="@dimen/dimen_5"
+                                android:layout_marginTop="@dimen/dimen_5"
+                                android:fontFamily="@font/montserrat_light"
+                                android:textStyle="bold"
+                                android:layout_weight="0.3"
+
+                                android:textSize="@dimen/dimen_14"/>
+
+                        </LinearLayout>
                     </LinearLayout>
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button_style"
+                        android:text="@string/submit"
+                        android:id="@+id/submit"
+                        android:layout_gravity="right"
+                        android:fontFamily="@font/montserrat_light"
+                        android:textColor="@color/colorWhite"
+                        android:layout_margin="@dimen/dimen_10">
+
+                    </Button>
 
 
                 </LinearLayout>

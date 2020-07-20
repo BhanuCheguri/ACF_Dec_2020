@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_margin="@dimen/dimen_10"
+    android:id="@+id/linearLayout">
+
+    <TextView
+        android:fontFamily="@font/montserrat_bold"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Verify OTP"
+        android:padding="@dimen/dimen_20"
+        android:textColor="@color/colorPrimary"
+        android:textSize="@dimen/dimen_16"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/dimen_10"
+        android:background="@drawable/editbox_blueborder">
+        <TextView
+            android:fontFamily="@font/montserrat_bold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Enter OTP"
+            android:padding="@dimen/dimen_20"
+            android:textColor="@color/colorPrimary"
+            android:textSize="@dimen/dimen_16"
+            android:textStyle="bold" />
+
+        <EditText
+            android:fontFamily="@font/montserrat_bold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:hint="Enter Your OTP"
+            android:padding="@dimen/dimen_20"
+            android:id="@+id/etEnterOtp"
+            android:textColor="@color/colorPrimary"
+            android:textSize="@dimen/dimen_16"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnVerify"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dimen_30"
+            android:layout_marginLeft="@dimen/dimen_10"
+            android:layout_marginRight="@dimen/dimen_10"
+            android:text="@string/verify"
+            android:textStyle="bold"
+            android:background="@drawable/button_style"
+            android:fontFamily="@font/montserrat_light"
+            android:textColor="@color/colorWhite" />
+    </LinearLayout>
+
+
+</LinearLayout>
