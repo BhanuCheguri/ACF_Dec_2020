@@ -1,9 +1,14 @@
-package com.joinacf.acf.activities;
+package com.joinacf.acf.fragments;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.core.view.MenuItemCompat;
 import androidx.databinding.DataBindingUtil;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,8 +25,9 @@ import android.widget.Toast;
 
 
 import com.joinacf.acf.R;
+import com.joinacf.acf.activities.AddPetitionActivity;
+import com.joinacf.acf.activities.MainActivity;
 import com.joinacf.acf.databinding.ActivityPetetionBinding;
-import com.joinacf.acf.fragments.BaseFragment;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.modelclasses.PetitionModel;
@@ -36,7 +42,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class MyPetitionListActivity extends BaseFragment {
+public class MyPetitionListFragment extends BaseFragment {
 
     ArrayList<PetitionModel> model;
     String strCategoryID = "";
@@ -45,11 +51,9 @@ public class MyPetitionListActivity extends BaseFragment {
     APIRetrofitClient apiRetrofitClient;
     ArrayList<PetitionModel.Result> lstPetitionData;
     PetitionsListAdapter adapter;
-    int mLastFirstVisibleItem;
-    int mLastVisibleItemCount;
 
-    public static MyPetitionListActivity newInstance() {
-        return new MyPetitionListActivity();
+    public static MyPetitionListFragment newInstance() {
+        return new MyPetitionListFragment();
     }
 
     @Nullable
@@ -84,6 +88,7 @@ public class MyPetitionListActivity extends BaseFragment {
 
     private void populateListView(ArrayList<PetitionModel.Result> PetitionData) {
         adapter = new PetitionsListAdapter(getActivity(),PetitionData, "MyPetitions");
+        dataBiding.lvPetitions.setLayoutManager(new LinearLayoutManager(getActivity()));
         dataBiding.lvPetitions.setAdapter(adapter);
         hideProgressDialog(getActivity());
     }
@@ -95,46 +100,25 @@ public class MyPetitionListActivity extends BaseFragment {
         ((AppCompatActivity) getActivity()).getSupportActionBar().setBackgroundDrawable(getResources().getDrawable(R.drawable.gradient_theme));
 
         ((AppCompatActivity) getActivity()).getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-       /* Bundle b = getIntent().getExtras();
-        if (b != null)
-        {
-            strCategoryID = b.getString("CatergoryID").toString();
-            strName = b.getString("Name").toString();
-        }*/
         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Petitions List");
 
         ((MainActivity)getActivity()).showBottomNavigation();
 
-        dataBiding.lvPetitions.setOnScrollListener(new AbsListView.OnScrollListener() {
-            int last_item;
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-
-            }
+        dataBiding.lvPetitions.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
-            public void onScroll(AbsListView view, int firstVisibleItem,
-                                 int visibleItemCount, int totalItemCount) {
-                if (mLastFirstVisibleItem > firstVisibleItem) {
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0) {
                     Log.e(getClass().toString(), "scrolling up");
                     ((MainActivity)getActivity()).hideBottomNavigation();
-                } else if (mLastFirstVisibleItem < firstVisibleItem) {
+                } else {
                     Log.e(getClass().toString(), "scrolling down");
                     ((MainActivity)getActivity()).showBottomNavigation();
-                } else if (mLastVisibleItemCount < visibleItemCount) {
-                    Log.e(getClass().toString(), "scrolling down");
-                    ((MainActivity)getActivity()).showBottomNavigation();
-                } else if (mLastVisibleItemCount > visibleItemCount) {
-                    Log.e(getClass().toString(), "scrolling up");
-                    ((MainActivity)getActivity()).hideBottomNavigation();
                 }
-                mLastFirstVisibleItem = firstVisibleItem;
-                mLastVisibleItemCount = visibleItemCount;
             }
         });
-
     }
-
 
     public void getMyPetitions(String MemberID) {
         apiRetrofitClient = new APIRetrofitClient();
@@ -176,6 +160,23 @@ public class MyPetitionListActivity extends BaseFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.add_petition, menu);
+        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSubmitButtonEnabled(true);
+        searchView.setQueryHint("Search with Title");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (adapter!=null)
+                    adapter.getFilter().filter(newText);
+                return true;
+            }
+        });
     }
 
     @Override
@@ -192,4 +193,20 @@ public class MyPetitionListActivity extends BaseFragment {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    /*@Override
+    public void onResume() {
+        super.onResume();
+        Log.e("FromFragment","resume");
+        if(App.isNetworkAvailable())
+            getMyPetitions(getStringSharedPreference(getActivity(), "MemberID"));
+        else{
+            ChocoBar.builder().setView(dataBiding.mainLayout)
+                    .setText("No Internet connection")
+                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                    //.setActionText(android.R.string.ok)
+                    .red()   // in built red ChocoBar
+                    .show();
+        }
+    }*/
 }

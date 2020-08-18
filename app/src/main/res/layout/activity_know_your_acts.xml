@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+            name="person"
+            type="com.joinacf.acf.activities.KnowYourActsActivity" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/mainLayout"
+        android:orientation="vertical">
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:id="@+id/radioGroup"
+            android:checkedButton="@+id/rti"
+            android:padding="@dimen/dimen_5">
+
+            <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textSize="@dimen/dimen_14"
+                android:id="@+id/rti"
+                android:text="Right to Information"
+                android:textColor="@color/colorBrown"/>
+            <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textSize="@dimen/dimen_14"
+                android:id="@+id/rts"
+                android:text="Right to Service"
+                android:textColor="@color/colorBrown"/>
+            <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textSize="@dimen/dimen_14"
+                android:id="@+id/cc"
+                android:text="Citizens Chart"
+                android:textColor="@color/colorBrown"/>
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_margin="@dimen/dimen_3"
+            android:background="@color/colorBrown"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textColor="@color/colorBrown"
+                android:textSize="@dimen/dimen_14"
+                android:padding="@dimen/dimen_10"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:text="Home"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/act_telugu"
+                android:textColor="@color/colorBrown"
+                android:textSize="@dimen/dimen_14"
+                android:padding="@dimen/dimen_10"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:text="Act Telugu"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/act_english"
+                android:textColor="@color/colorBrown"
+                android:textSize="@dimen/dimen_14"
+                android:padding="@dimen/dimen_10"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:text="Act English"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/faq"
+                android:textColor="@color/colorBrown"
+                android:textSize="@dimen/dimen_14"
+                android:padding="@dimen/dimen_10"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:text="FAQ's"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/howtoapply"
+                android:textColor="@color/colorBrown"
+                android:textSize="@dimen/dimen_14"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:text="How to Apply?"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"/>
+        </LinearLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_margin="@dimen/dimen_3"
+            android:background="@color/colorBrown"/>
+
+        <LinearLayout
+            android:id="@+id/container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_margin="5dp">
+
+            <FrameLayout
+                android:id="@+id/content"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:id="@+id/ll_no_data"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <ImageView
+                                android:id="@+id/imageView4"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:srcCompat="@mipmap/ic_no_data" />
+
+                            <TextView
+                                android:id="@+id/textView2"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="No Data" />
+                        </LinearLayout>
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/lv_MoreFeed"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:divider="@android:color/transparent"/>
+
+                        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                            android:id="@+id/fab"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentRight="true"
+                            android:layout_marginBottom="@dimen/dimen_16"
+                            android:layout_marginRight="@dimen/dimen_16"
+                            android:clickable="true"
+                            app:backgroundTint="@color/colorPrimaryDark"
+                            android:src="@drawable/edit"
+                            app:elevation="4dp" />
+                    </RelativeLayout>
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+    </LinearLayout>
+</layout>

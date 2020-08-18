@@ -4,9 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuItemCompat;
 import androidx.databinding.DataBindingUtil;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,7 +20,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AbsListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -30,7 +33,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.joinacf.acf.activities.MainActivity;
 import com.joinacf.acf.activities.NewComplaintActivity;
 import com.joinacf.acf.activities.NewLoginActivity;
-import com.joinacf.acf.activities.ProfileActivity;
+import com.joinacf.acf.activities.MyProfileActivity;
 import com.joinacf.acf.adapters.HomePageAdapter;
 import com.joinacf.acf.modelclasses.WallPostsModel;
 import com.joinacf.acf.network.APIInterface;
@@ -60,7 +63,7 @@ import static com.facebook.FacebookSdk.getApplicationContext;
  * Created by priya.cheguri on 8/14/2019.
  */
 
-public class CorruptionFragment extends BaseFragment {
+public class CorruptionFragment extends BaseFragment{
 
     FragmentCorruptionBinding dataBiding;
     APIRetrofitClient apiRetrofitClient;
@@ -72,6 +75,7 @@ public class CorruptionFragment extends BaseFragment {
     int mLastFirstVisibleItem;
     int mLastVisibleItemCount;
 
+    Context context ;
     public static CorruptionFragment newInstance() {
         return new CorruptionFragment();
     }
@@ -81,7 +85,7 @@ public class CorruptionFragment extends BaseFragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         //return inflater.inflate(R.layout.fragment_corruption, container, false);
         dataBiding = DataBindingUtil.inflate(inflater, R.layout.fragment_corruption, null, false);
-
+        context = getContext();
         setActionBarTitle(getString(R.string.title_corruption));
 
         init();
@@ -104,30 +108,18 @@ public class CorruptionFragment extends BaseFragment {
 
         //((MainActivity)getActivity()).showBottomNavigation();
 
-        dataBiding.lvCategoryFeed.setOnScrollListener(new AbsListView.OnScrollListener() {
-            int last_item;
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-            }
+        dataBiding.lvCategoryFeed.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
-            public void onScroll(AbsListView view, int firstVisibleItem,
-                                 int visibleItemCount, int totalItemCount) {
-                if (mLastFirstVisibleItem > firstVisibleItem) {
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0) {
                     Log.e(getClass().toString(), "scrolling up");
                     ((MainActivity)getActivity()).hideBottomNavigation();
-                } else if (mLastFirstVisibleItem < firstVisibleItem) {
+                } else {
                     Log.e(getClass().toString(), "scrolling down");
                     ((MainActivity)getActivity()).showBottomNavigation();
-                } else if (mLastVisibleItemCount < visibleItemCount) {
-                    Log.e(getClass().toString(), "scrolling down");
-                    ((MainActivity)getActivity()).showBottomNavigation();
-                } else if (mLastVisibleItemCount > visibleItemCount) {
-                    Log.e(getClass().toString(), "scrolling up");
-                    ((MainActivity)getActivity()).hideBottomNavigation();
                 }
-                mLastFirstVisibleItem = firstVisibleItem;
-                mLastVisibleItemCount = visibleItemCount;
             }
         });
     }
@@ -209,7 +201,10 @@ public class CorruptionFragment extends BaseFragment {
     }
 
     private void populateListView(ArrayList<WallPostsModel.Result> wallPostData) {
-        adapter = new HomePageAdapter(getActivity(),wallPostData);
+        adapter = new HomePageAdapter(context,wallPostData);
+        dataBiding.lvCategoryFeed.setLayoutManager(new LinearLayoutManager(context));
+        dataBiding.lvCategoryFeed.setItemAnimator(new DefaultItemAnimator());
+        dataBiding.lvCategoryFeed.setNestedScrollingEnabled(false);
         dataBiding.lvCategoryFeed.setAdapter(adapter);
         hideProgressDialog(getActivity());
     }
@@ -218,7 +213,7 @@ public class CorruptionFragment extends BaseFragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         //inflater.inflate(R.menu.menu, menu);
         //super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.menu, menu);
+        inflater.inflate(R.menu.corruption_menu, menu);
         final MenuItem searchItem = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setSubmitButtonEnabled(true);
@@ -253,7 +248,7 @@ public class CorruptionFragment extends BaseFragment {
             case R.id.myprofile:
                 Intent intent = null;
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                    intent = new Intent(getContext(), ProfileActivity.class);
+                    intent = new Intent(getContext(), MyProfileActivity.class);
                 }
                 getActivity().startActivity(intent);
                 break;

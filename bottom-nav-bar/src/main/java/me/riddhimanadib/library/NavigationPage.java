@@ -22,6 +22,7 @@ public class NavigationPage {
         this.fragment = fragment;
     }
 
+
     public String getTitle() {
         return title;
     }

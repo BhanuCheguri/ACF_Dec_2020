@@ -15,6 +15,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import org.apache.commons.io.FileUtils;
 import android.graphics.Bitmap;
@@ -309,11 +310,16 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
             public void onClick(View view) {
                 strTitle = binding.etTitle.getText().toString();
                 strDescription = binding.etDescription.getText().toString();
-                SubmitDialog();
+                if (!strDescription.equalsIgnoreCase("") && !strTitle.equalsIgnoreCase("")) {
+                   if(lstPathURI.isEmpty()){
+                        Toast.makeText(NewComplaintActivity.this, "Please upload atleast one image/document to upload this complaint", Toast.LENGTH_LONG).show();
+                    }else
+                        SubmitDialog();
+                }else {
+                    Toast.makeText(NewComplaintActivity.this, "Please fill all the fields", Toast.LENGTH_LONG).show();
+                }
             }
         });
-
-
     }
 
 
@@ -411,8 +417,7 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
                     case 0:
                         try {
                             requestMultiplePermissions();
-                            //selectImage();
-                            takePhotoFromCamera();
+                            selectImage();
                         }catch(ActivityNotFoundException anfe){
                             String errorMessage = "Whoops – your device doesn’t support capturing images!";
                             Toast toast = Toast.makeText(NewComplaintActivity.this, errorMessage, Toast.LENGTH_SHORT);
@@ -422,7 +427,7 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
                     case 1:
                         try {
                             requestMultiplePermissions();
-                            takeVideoFromCamera();
+                            selectVideo();
                         }catch(ActivityNotFoundException anfe){
                             String errorMessage = "Whoops – your device doesn’t support capturing videos!";
                             Toast toast = Toast.makeText(NewComplaintActivity.this, errorMessage, Toast.LENGTH_SHORT);
@@ -497,6 +502,29 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
         builder.show();
     }
 
+    private void selectVideo() {
+        final CharSequence[] items = { "Take Video", "Choose from Library",
+                "Cancel" };
+        AlertDialog.Builder builder = new AlertDialog.Builder(NewComplaintActivity.this);
+        builder.setTitle("Add Video!");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int item) {
+                boolean result= Utility.checkPermission(NewComplaintActivity.this);
+                if (items[item].equals("Take Video")) {
+                    if(result)
+                        takeVideoFromCamera();
+                } else if (items[item].equals("Choose from Library")) {
+                    if(result)
+                        chooseVideoFromGallary();
+                } else if (items[item].equals("Cancel")) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        builder.show();
+    }
+
     public void choosePhotoFromGallary() {
         /*Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -519,6 +547,11 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
         startActivityForResult(intent, VIDEO_CAMERA);
     }
 
+    private void chooseVideoFromGallary() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("video/*");
+        startActivityForResult(intent, VIDEO_GALLERY);
+    }
 
     @SuppressLint("LongLogTag")
     public void saveFile(Context context, Bitmap b, String picName){
@@ -553,22 +586,17 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
                 if (data != null) {
                     String[] filePath = {MediaStore.Images.Media.DATA};
                     String path = getPathFromUri(NewComplaintActivity.this,contentURI);
-
-                    Cursor cursor = getContentResolver().query(contentURI, filePath, null, null, null);
-                    cursor.moveToFirst();
-                    String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
-                    BitmapFactory.Options options = new BitmapFactory.Options();
-                    options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                    Bitmap bm = android.provider.MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentURI);
-                    //Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(imagePath));
-                    cursor.close();
-                    File file = new File(contentURI.getPath().toString());
-                    Log.d("", "File : " + file.getName());
-                    StringTokenizer tokens = new StringTokenizer(file.getName(), ":");
-                    String first = tokens.nextToken();
-                    String file_1 = tokens.nextToken().trim();
-                    setAttachmentData(path,path,contentURI,getExtensionType(contentURI),bm);
-
+                    if(path != null) {
+                        Cursor cursor = getContentResolver().query(contentURI, filePath, null, null, null);
+                        cursor.moveToFirst();
+                        String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                        Bitmap bm = android.provider.MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentURI);
+                        //Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(imagePath));
+                        cursor.close();
+                        setAttachmentData(path, path, contentURI, getExtensionType(contentURI), bm);
+                    }
                 }
             }catch (Exception e) {
                 e.printStackTrace();
@@ -610,23 +638,39 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
             try {
                 String recordedVideoPath = getPath(contentURI);
                 Log.d("frrr", recordedVideoPath);
+                if(recordedVideoPath != null) {
+                    String[] filePath = {MediaStore.Video.Media.DATA};
+                    Cursor cursor = getContentResolver().query(contentURI, filePath, null, null, null);
+                    cursor.moveToFirst();
+                    String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
+                    //Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(imagePath));
 
-                String[] filePath = {MediaStore.Video.Media.DATA};
-                Cursor cursor = getContentResolver().query(contentURI, filePath, null, null, null);
-                cursor.moveToFirst();
-                String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
-                //Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(imagePath));
-
-                setAttachmentData(recordedVideoPath,imagePath,contentURI,getExtensionType(contentURI),null);
-
+                    setAttachmentData(recordedVideoPath, imagePath, contentURI, getExtensionType(contentURI), null);
+                }
             }catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(NewComplaintActivity.this, "Attachment Failed", Toast.LENGTH_SHORT).show();
             }
 
-        }else if(requestCode == PICKFILE_RESULT_CODE) {
+        }else if(requestCode ==  VIDEO_GALLERY){
+            Uri selectedVideoUri = data.getData();
+            try {
+                // OI FILE Manager
+                String filemanagerstring = selectedVideoUri.toString();
+                // MEDIA GALLERY
+                String selectedVideoPath = getPathFromUri(NewComplaintActivity.this,selectedVideoUri);
+                if (selectedVideoPath != null) {
+                    String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtensionType(selectedVideoUri));
+                    setAttachmentData(selectedVideoPath,selectedVideoPath,selectedVideoUri,mimeType,null);
+                }
+            }catch (Exception e)
+            {
+                e.printStackTrace();
+                Toast.makeText(NewComplaintActivity.this, "Attachment Failed", Toast.LENGTH_SHORT).show();
+            }
+        }
+       else if(requestCode == PICKFILE_RESULT_CODE) {
             Uri contentURI = data.getData();
-
             try {
                 String uriString = contentURI.toString();
                 File myFile = new File(uriString);
@@ -737,48 +781,6 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
                 .onSameThread()
                 .check();
     }
-
-   /* @Override
-    public void onFocusChange(View v, boolean hasFocus) {
-        if(!hasFocus) {
-            //do job here owhen Edittext lose focus
-            if(v instanceof EditText) {
-                if (!((EditText)v).getText().equals("")) {
-                    if(lstAutoEmpty.contains(v.getId()))
-                    {
-                        lstAutoEmpty.remove(v.getId());
-                    }
-                }else{
-                    if(!lstAutoEmpty.contains(v.getId()))
-                    {
-                        lstAutoEmpty.add(v.getId());
-                    }
-                }
-                if(lstAutoEmpty.size() < 0)
-                {
-                    binding.btnSubmit.setVisibility(View.VISIBLE);
-                }
-            }else if(v instanceof AutoCompleteTextView)
-            {
-                if (!((AutoCompleteTextView)v).getText().equals("")) {
-                    if(lstAutoEmpty.contains(v.getId()))
-                    {
-                        lstAutoEmpty.remove(v.getId());
-                    }
-                }else{
-                    if(!lstAutoEmpty.contains(v.getId()))
-                    {
-                        lstAutoEmpty.add(v.getId());
-                    }
-                }
-                if(lstAutoEmpty.size() < 0)
-                {
-                    binding.btnSubmit.setVisibility(View.VISIBLE);
-                }
-            }
-        }
-    }*/
-
     public class CustomImageAdapter extends BaseAdapter
     {
         private Context context;
@@ -835,7 +837,7 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
                     holder.grid_img.setId(position);
                 }
             }
-            else if(strMimeType.equalsIgnoreCase("mp4")) {
+            else if(strMimeType.equalsIgnoreCase("mp4") || strMimeType.equalsIgnoreCase("video/mp4")) {
                     holder.grid_img.setImageResource(R.drawable.mp4);
                     holder.grid_img.setId(position);
             }
@@ -911,10 +913,9 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
 
     public void SubmitDialog()
     {
-        if (!strDescription.equalsIgnoreCase("") && !strTitle.equalsIgnoreCase("")) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("New Post Upload");
-            builder.setMessage("Do you want to upload the complaint?")
+            builder.setTitle("Confirmation !!");
+            builder.setMessage("Do you really want to upload the complaint?")
                     .setCancelable(false)
                     .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
@@ -944,22 +945,21 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
                     });
             AlertDialog alert = builder.create();
             alert.show();
-        }else {
-            Toast.makeText(NewComplaintActivity.this, "Please fill all the fields", Toast.LENGTH_LONG).show();
-        }
+
     }
 
 
     private class AsyncTaskExample extends AsyncTask<String, Integer, Integer> {
-
+        Dialog dialog;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            showProgressDialog(NewComplaintActivity.this,"Please wait.. We are posting your complaint");
+            showCustomProgressDialog(NewComplaintActivity.this,"Processing your data...",R.mipmap.ic_dataprocessing);
         }
         @Override
         protected Integer doInBackground(String... strings) {
             String result = uploadData(String.valueOf(prepareJSON()),"http://api.ainext.in/posts/addpost");
+            System.out.println( "NewComplaintActivity.this ::: uploadData :::" +result);
             try {
                 JSONObject jsonObject = new JSONObject(result);
                 if(jsonObject.has("message"))
@@ -986,10 +986,18 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
         @Override
         protected void onPostExecute(Integer result) {
             super.onPostExecute(result);
-            hideProgressDialog(NewComplaintActivity.this);
-
+            hideCustomProgressDialog(NewComplaintActivity.this);
             if(result != -1 && result != 0) {
-                showSuccessAlert(NewComplaintActivity.this,"Success","Data Successfully uploaded","OK");
+                //showSuccessAlert(NewComplaintActivity.this,"Success","Data Successfully uploaded","OK");
+                if(App.isNetworkAvailable())
+                    new AsyncUploadImages().execute(String.valueOf(strResult));
+                else{
+                    ChocoBar.builder().setView(binding.mainLayout)
+                            .setText("No Internet connection")
+                            .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                            .red()
+                            .show();
+                }
             }else
                 showAlert(NewComplaintActivity.this,"Failed to upload data","Result:"+result,"OK");
         }
@@ -1000,14 +1008,16 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            showProgressDialog(NewComplaintActivity.this,"Please wait.. We are uploading your images");
+            //showProgressDialog(NewComplaintActivity.this,"Please wait.. We are uploading your images");
+            showCustomProgressDialog(NewComplaintActivity.this,"Classifying your data...",R.mipmap.ic_classifydata);
         }
         @Override
         protected String doInBackground(String... strings) {
             String result = null;
+            String itemID = strings[0];
             if(!lstPathURI.isEmpty())
             {
-                uploadMultiFile(lstPathURI);
+                uploadMultiFile(itemID,lstPathURI);
             }
 
             System.out.println("Upload Images Result::" + result);
@@ -1017,66 +1027,8 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            hideProgressDialog(NewComplaintActivity.this);
-
-            /*if(result != null && !result.equalsIgnoreCase("")) {
-                try{
-                    JSONObject jobject = new JSONObject(result);
-                    if (result.length() > 0) {
-                        if (jobject.has("message")) {
-                            if (jobject.getString("message").equalsIgnoreCase("SUCCESS")) {
-                                if (jobject.has("result")) {
-                                    JSONArray jsonArray = new JSONArray(jobject.getString("result"));
-                                    for (int i = 0; i < jsonArray.length(); i++) {
-                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                        CustomDialog(NewComplaintActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
-                                        *//*if(jsonObject.has("Status")) {
-                                            int Status = jsonObject.getInt("Status");
-                                        }*//*
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-            }else {
-                showAlert(NewComplaintActivity.this, "Failed to upload data", "Result:" + result, "OK");
-            }*/
-            //binding.grid.setAdapter(null);
+            hideCustomProgressDialog(NewComplaintActivity.this);
         }
-    }
-
-    public void showSuccessAlert(Activity activity, String Title, String strMsg, String Positive)
-    {
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        // Get the layout inflater
-        LayoutInflater inflater = (activity).getLayoutInflater();
-        // Inflate and set the layout for the dialog
-        // Pass null as the parent view because its going in the
-        // dialog layout
-        builder.setTitle(Title);
-        builder.setMessage(strMsg);
-        builder.setCancelable(false);
-        builder.setPositiveButton(Positive, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int i) {
-                dialog.dismiss();
-                if(App.isNetworkAvailable())
-                    new AsyncUploadImages().execute(String.valueOf(strResult));
-                else{
-                    ChocoBar.builder().setView(binding.mainLayout)
-                            .setText("No Internet connection")
-                            .setDuration(ChocoBar.LENGTH_INDEFINITE)
-                            .red()
-                            .show();
-                }
-            }
-        });
-        builder.create();
-        builder.show();
     }
 
     public void CustomDialog(Context context,String title,String msg,String subMsg)
@@ -1113,6 +1065,7 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
+                finish();
             }
         });
 
@@ -1271,66 +1224,7 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
         return null;
     }
 
-    /*public void uploadAlbum(ArrayList<String> filePaths ){
-
-        try {
-            OkHttpClient client = new OkHttpClient().newBuilder()
-                    .build();
-            //MediaType mediaType = MediaType.parse("text/plain");
-            RequestBody body = null;
-            Request request = null ;
-            for (int i = 0; i < filePaths.size(); i++) {
-                File file = new File(filePaths.get(i));
-                body = new MultipartBody.Builder().setType(MultipartBody.FORM)
-                        .addFormDataPart("file", file.getAbsolutePath(),
-                                RequestBody.create(MediaType.parse("application/octet-stream"),
-                                        new File(file.getAbsolutePath()))).build();
-                request  = new Request.Builder()
-                        .url("http://api.ainext.in/posts/upload")
-                        .method("POST", body)
-                        .build();
-            }
-
-            okhttp3.Response response = client.newCall(request).execute();
-            System.out.println("Response :::: "+response.body());
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-        }*/
-       /* List<MultipartBody.Part> list = new ArrayList<>();
-        int i = 0;
-        for (Uri uri : filePaths) {
-            MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(),
-                    RequestBody.create(MediaType.parse("multipart/form-data"), bos.toByteArray()));
-            list.add(fileToUpload);
-        }
-        Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
-        APIInterface api = retrofit.create(APIInterface.class);
-
-        Call<ResponseBody> call = api.uploadAlbum(list);
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Log.e("main", "the message is ----> " + response.body());
-                Log.e("main", "the error is ----> " + response.body());
-
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable throwable) {
-                Log.e("main", "on error is called and the error is  ----> " + throwable.getMessage());
-
-            }
-        });*/
-
-    //}
-
-    private void uploadMultiFile(ArrayList<String> filePaths ) {
-        OkHttpClient okHttpClient = new OkHttpClient();
-        OkHttpClient clientWith30sTimeout = okHttpClient.newBuilder()
-                .readTimeout(30, TimeUnit.SECONDS)
-                .build();
-
+    private void uploadMultiFile(String itemID, ArrayList<String> filePaths) {
         Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
         APIInterface api = retrofit.create(APIInterface.class);
 
@@ -1356,11 +1250,13 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
 
         MultipartBody requestBody = builder.build();
 
-        Call<JSONObject> call = api.uploadMultiFile("1",requestBody);
+        Call<JSONObject> call = api.uploadMultiFile(itemID,requestBody);
         call.enqueue(new Callback<JSONObject>() {
             @Override
             public void onResponse(Call<JSONObject> call, Response<JSONObject> response) {
-               // showAlert(NewComplaintActivity.this, "Uploaded Successfully", "OK", "OK");
+                System.out.println( "NewComplaintActivity.this ::: uploadMultiFile :::" +response.toString());
+
+                // showAlert(NewComplaintActivity.this, "Uploaded Successfully", "OK", "OK");
                 CustomDialog(NewComplaintActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
                 binding.etTitle.setText("");
                 binding.etDescription.setText("");
@@ -1384,48 +1280,6 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
         RequestBody requestBody = RequestBody.create(MediaType.parse(getContentResolver().getType(fileUri)), file);
         return MultipartBody.Part.createFormData(partName, file.getName(),requestBody);
     }
-
-
-    private String getRealPathFromURI(Uri uri) {
-        Uri returnUri = uri;
-        Cursor returnCursor = getContentResolver().query(returnUri, null, null, null, null);
-        /*
-         * Get the column indexes of the data in the Cursor,
-         *     * move to the first row in the Cursor, get the data,
-         *     * and display it.
-         * */
-        int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-        int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
-        returnCursor.moveToFirst();
-        String name = (returnCursor.getString(nameIndex));
-        String size = (Long.toString(returnCursor.getLong(sizeIndex)));
-        File file = new File(getFilesDir(), name);
-        try {
-            InputStream inputStream = getContentResolver().openInputStream(uri);
-            FileOutputStream outputStream = new FileOutputStream(file);
-            int read = 0;
-            int maxBufferSize = 1 * 1024 * 1024;
-            int bytesAvailable = inputStream.available();
-
-            //int bufferSize = 1024;
-            int bufferSize = Math.min(bytesAvailable, maxBufferSize);
-
-            final byte[] buffers = new byte[bufferSize];
-            while ((read = inputStream.read(buffers)) != -1) {
-                outputStream.write(buffers, 0, read);
-            }
-            Log.e("File Size", "Size " + file.length());
-            inputStream.close();
-            outputStream.close();
-            Log.e("File Path", "Path " + file.getPath());
-            Log.e("File Size", "Size " + file.length());
-        } catch (Exception e) {
-            Log.e("Exception", e.getMessage());
-        }
-        return file.getPath();
-    }
-
-
 
     public static String getPathFromUri(final Context context, final Uri uri) {
 
@@ -1538,8 +1392,6 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
                 return getDriveFilePath(uri, context);
             }
         }
-
-
         // MediaStore (and general)
         else if ("content".equalsIgnoreCase(uri.getScheme())) {
 
@@ -1558,8 +1410,6 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
 
                 return getDataColumn(context, uri, null, null);
             }
-
-
         }
         // File
         else if ("file".equalsIgnoreCase(uri.getScheme())) {

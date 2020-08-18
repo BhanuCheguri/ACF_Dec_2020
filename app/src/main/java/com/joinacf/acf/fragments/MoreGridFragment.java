@@ -24,17 +24,17 @@ import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.joinacf.acf.activities.KnowYourActsActivity;
 import com.joinacf.acf.activities.MainActivity;
 import com.joinacf.acf.activities.MoreActivity;
 import com.joinacf.acf.activities.NewLoginActivity;
-import com.joinacf.acf.activities.ProfileActivity;
+import com.joinacf.acf.activities.MyProfileActivity;
 import com.joinacf.acf.modelclasses.DashboardCategories;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.R;
 import com.joinacf.acf.databinding.FragmentGridBinding;
 import com.crashlytics.android.Crashlytics;
-import com.joinacf.acf.activities.MyPetitionListActivity;
 import com.joinacf.acf.utilities.App;
 import com.pd.chocobar.ChocoBar;
 
@@ -67,7 +67,7 @@ public class MoreGridFragment extends BaseFragment {
             R.mipmap.ic_medical_emergency,
             R.mipmap.ic_law_n_order,
             R.mipmap.ic_information,
-            R.mipmap.ic_law_n_order
+            R.mipmap.ic_humanrights
     };
     private APIRetrofitClient apiRetrofitClient;
     ArrayList<String> lstCategories;
@@ -161,7 +161,7 @@ public class MoreGridFragment extends BaseFragment {
             case R.id.myprofile:
                 Intent intent = null;
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                    intent = new Intent(getContext(), ProfileActivity.class);
+                    intent = new Intent(getContext(), MyProfileActivity.class);
                 }
                 getActivity().startActivity(intent);
                 break;
@@ -283,8 +283,6 @@ public class MoreGridFragment extends BaseFragment {
                             checkExistingCategories(lstResltCatagories);
                         }
                     }
-
-                   /* */
                 }
 
                 @Override
@@ -319,7 +317,7 @@ public class MoreGridFragment extends BaseFragment {
 
         System.out.println(lstCategories);
 
-        CustomGrid adapter = new CustomGrid(getActivity(), lstCategories, imageId);
+        CustomGrid adapter  = new CustomGrid(getActivity(), lstCategories, imageId);
         dataBiding.grid.setAdapter(adapter);
         dataBiding.grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -327,15 +325,21 @@ public class MoreGridFragment extends BaseFragment {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
 
-                //if(!hshMapDashBoardsLst.get(lstCategories.get(position)).equalsIgnoreCase("11")){
+                System.out.println("CatergoryID" +hshMapDashBoardsLst.get(lstCategories.get(position)));
+
+                if(!hshMapDashBoardsLst.get(lstCategories.get(position)).equalsIgnoreCase("10")) {
                     Intent intent = new Intent(getActivity(), MoreActivity.class);
-                    intent.putExtra("CatergoryID",hshMapDashBoardsLst.get(lstCategories.get(position)));
-                    intent.putExtra("Name",lstCategories.get(position));
+                    intent.putExtra("CatergoryID", hshMapDashBoardsLst.get(lstCategories.get(position)));
+                    intent.putExtra("Name", lstCategories.get(position));
                     getActivity().startActivity(intent);
-                    //getActivity().finish();
+                }else
+                {
+                    Intent intent = new Intent(getActivity(), KnowYourActsActivity.class);
+                    intent.putExtra("CatergoryID", hshMapDashBoardsLst.get(lstCategories.get(position)));
+                    intent.putExtra("Name", lstCategories.get(position));
+                    getActivity().startActivity(intent);
+                }
             }
         });
     }
-
-
 }

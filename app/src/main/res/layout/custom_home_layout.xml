@@ -1,6 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:card_view="http://schemas.android.com/tools"
     android:background="@color/colorSilverGrey">
@@ -33,37 +33,41 @@
                 android:textColor="@color/colorDarkBlue"
                 android:textSize="@dimen/dimen_16"
                 android:textStyle="normal" />
-
-            <ImageView
-                android:id="@+id/imgFilePath"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/dimen_200"
-                app:srcCompat="@mipmap/logo"
-                android:background="@android:color/transparent"
-                android:foreground="@drawable/rippleeffect"
-                android:layout_marginBottom="@dimen/dimen_5"
-                android:layout_marginTop="@dimen/dimen_5"
-                android:visibility="visible"
-                android:scaleType="fitXY"/>
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/linearImages">
 
-            <HorizontalScrollView
-                android:id="@+id/horizontal_scroll"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:fillViewport="true">
-
-                <LinearLayout
-                    android:id="@+id/linear"
+                <ImageView
+                    android:id="@+id/imgFilePath"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dimen_200"
                     android:background="@android:color/transparent"
                     android:foreground="@drawable/rippleeffect"
+                    android:layout_marginBottom="@dimen/dimen_10"
+                    android:layout_marginTop="@dimen/dimen_5"
+                    android:visibility="visible"
+                    android:scaleType="fitXY"/>
+
+                <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:scaleType="fitCenter">
-                </LinearLayout>
+                    android:fillViewport="true"
+                    android:scrollbars="horizontal">
 
-            </HorizontalScrollView>
+                    <LinearLayout
+                        android:id="@+id/linear"
+                        android:background="@android:color/transparent"
+                        android:foreground="@drawable/rippleeffect"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:scaleType="fitCenter">
+                    </LinearLayout>
 
+                </HorizontalScrollView>
+            </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

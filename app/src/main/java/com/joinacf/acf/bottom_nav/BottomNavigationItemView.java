@@ -16,6 +16,7 @@
 
 package com.joinacf.acf.bottom_nav;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
@@ -89,8 +90,10 @@ public class BottomNavigationItemView extends FrameLayout implements MenuView.It
         mIcon = (ImageView) findViewById(R.id.icon);
         mSmallLabel = (TextView) findViewById(R.id.smallLabel);
         mLargeLabel = (TextView) findViewById(R.id.largeLabel);
+       // mLargeLabel.setTextSize(R.dimen.dimen_12);
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     public void initialize(MenuItemImpl itemData, int menuType) {
         mItemData = itemData;
@@ -203,6 +206,7 @@ public class BottomNavigationItemView extends FrameLayout implements MenuView.It
 
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     public int[] onCreateDrawableState(final int extraSpace) {
         final int[] drawableState = super.onCreateDrawableState(extraSpace + 1);

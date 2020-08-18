@@ -5,18 +5,20 @@
     <data>
         <variable
             name="person"
-            type="com.joinacf.acf.activities.MyPetitionListActivity" />
+            type="com.joinacf.acf.fragments.MyPetitionListFragment" />
     </data>
 
-<androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:id="@+id/mainLayout">
 
-        <ListView
+        <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/lv_petitions">
-        </ListView>
+            android:layout_height="wrap_content"
+            android:id="@+id/lv_petitions"
+            tools:ignore="MissingConstraints">
+        </androidx.recyclerview.widget.RecyclerView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -5,9 +5,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuItemCompat;
 import androidx.databinding.DataBindingUtil;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,7 +21,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AbsListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -29,15 +32,14 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.joinacf.acf.activities.MainActivity;
+import com.joinacf.acf.activities.MyProfileActivity;
 import com.joinacf.acf.activities.NewComplaintActivity;
 import com.joinacf.acf.activities.NewLoginActivity;
-import com.joinacf.acf.activities.ProfileActivity;
 import com.joinacf.acf.adapters.HomePageAdapter;
 import com.joinacf.acf.databinding.FragmentFindnfixBinding;
 import com.joinacf.acf.modelclasses.WallPostsModel;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
-import com.joinacf.acf.network.ServiceCall;
 import com.joinacf.acf.R;
 import com.joinacf.acf.utilities.App;
 import com.pd.chocobar.ChocoBar;
@@ -68,7 +70,7 @@ public class FindnFixFragment extends BaseFragment {
     String strPersonName,strPersonEmail,strLoginType;
     int mLastFirstVisibleItem;
     int mLastVisibleItemCount;
-
+    Context context;
     public static FindnFixFragment newInstance() {
         return new FindnFixFragment();
     }
@@ -84,7 +86,7 @@ public class FindnFixFragment extends BaseFragment {
         //return inflater.inflate(R.layout.fragment_findnfix, container, false);
 
         dataBiding = DataBindingUtil.inflate(inflater, R.layout.fragment_findnfix, null, false);
-
+        context = getContext();
         setActionBarTitle(getString(R.string.title_findandFix));
         init();
         LoadAdapter();
@@ -104,32 +106,18 @@ public class FindnFixFragment extends BaseFragment {
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         ((MainActivity)getActivity()).showBottomNavigation();
-
-        dataBiding.lvFindnFixFeed.setOnScrollListener(new AbsListView.OnScrollListener() {
-            int last_item;
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-
-            }
+        dataBiding.lvFindnFixFeed.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
-            public void onScroll(AbsListView view, int firstVisibleItem,
-                                 int visibleItemCount, int totalItemCount) {
-                if (mLastFirstVisibleItem > firstVisibleItem) {
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0) {
                     Log.e(getClass().toString(), "scrolling up");
                     ((MainActivity)getActivity()).hideBottomNavigation();
-                } else if (mLastFirstVisibleItem < firstVisibleItem) {
+                } else {
                     Log.e(getClass().toString(), "scrolling down");
                     ((MainActivity)getActivity()).showBottomNavigation();
-                } else if (mLastVisibleItemCount < visibleItemCount) {
-                    Log.e(getClass().toString(), "scrolling down");
-                    ((MainActivity)getActivity()).showBottomNavigation();
-                } else if (mLastVisibleItemCount > visibleItemCount) {
-                    Log.e(getClass().toString(), "scrolling up");
-                    ((MainActivity)getActivity()).hideBottomNavigation();
                 }
-                mLastFirstVisibleItem = firstVisibleItem;
-                mLastVisibleItemCount = visibleItemCount;
             }
         });
     }
@@ -212,7 +200,10 @@ public class FindnFixFragment extends BaseFragment {
     }
 
     private void populateListView(ArrayList<WallPostsModel.Result> wallPostData) {
-        adapter = new HomePageAdapter(getActivity(),wallPostData);
+        adapter = new HomePageAdapter(context,wallPostData);
+        dataBiding.lvFindnFixFeed.setLayoutManager(new LinearLayoutManager(context));
+        dataBiding.lvFindnFixFeed.setItemAnimator(new DefaultItemAnimator());
+        dataBiding.lvFindnFixFeed.setNestedScrollingEnabled(false);
         dataBiding.lvFindnFixFeed.setAdapter(adapter);
         hideProgressDialog(getActivity());
     }
@@ -251,7 +242,7 @@ public class FindnFixFragment extends BaseFragment {
             case R.id.myprofile:
                 Intent intent = null;
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                    intent = new Intent(getContext(), ProfileActivity.class);
+                    intent = new Intent(getContext(), MyProfileActivity.class);
                 }
                 getActivity().startActivity(intent);
                 break;

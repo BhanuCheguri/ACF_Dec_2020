@@ -35,10 +35,11 @@
             android:text="No Data" />
     </LinearLayout>
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/lv_SPpetitions">
-    </ListView>
+        android:layout_height="wrap_content"
+        android:id="@+id/lv_SPpetitions"
+        tools:ignore="MissingConstraints">
+    </androidx.recyclerview.widget.RecyclerView>
 </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +17,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -31,6 +33,7 @@ public class BaseActivity extends AppCompatActivity {
     private static final String TAG = "BaseActivity";
     SharedPreferences pref;
     ProgressDialog dialog;
+    Dialog customDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -201,10 +204,33 @@ public class BaseActivity extends AppCompatActivity {
         }else{
             dialog = new ProgressDialog(activity);
         }
+        dialog.setIcon(R.mipmap.ic_dataprocessing);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(false);
         dialog.setMessage(Msg);
         dialog.show();
+    }
+
+
+    public void hideCustomProgressDialog(Activity activity)
+    {
+        if(customDialog.isShowing())
+            customDialog.dismiss();
+    }
+
+    public void showCustomProgressDialog(Activity activity,String strText,int res)
+    {
+        customDialog = new Dialog(activity);
+        customDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        customDialog.setContentView(R.layout.dialog_processdats_layout);
+        TextView txtdata = (TextView)customDialog.findViewById(R.id.tvData);
+        ImageView Imgdata = (ImageView)customDialog.findViewById(R.id.imgdata);
+        Imgdata.setImageResource(res);
+        txtdata.setText(strText);
+        customDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        //customDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        customDialog.setCancelable(false);
+        customDialog.show();
     }
 
     public void CustomDialog(Context context,String title,String msg,String subMsg)

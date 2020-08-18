@@ -1,7 +1,6 @@
 package com.joinacf.acf.activities;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -20,15 +19,12 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.TranslateAnimation;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.Fragment;
 
 
 import com.crashlytics.android.Crashlytics;
@@ -43,8 +39,8 @@ import com.joinacf.acf.fragments.CorruptionFragment;
 import com.joinacf.acf.fragments.FindnFixFragment;
 import com.joinacf.acf.fragments.HomeFragment;
 import com.joinacf.acf.fragments.MoreGridFragment;
+import com.joinacf.acf.fragments.MyPetitionListFragment;
 import com.joinacf.acf.fragments.SocialEvilFragment;
-import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.utilities.App;
 import com.joinacf.acf.utilities.LocationHandler;
@@ -61,16 +57,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import io.fabric.sdk.android.services.common.Crash;
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 public class MainActivity extends BaseActivity {
 
@@ -116,9 +104,7 @@ public class MainActivity extends BaseActivity {
 
     };
 
-
     private void loadHomeFragment() {
-
         HomeFragment fragment = HomeFragment.newInstance();
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_frame, fragment);
@@ -126,7 +112,6 @@ public class MainActivity extends BaseActivity {
     }
 
     private void loadCorruptionFragment() {
-
         CorruptionFragment fragment = CorruptionFragment.newInstance();
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_frame, fragment);
@@ -134,14 +119,13 @@ public class MainActivity extends BaseActivity {
     }
 
     private void loadFinnFixFragment() {
-
         FindnFixFragment fragment = FindnFixFragment.newInstance();
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_frame, fragment);
         ft.commit();
     }
-    private void loadSocialEvilFragment() {
 
+    private void loadSocialEvilFragment() {
         SocialEvilFragment fragment = SocialEvilFragment.newInstance();
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_frame, fragment);
@@ -149,15 +133,13 @@ public class MainActivity extends BaseActivity {
     }
 
     private void loadMyPetitionsFragment() {
-
-        MyPetitionListActivity fragment = MyPetitionListActivity.newInstance();
+        MyPetitionListFragment fragment = MyPetitionListFragment.newInstance();
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_frame, fragment);
         ft.commit();
     }
 
     private void loadMoreFragment() {
-
         MoreGridFragment fragment = MoreGridFragment.newInstance();
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_frame, fragment);
@@ -167,32 +149,32 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_main);
-
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         apiRetrofitClient = new APIRetrofitClient();
+        boolean bFirst = getBooleanSharedPreference(MainActivity.this, "FirstTime");
 
         navigation = (BottomNavigationViewNew) findViewById(R.id.bottom_navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navigation.setVisibility(View.VISIBLE);
         showBottomNavigation();
         boolean isLocationEnabled = isLocationEnabled(MainActivity.this);
-        if(isLocationEnabled){
-           getCurrentLocation();
-        }else
-        {
-            LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-            if( !locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ) {
-                new AlertDialog.Builder(MainActivity.this)
-                        .setTitle("GPS not found")  // GPS not found
-                        .setMessage("Want to enable?") // Want to enable?
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                            }
-                        })
-                        .setNegativeButton("No", null)
-                        .show();
+        if(bFirst) {
+            if (isLocationEnabled) {
+                getCurrentLocation();
+            } else {
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("GPS not found")  // GPS not found
+                            .setMessage("Want to enable?") // Want to enable?
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                                }
+                            })
+                            .setNegativeButton("No", null)
+                            .show();
+                }
             }
         }
 
@@ -231,27 +213,27 @@ public class MainActivity extends BaseActivity {
     public void hideBottomNavigation()
     {
         navigation.setVisibility(View.GONE);
-        TranslateAnimation animate = new TranslateAnimation(
+        /*TranslateAnimation animate = new TranslateAnimation(
                 0,                 // fromXDelta
                 0,                 // toXDelta
                 0,                 // fromYDelta
                 navigation.getHeight()); // toYDelta
         animate.setDuration(500);
         animate.setFillAfter(true);
-        navigation.startAnimation(animate);
+        navigation.startAnimation(animate);*/
     }
 
     public void showBottomNavigation()
     {
         navigation.setVisibility(View.VISIBLE);
-        TranslateAnimation animate = new TranslateAnimation(
+       /* TranslateAnimation animate = new TranslateAnimation(
                 0,                 // fromXDelta
                 0,                 // toXDelta
                 navigation.getHeight(),  // fromYDelta
                 0);                // toYDelta
         animate.setDuration(500);
         animate.setFillAfter(true);
-        navigation.startAnimation(animate);
+        navigation.startAnimation(animate);*/
     }
 
     public class AsyncUpdateMembersLocation extends AsyncTask<String,String,String> {
@@ -373,16 +355,13 @@ public class MainActivity extends BaseActivity {
                 e.printStackTrace();
                 Crashlytics.logException(e);
             }
-
             Call<ResponseBody> call = api.updateMemLocation(json);
-
             call.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     ResponseBody myProfileData = response.body();
                     System.out.println(myProfileData);
                 }
-
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
                     Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
@@ -490,29 +469,38 @@ public class MainActivity extends BaseActivity {
         return true;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.e("FromActivity","resume");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.e("FromActivity","Pause");
+
+    }
 }
 
+
+
  /*extends BottomBarHolderActivity implements HomeFragment.OnFragmentInteractionListener {
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         NavigationPage page1 = new NavigationPage("Home", ContextCompat.getDrawable(this, R.drawable.ic_home_black_24dp), HomeFragment.newInstance());
         NavigationPage page2 = new NavigationPage("Corruption", ContextCompat.getDrawable(this, R.drawable.ic_corruption), CorruptionFragment.newInstance());
         //NavigationPage page3 = new NavigationPage("Adulteration", ContextCompat.getDrawable(this, R.drawable.ic_adulteration), AdulterationFragment.newInstance());
         NavigationPage page4 = new NavigationPage("Find n Fix", ContextCompat.getDrawable(this, R.drawable.ic_findnfix), FindnFixFragment.newInstance());
         NavigationPage page5 = new NavigationPage("Social Evil", ContextCompat.getDrawable(this, R.drawable.ic_social_evil), SocialEvilFragment.newInstance());
         NavigationPage page6 = new NavigationPage("More", ContextCompat.getDrawable(this, R.drawable.ic_more), MoreGridFragment.newInstance());
-
         List<NavigationPage> navigationPages = new ArrayList<>();
         navigationPages.add(page1);
         navigationPages.add(page2);
          navigationPages.add(page4);
         navigationPages.add(page5);
         navigationPages.add(page6);
-
         super.setupBottomBarHolderActivity(navigationPages);
     }
 }*/

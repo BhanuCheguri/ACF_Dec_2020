@@ -10,7 +10,7 @@ import android.view.WindowManager;
 import com.joinacf.acf.activities.AddPetitionActivity;
 import com.joinacf.acf.activities.BaseActivity;
 import com.joinacf.acf.R;
-import com.joinacf.acf.activities.MyPetitionListActivity;
+import com.joinacf.acf.fragments.MyPetitionListFragment;
 import com.joinacf.acf.databinding.ActivityPetitionBinding;
 
 public class PetitionActivity extends BaseActivity {
@@ -29,7 +29,7 @@ public class PetitionActivity extends BaseActivity {
         dataBiding.llMyPetitionList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(PetitionActivity.this, MyPetitionListActivity.class);
+                Intent intent = new Intent(PetitionActivity.this, MyPetitionListFragment.class);
                 startActivity(intent);
             }
         });

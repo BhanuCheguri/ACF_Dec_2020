@@ -1,8 +1,12 @@
 package com.joinacf.acf.activities;
 
+import androidx.annotation.NonNull;
 import androidx.core.view.MenuItemCompat;
 import androidx.databinding.DataBindingUtil;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -10,6 +14,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.TranslateAnimation;
+import android.widget.ListAdapter;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -22,6 +28,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.joinacf.acf.R;
 import com.joinacf.acf.adapters.HomePageAdapter;
+import com.joinacf.acf.bottom_nav.BottomNavigationViewNew;
+import com.joinacf.acf.fragments.CorruptionFragment;
+import com.joinacf.acf.fragments.FindnFixFragment;
+import com.joinacf.acf.fragments.HomeFragment;
+import com.joinacf.acf.fragments.MoreGridFragment;
+import com.joinacf.acf.fragments.SocialEvilFragment;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.modelclasses.WallPostsModel;
@@ -39,7 +51,7 @@ import retrofit2.Retrofit;
 
 import static com.facebook.FacebookSdk.getApplicationContext;
 
-public class MoreActivity extends BaseActivity {
+public class MoreActivity extends BaseActivity{
 
     ActivityMoreBinding dataBiding;
     APIRetrofitClient apiRetrofitClient;
@@ -53,18 +65,16 @@ public class MoreActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_more);
         dataBiding = DataBindingUtil.setContentView(this, R.layout.activity_more);
         init();
-        LoadAdapter();
     }
 
     private void  init() {
+        getSupportActionBar().setTitle(strName);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.mipmap.ic_launcher_icon);
         getSupportActionBar().setBackgroundDrawable(getResources().getDrawable(R.drawable.gradient_theme));
-
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         Bundle b = getIntent().getExtras();
@@ -72,9 +82,8 @@ public class MoreActivity extends BaseActivity {
         {
             strCategoryID = b.getString("CatergoryID").toString();
             strName = b.getString("Name").toString();
+            LoadAdapter();
         }
-        getSupportActionBar().setTitle(strName);
-
     }
 
     private void LoadAdapter()
@@ -90,7 +99,6 @@ public class MoreActivity extends BaseActivity {
                     .red()   // in built red ChocoBar
                     .show();
         }
-
 
         dataBiding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -144,8 +152,10 @@ public class MoreActivity extends BaseActivity {
     }
 
     private void populateListView(ArrayList<WallPostsModel.Result> wallPostData) {
-        adapter = new HomePageAdapter(MoreActivity.this,wallPostData);
-        dataBiding.lvMoreFeed.setAdapter(adapter);
+        //dataBiding.lvMoreFeed.setAdapter(adapter);
+        dataBiding.lvMoreFeed.setLayoutManager(new LinearLayoutManager(MoreActivity.this));
+        dataBiding.lvMoreFeed.setItemAnimator(new DefaultItemAnimator());
+        dataBiding.lvMoreFeed.setAdapter(new HomePageAdapter(MoreActivity.this,wallPostData));
         hideProgressDialog(MoreActivity.this);
     }
 
@@ -184,7 +194,7 @@ public class MoreActivity extends BaseActivity {
 
                 break;
             case R.id.myprofile:
-                Intent intent = new Intent(MoreActivity.this, ProfileActivity.class);
+                Intent intent = new Intent(MoreActivity.this, MyProfileActivity.class);
                 startActivity(intent);
                 break;
 

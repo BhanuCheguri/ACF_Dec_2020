@@ -5,6 +5,7 @@ import com.joinacf.acf.modelclasses.AddMemberResult;
 import com.joinacf.acf.modelclasses.AddPetitionRequest;
 import com.joinacf.acf.modelclasses.AddPetitionResult;
 import com.joinacf.acf.modelclasses.DashboardCategories;
+import com.joinacf.acf.modelclasses.KnowYourActModel;
 import com.joinacf.acf.modelclasses.ModeratorListModel;
 import com.joinacf.acf.modelclasses.ModeratorStatusModel;
 import com.joinacf.acf.modelclasses.MyPostingModel;
@@ -136,12 +137,15 @@ public interface APIInterface {
     @Headers("Content-Type: application/json")
     Call<ResponseBody> uploadImages(@Query("item") String item,@Body RequestBody requestBody);
 
-    @Multipart
-    @POST("petitions/upload")
-    Call<ResponseBody> uploadPetitionImages(@Query("item") String item,@PartMap Map<String, RequestBody> Files);
-
     @POST("posts/upload")
     Call<JSONObject> uploadMultiFile(@Header("item") String authorization, @Body RequestBody file);
+
+    @POST("petitions/upload")
+    Call<JSONObject> uploadPetitionMultiFile(@Header("pid") String authorization, @Body RequestBody file);
+
+    @GET("moderation/getserviceproviders?")
+    Call<KnowYourActModel> getKnowYourActs();
+
 
     @POST("posts/upload")
     Call<JSONObject> uploadFiles(@Header("item") String authorization, @Part MultipartBody.Part file);

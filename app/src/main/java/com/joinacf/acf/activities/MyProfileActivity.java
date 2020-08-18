@@ -28,7 +28,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 
 import java.util.ArrayList;
 
-public class ProfileActivity extends BaseActivity {
+public class MyProfileActivity extends BaseActivity {
     APIRetrofitClient apiRetrofitClient;
     ActivityProfileBinding binding;
     String strLoginType;
@@ -45,53 +45,60 @@ public class ProfileActivity extends BaseActivity {
     }
 
     private void getProfileDetails() {
-        Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
-        APIInterface api = retrofit.create(APIInterface.class);
-        String strPhotoURL = getStringSharedPreference(ProfileActivity.this, "personPhoto");
+        String strPhotoURL = getStringSharedPreference(MyProfileActivity.this, "personPhoto");
         Glide.with(this)
                 .load(strPhotoURL)
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .skipMemoryCache(true)
                 .into(binding.profileImage);
 
-        String strMobileNo = getStringSharedPreference(ProfileActivity.this,"mobile");
-        String strEmailId = getStringSharedPreference(ProfileActivity.this,"personEmail");
+        final String strMobileNo = getStringSharedPreference(MyProfileActivity.this,"mobile");
+        String strEmailId = getStringSharedPreference(MyProfileActivity.this,"personEmail");
         System.out.println("Email::" + strEmailId);
         System.out.println("MobileNo::" + strMobileNo);
+
+        Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
+        APIInterface api = retrofit.create(APIInterface.class);
         Call<MyProfileModel> call = api.getProfileDetailsbyEmail(strEmailId);
 
         call.enqueue(new Callback<MyProfileModel>() {
             @Override
             public void onResponse(Call<MyProfileModel> call, Response<MyProfileModel> response) {
-                hideProgressDialog(ProfileActivity.this);
+                hideProgressDialog(MyProfileActivity.this);
                 MyProfileModel myProfileData = response.body();
                 if(myProfileData != null) {
                     String status = myProfileData.getStatus();
                     String msg = myProfileData.getMessage();
                     if (msg.equalsIgnoreCase("SUCCESS")) {
                         myProfileResult = myProfileData.getResult();
+
                         for (int i = 0; i < myProfileResult.size(); i++) {
                             binding.email.setText(myProfileResult.get(i).getEmail());
                             binding.name.setText(myProfileResult.get(i).getFullName());
+
                             if(!myProfileResult.get(i).getMobile().equalsIgnoreCase(""))
                                 binding.mobileNo.setText(myProfileResult.get(i).getMobile());
+                            else if(!strMobileNo.equalsIgnoreCase(""))
+                                binding.mobileNo.setText(strMobileNo);
                             else
                                 binding.mobileNo.setText("XXXXXXXXXX");
+
                             if(myProfileResult.get(i).getGender().equalsIgnoreCase("M"))
                                 binding.gender.setText("Male");
                             else if(myProfileResult.get(i).getGender().equalsIgnoreCase("F"))
                                 binding.gender.setText("Female");
                             else
                                 binding.gender.setText("");
-                            putStringSharedPreference(ProfileActivity.this,"MemberID",myProfileResult.get(i).getMemberID());
+
+                            putStringSharedPreference(MyProfileActivity.this,"MemberID",myProfileResult.get(i).getMemberID());
                         }
                     } else {
-                        showAlert(ProfileActivity.this,"Alert","No record with this Mobile Number","OK");
+                        showAlert(MyProfileActivity.this,"Alert","No record with this Mobile Number","OK");
                         binding.email.setText("");
                         binding.name.setText("");
                         binding.mobileNo.setText("");
                         binding.gender.setText("");
-                        putStringSharedPreference(ProfileActivity.this,"MemberID","");
+                        putStringSharedPreference(MyProfileActivity.this,"MemberID","");
                     }
                 }
             }
@@ -106,14 +113,14 @@ public class ProfileActivity extends BaseActivity {
     public void init()
     {
         apiRetrofitClient = new APIRetrofitClient();
-        showProgressDialog(ProfileActivity.this);
+        showProgressDialog(MyProfileActivity.this);
         getProfileDetails();
-        strLoginType = getStringSharedPreference(ProfileActivity.this, "LoginType");
+        strLoginType = getStringSharedPreference(MyProfileActivity.this, "LoginType");
 
         binding.myPostings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ProfileActivity.this, MyPostingsActivity.class);
+                Intent intent = new Intent(MyProfileActivity.this, MyPostingsActivity.class);
                 startActivity(intent);
             }
         });
@@ -138,21 +145,21 @@ public class ProfileActivity extends BaseActivity {
                 GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                         .requestEmail()
                         .build();
-                GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(ProfileActivity.this, gso);
+                GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(MyProfileActivity.this, gso);
                 googleSignInClient.signOut();
-                putBooleanSharedPreference(ProfileActivity.this, "LoggedIn",false);
+                putBooleanSharedPreference(MyProfileActivity.this, "LoggedIn",false);
                 Toast.makeText(getApplicationContext(), "User Logged out successfully", Toast.LENGTH_LONG).show();
 
-                Intent intent = new Intent(ProfileActivity.this, NewLoginActivity.class);
+                Intent intent = new Intent(MyProfileActivity.this, NewLoginActivity.class);
                 startActivity(intent);
                 finish();
             } else {
                 FacebookSdk.sdkInitialize(getApplicationContext());
-                AppEventsLogger.activateApp(ProfileActivity.this);
+                AppEventsLogger.activateApp(MyProfileActivity.this);
                 LoginManager.getInstance().logOut();
-                putBooleanSharedPreference(ProfileActivity.this, "LoggedIn",false);
+                putBooleanSharedPreference(MyProfileActivity.this, "LoggedIn",false);
 
-                Intent intent = new Intent(ProfileActivity.this, NewLoginActivity.class);
+                Intent intent = new Intent(MyProfileActivity.this, NewLoginActivity.class);
                 startActivity(intent);
                 finish();
             }

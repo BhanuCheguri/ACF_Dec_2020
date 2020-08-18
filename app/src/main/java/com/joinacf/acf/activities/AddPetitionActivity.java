@@ -85,6 +85,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -371,7 +373,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            showProgressDialog(AddPetitionActivity.this);
+            showCustomProgressDialog(AddPetitionActivity.this,"Processing your data...",R.mipmap.ic_dataprocessing);
         }
         @Override
         protected String doInBackground(String... params) {
@@ -394,6 +396,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
+            hideCustomProgressDialog(AddPetitionActivity.this);
             if(!result.equalsIgnoreCase("") && result != null){
                 try {
                     JSONObject jobject = new JSONObject(result);
@@ -413,15 +416,26 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                                             strOTP = String.valueOf(nOTP);
                                         }
                                     }
-                                    CustomDialog(AddPetitionActivity.this,"Petition added Successfully","",String.valueOf("Verification Code : " + strOTP));
+                                    
+                                    if(strPID != null) {
+                                        if (App.isNetworkAvailable())
+                                            new AsyncUploadImages().execute(strPID);
+                                        else {
+                                            ChocoBar.builder().setView(binding.mainLayout)
+                                                    .setText("No Internet connection")
+                                                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                                                    //.setActionText(android.R.string.ok)
+                                                    .red()   // in built red ChocoBar
+                                                    .show();
+                                        }
+                                    }else{
+                                        Toast.makeText(AddPetitionActivity.this, "Invalid Petition ID", Toast.LENGTH_SHORT).show();
+                                    }
                                 }
                             }
                         }
                     }
-                    binding.etTitle.setText("");
-                   // binding.etComment.setText("");
-                    binding.spOffice.setText("");
-                    binding.spSelection.setText("");
+
                 }catch (Exception e)
                 {
                     Crashlytics.logException(e);
@@ -698,14 +712,14 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            showProgressDialog(AddPetitionActivity.this,"Please wait.. We are uploading your images");
+            showCustomProgressDialog(AddPetitionActivity.this,"Classifying your data...",R.mipmap.ic_classifydata);
         }
         @Override
         protected String doInBackground(String... strings) {
             String result = null;
             if(!lstPathURI.isEmpty())
             {
-                result = mulipleFileUploadFile(lstPathURI,strings[0]);
+                uploadMultiFile(strings[0],lstPathURI);
             }
 
             System.out.println("Upload Images Result::" + result);
@@ -715,7 +729,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            hideProgressDialog(AddPetitionActivity.this);
+            hideCustomProgressDialog(AddPetitionActivity.this);
 
             if(result != null && !result.equalsIgnoreCase("")) {
                 if(result != null && !result.equalsIgnoreCase("")) {
@@ -729,9 +743,6 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                                         for (int i = 0; i < jsonArray.length(); i++) {
                                             JSONObject jsonObject = jsonArray.getJSONObject(i);
                                             showAlert(AddPetitionActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
-                                        /*if(jsonObject.has("Status")) {
-                                            int Status = jsonObject.getInt("Status");
-                                        }*/
                                         }
                                     }
                                 }
@@ -742,7 +753,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                     }
                 }
             }else {
-                showAlert(AddPetitionActivity.this, "Failed to upload data", "Result:" + result, "OK");
+                showAlert(AddPetitionActivity.this, "Failed to upload Images", "Result:" + result, "OK");
             }
             binding.imageView1.setImageResource(R.drawable.ic_add_item);
             binding.imageView2.setImageResource(R.drawable.ic_add_item);
@@ -750,227 +761,68 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
             binding.imageView3.setImageResource(R.drawable.ic_add_item);
             binding.imageView4.setImageResource(R.drawable.ic_add_item);
             binding.imageView5.setImageResource(R.drawable.ic_add_item);
-            //binding.imageView6.setImageResource(R.drawable.ic_add_item);
         }
     }
+    private void uploadMultiFile(String pid, ArrayList<String> filePaths) {
+        Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
+        APIInterface api = retrofit.create(APIInterface.class);
 
-
-    private String mulipleFileUploadFile(ArrayList<String> fileUri, String item) {
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-            OkHttpClient clientWith30sTimeout = okHttpClient.newBuilder()
-                    .readTimeout(30, TimeUnit.SECONDS)
-                    .build();
-
-            Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
-            APIInterface api = retrofit.create(APIInterface.class);
-            Map<String, RequestBody> maps = new HashMap<>();
-
-
-            if (fileUri != null && fileUri.size() > 0) {
-                for (int i = 0; i < fileUri.size(); i++) {
-
-                    Uri contentURI = Uri.fromFile(new File(fileUri.get(i).toString()));
-                    String filePath = getPathFromUri(AddPetitionActivity.this,contentURI );
-                    File file1 = new File(filePath);
-
-                    if (filePath != null && filePath.length() > 0) {
-                        if (file1.exists()) {
-                            okhttp3.RequestBody requestFile = okhttp3.RequestBody.create(okhttp3.MediaType.parse("multipart/form-data"), file1);
-                            String filename = "imagePath" + i; //key for upload file like : imagePath0
-                            maps.put(filename + "\"; filename=\"" + file1.getName(), requestFile);
-                        }
-                    }
-                }
-            }
-
-            //hear is the your json request
-            Call<ResponseBody> call = api.uploadPetitionImages(item,maps);
-            call.enqueue(new Callback<ResponseBody>() {
-                @SuppressLint("LongLogTag")
-                @Override
-                public void onResponse(Call<ResponseBody> call,
-                                       Response<ResponseBody> response) {
-                    try {
-                        Log.i(TAG, "success");
-                        strResponse = response.body().toString();
-                        Log.d("body==>", response.body().toString() + "");
-                        System.out.println("body==>" + response.body().toString());
-
-                    }catch (Exception e)
-                    {
-                        strResponse = "";
-                        e.printStackTrace();
-                        Crashlytics.logException(e);
-                        hideProgressDialog(AddPetitionActivity.this);
-                        //showErrorAlert(AddPetitionActivity.this,"Failed to upload images");
-                    }
-                }
-
-                @SuppressLint("LongLogTag")
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Log.e(TAG, t.getMessage());
-                    hideProgressDialog(AddPetitionActivity.this);
-                    showErrorAlert(AddPetitionActivity.this,t.toString());
-                }
-            });
-        }catch (Exception e)
-        {
-            hideProgressDialog(AddPetitionActivity.this);
-            e.printStackTrace();
-            Crashlytics.logException(e);
+        MultipartBody.Builder builder = new MultipartBody.Builder();
+        builder.setType(MultipartBody.FORM);
+        List<MultipartBody.Part> list = new ArrayList<>();
+        // Multiple Images
+        for (int i = 0; i < filePaths.size(); i++) {
+            File file = new File(filePaths.get(i));
+            MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("image"+i, file.getName(),
+                    RequestBody.create(MediaType.parse("application/octet-stream"), file));
+            builder.addPart(fileToUpload);
         }
-        return strResponse;
-    }
 
-    public static String getPathFromUri(final Context context, final Uri uri) {
+        MultipartBody requestBody = builder.build();
 
-        // check here to KITKAT or new version
-        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-        String selection = null;
-        String[] selectionArgs = null;
-        // DocumentProvider
-        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
-            // ExternalStorageProvider
-            if (isExternalStorageDocument(uri)) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
+        Call<JSONObject> call = api.uploadPetitionMultiFile(pid,requestBody);
+        call.enqueue(new Callback<JSONObject>() {
+            @Override
+            public void onResponse(Call<JSONObject> call, Response<JSONObject> response) {
+                String strResponse = response.toString();
+                System.out.println( "AddPetitionActivity.this ::: uploadMultiFile :::" +response.toString());
 
-                String fullPath = getPathFromExtSD(split);
-                if (fullPath != "") {
-                    return fullPath;
-                } else {
-                    return null;
-                }
-            }
-
-            // DownloadsProvider
-            else if (isDownloadsDocument(uri)) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    final String id;
-                    Cursor cursor = null;
-                    try {
-                        cursor = context.getContentResolver().query(uri, new String[]{MediaStore.MediaColumns.DISPLAY_NAME}, null, null, null);
-                        if (cursor != null && cursor.moveToFirst()) {
-                            String fileName = cursor.getString(0);
-                            String path = Environment.getExternalStorageDirectory().toString() + "/Download/" + fileName;
-                            if (!TextUtils.isEmpty(path)) {
-                                return path;
+                if(strResponse != null && !strResponse.equalsIgnoreCase("")) {
+                    if(strResponse != null && !strResponse.equalsIgnoreCase("")) {
+                        try {
+                            JSONObject jobject = new JSONObject(strResponse);
+                            if (strResponse.length() > 0) {
+                                if (jobject.has("message")) {
+                                    if (jobject.getString("message").equalsIgnoreCase("SUCCESS")) {
+                                        CustomDialog(AddPetitionActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
+                                        binding.etTitle.setText("");
+                                        binding.spOffice.setText("");
+                                        binding.spSelection.setText("");
+                                        binding.imageView1.setImageResource(R.drawable.ic_add_item);
+                                        binding.imageView2.setImageResource(R.drawable.ic_add_item);
+                                        binding.imageView3.setImageResource(R.drawable.ic_add_item);
+                                        binding.imageView3.setImageResource(R.drawable.ic_add_item);
+                                        binding.imageView4.setImageResource(R.drawable.ic_add_item);
+                                        binding.imageView5.setImageResource(R.drawable.ic_add_item);
+                                    }
+                                }
                             }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                    } finally {
-                        if (cursor != null)
-                            cursor.close();
                     }
-                    id = DocumentsContract.getDocumentId(uri);
-                    if (!TextUtils.isEmpty(id)) {
-                        if (id.startsWith("raw:")) {
-                            return id.replaceFirst("raw:", "");
-                        }
-                        String[] contentUriPrefixesToTry = new String[]{
-                                "content://downloads/public_downloads",
-                                "content://downloads/my_downloads"
-                        };
-                        for (String contentUriPrefix : contentUriPrefixesToTry) {
-                            try {
-                                final Uri contentUri = ContentUris.withAppendedId(Uri.parse(contentUriPrefix), Long.valueOf(id));
-
-                         /*   final Uri contentUri = ContentUris.withAppendedId(
-                                    Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));*/
-
-                                return getDataColumn(context, contentUri, null, null);
-                            } catch (NumberFormatException e) {
-                                //In Android 8 and Android P the id is not a number
-                                return uri.getPath().replaceFirst("^/document/raw:", "").replaceFirst("^raw:", "");
-                            }
-                        }
-
-
-                    }
-
-                } else {
-                    final String id = DocumentsContract.getDocumentId(uri);
-                    final boolean isOreo = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-                    if (id.startsWith("raw:")) {
-                        return id.replaceFirst("raw:", "");
-                    }
-                    try {
-                        contentUri = ContentUris.withAppendedId(
-                                Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-
-                    } catch (NumberFormatException e) {
-                        e.printStackTrace();
-                    }
-                    if (contentUri != null) {
-                        return getDataColumn(context, contentUri, null, null);
-                    }
+                }else {
+                    showAlert(AddPetitionActivity.this, "Failed to upload Images", "Result:" + response.toString(), "OK");
                 }
-
-
-            }
-            // MediaProvider
-            else if (isMediaDocument(uri)) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-
-                Uri contentUri = null;
-
-                if ("image".equals(type)) {
-                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                } else if ("video".equals(type)) {
-                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                } else if ("audio".equals(type)) {
-                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                }
-                selection = "_id=?";
-                selectionArgs = new String[]{split[1]};
-
-
-                return getDataColumn(context, contentUri, selection,
-                        selectionArgs);
-            } else if (isGoogleDriveUri(uri)) {
-                return getDriveFilePath(uri, context);
-            }
-        }
-
-
-        // MediaStore (and general)
-        else if ("content".equalsIgnoreCase(uri.getScheme())) {
-
-            if (isGooglePhotosUri(uri)) {
-                return uri.getLastPathSegment();
             }
 
-            if (isGoogleDriveUri(uri)) {
-                return getDriveFilePath(uri, context);
+            @Override
+            public void onFailure(Call<JSONObject> call, Throwable t) {
+                Log.d(TAG, "Error " + t.getMessage());
+                showAlert(AddPetitionActivity.this, "Failed to upload Images", "Result:" + t.getMessage(), "OK");
             }
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.N) {
-                // return getFilePathFromURI(context,uri);
-                return getMediaFilePathForN(uri, context);
-                // return getRealPathFromURI(context,uri);
-            } else {
-
-                return getDataColumn(context, uri, null, null);
-            }
-
-
-        }
-        // File
-        else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            return uri.getPath();
-        }
-
-        return null;
+        });
     }
-
-    /**
-     * Check if a file exists on device
-     *
-     * @param filePath The absolute file path
-     */
     private static boolean fileExists(String filePath) {
         File file = new File(filePath);
 
@@ -1195,16 +1047,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
-                /*if(App.isNetworkAvailable())
-                    new AsyncUploadImages().execute(strPID);
-                else{
-                    ChocoBar.builder().setView(binding.mainLayout)
-                            .setText("No Internet connection")
-                            .setDuration(ChocoBar.LENGTH_INDEFINITE)
-                            //.setActionText(android.R.string.ok)
-                            .red()   // in built red ChocoBar
-                            .show();
-                }*/
+                
             }
         });
 

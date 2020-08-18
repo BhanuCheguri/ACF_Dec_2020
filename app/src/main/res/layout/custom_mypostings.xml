@@ -33,6 +33,11 @@
                 android:textColor="@color/colorDarkBlue"
                 android:textSize="@dimen/dimen_16"
                 android:textStyle="normal" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/linearImages">
 
             <ImageView
                 android:id="@+id/imgFilePath"
@@ -63,7 +68,7 @@
                 </LinearLayout>
 
             </HorizontalScrollView>
-
+        </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"

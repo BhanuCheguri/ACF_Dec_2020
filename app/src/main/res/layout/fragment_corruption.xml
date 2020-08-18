@@ -20,50 +20,6 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <!--<android.support.v7.widget.Toolbar
-                android:id="@+id/tool_bar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:title="@string/title"/>-->
-
-            <!--<RelativeLayout
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:id="@+id/rl">
-
-                <EditText
-                    android:id="@+id/search"
-                    android:layout_height="wrap_content"
-                    android:layout_width="fill_parent"
-                    android:inputType="textAutoComplete"
-                    android:padding="8dp"
-                    android:hint="@string/search_for_post"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
-                    android:background="@drawable/editbox_blueborder"/>
-
-                <ImageView
-                    android:id="@+id/imageButton1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:padding="3dp"
-                    android:src="@android:drawable/ic_menu_search"/>
-
-                <ImageView
-                    android:id="@+id/imageButton2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_toLeftOf="@+id/imageButton1"
-                    android:layout_centerVertical="true"
-                    android:padding="3dp"
-                    android:src="@android:drawable/ic_btn_speak_now"/>
-            </RelativeLayout>-->
-
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -91,10 +47,10 @@
                         android:text="No Data" />
                 </LinearLayout>
 
-                <ListView
+                <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/lv_CategoryFeed"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:divider="@android:color/transparent"/>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
