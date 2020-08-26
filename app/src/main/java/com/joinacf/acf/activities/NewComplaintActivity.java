@@ -132,6 +132,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
+import static com.joinacf.acf.utilities.DataUtilities.openFile;
+
 public class NewComplaintActivity extends BaseActivity /*implements View.OnFocusChangeListener*/ {
 
     private static Uri contentUri = null;
@@ -873,36 +875,10 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
                 @Override
                 public void onClick(View view) {
                     try {
-                        
-                        if(!strMimeType.equalsIgnoreCase("mp4") && !strMimeType.equalsIgnoreCase("jpg") && !strMimeType.equalsIgnoreCase("png")) {
-                            Intent intent = new Intent(Intent.ACTION_VIEW);
-                            intent.setDataAndType(lstModelData.get(position).getUri(), strMimeType);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                            startActivity(intent);
-                        }
-                        else
-                        {
-                            if(strMimeType.equalsIgnoreCase("mp4"))
-                            {
-                                Intent intent = new Intent(context,ViewMediaActivity.class);
-                                intent.putExtra("FilePath",lstModelData.get(position).getUri().toString());
-                                intent.putExtra("FileType","mp4");
-                                context.startActivity(intent);
-
-                            }else  if(strMimeType.equalsIgnoreCase("jpg") ||  strMimeType.equalsIgnoreCase("png")){
-                                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                                lstModelData.get(position).getBitmap().compress(Bitmap.CompressFormat.PNG, 100, stream);
-                                byte[] byteArray = stream.toByteArray();
-
-                                Intent intent = new Intent(context,ViewMediaActivity.class);
-                                intent.putExtra("FilePath",byteArray);
-                                intent.putExtra("FileType","jpg");
-                                context.startActivity(intent);
-                            }
-                        }
+                        openFile(lstModelData.get(position).getUri(), strMimeType, context);
                     } catch (ActivityNotFoundException e) {
                         e.printStackTrace();
-                        Toast.makeText(context,"No Activity found to handle this file.Need to install supported Application",Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, "No Activity found to handle this file. Need to install supported Application", Toast.LENGTH_LONG).show();
                     }
                 }
             });

@@ -371,6 +371,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         try {
             Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
             startActivityForResult(signInIntent, RC_SIGN_IN);
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         }catch (Exception e) {
             Crashlytics.logException(e);
         }
@@ -379,10 +380,10 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
     private void facebookLogin()
     {
         try {
-            boolean loggedOut = AccessToken.getCurrentAccessToken() == null;
+            /*boolean loggedOut = AccessToken.getCurrentAccessToken() == null;
             if (!loggedOut) {
                 return;
-            }
+            }*/
             AccessTokenTracker fbTracker = new AccessTokenTracker() {
                 @Override
                 protected void onCurrentAccessTokenChanged(AccessToken accessToken, AccessToken accessToken2) {
@@ -829,6 +830,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
     private void reqPerm() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 
     private void printBasic() {

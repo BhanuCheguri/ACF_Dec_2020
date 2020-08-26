@@ -190,6 +190,9 @@ public class MyPetitionListFragment extends BaseFragment {
                 Intent intent = new Intent(getActivity(), AddPetitionActivity.class);
                 startActivity(intent);
                 break;
+            case R.id.help:
+                Toast.makeText(getActivity(), "Help", Toast.LENGTH_SHORT).show();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

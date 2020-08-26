@@ -1,6 +1,5 @@
 package com.joinacf.acf.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -69,10 +68,16 @@ public class KnowYourActsActivity extends BaseActivity implements View.OnClickLi
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 if(checkedId == R.id.rti) {
                     nRadioGroup = 0;
+                    dataBiding.howtoapply.setVisibility(View.VISIBLE);
+                    Toast.makeText(KnowYourActsActivity.this, "You have selected Right to Information", Toast.LENGTH_SHORT).show();
                 } else if(checkedId == R.id.rts) {
                     nRadioGroup = 1;
+                    dataBiding.howtoapply.setVisibility(View.GONE);
+                    Toast.makeText(KnowYourActsActivity.this, "You have selected Right to Service", Toast.LENGTH_SHORT).show();
                 } else {
                     nRadioGroup = 2;
+                    dataBiding.howtoapply.setVisibility(View.GONE);
+                    Toast.makeText(KnowYourActsActivity.this, "You have selected Citizens Chart", Toast.LENGTH_SHORT).show();
                 }
             }
         });

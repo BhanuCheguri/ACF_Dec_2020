@@ -264,9 +264,14 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
                         call.enqueue(new Callback<ResponseBody>() {
                             @Override
                             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                ResponseBody myProfileData = response.body();
-                                binding.llVerifyMobileNo.setVisibility(View.GONE);
-                                binding.llVerifyingOtp.setVisibility(View.VISIBLE);
+                                if(response.code() == 200)
+                                {
+                                    ResponseBody myProfileData = response.body();
+
+                                    binding.llVerifyMobileNo.setVisibility(View.GONE);
+                                    binding.llVerifyingOtp.setVisibility(View.VISIBLE);
+                                }else
+                                    Toast.makeText(getApplicationContext(), response.body().toString(), Toast.LENGTH_SHORT).show();
                             }
 
                             @Override

@@ -6,9 +6,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.databinding.DataBindingUtil;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,13 +17,10 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -63,6 +58,7 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.pd.chocobar.ChocoBar;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -82,12 +78,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -716,51 +709,18 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         }
         @Override
         protected String doInBackground(String... strings) {
-            String result = null;
+            System.out.println("lstPathURI ::" + lstPathURI);
             if(!lstPathURI.isEmpty())
             {
                 uploadMultiFile(strings[0],lstPathURI);
             }
-
-            System.out.println("Upload Images Result::" + result);
-            return result;
+            return null;
         }
 
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             hideCustomProgressDialog(AddPetitionActivity.this);
-
-            if(result != null && !result.equalsIgnoreCase("")) {
-                if(result != null && !result.equalsIgnoreCase("")) {
-                    try {
-                        JSONObject jobject = new JSONObject(result);
-                        if (result.length() > 0) {
-                            if (jobject.has("message")) {
-                                if (jobject.getString("message").equalsIgnoreCase("SUCCESS")) {
-                                    if (jobject.has("result")) {
-                                        JSONArray jsonArray = new JSONArray(jobject.getString("result"));
-                                        for (int i = 0; i < jsonArray.length(); i++) {
-                                            JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                            showAlert(AddPetitionActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }else {
-                showAlert(AddPetitionActivity.this, "Failed to upload Images", "Result:" + result, "OK");
-            }
-            binding.imageView1.setImageResource(R.drawable.ic_add_item);
-            binding.imageView2.setImageResource(R.drawable.ic_add_item);
-            binding.imageView3.setImageResource(R.drawable.ic_add_item);
-            binding.imageView3.setImageResource(R.drawable.ic_add_item);
-            binding.imageView4.setImageResource(R.drawable.ic_add_item);
-            binding.imageView5.setImageResource(R.drawable.ic_add_item);
         }
     }
     private void uploadMultiFile(String pid, ArrayList<String> filePaths) {
@@ -769,59 +729,92 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
 
         MultipartBody.Builder builder = new MultipartBody.Builder();
         builder.setType(MultipartBody.FORM);
-        List<MultipartBody.Part> list = new ArrayList<>();
+        File file= null;
         // Multiple Images
         for (int i = 0; i < filePaths.size(); i++) {
-            File file = new File(filePaths.get(i));
-            MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("image"+i, file.getName(),
+            if(!filePaths.get(i).equalsIgnoreCase("") && filePaths.get(i) != null) {
+                file = new File(filePaths.get(i));
+            }
+            System.out.println("image"+(i+1));
+            MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("image"+(i+1), file.getName(),
                     RequestBody.create(MediaType.parse("application/octet-stream"), file));
             builder.addPart(fileToUpload);
         }
 
         MultipartBody requestBody = builder.build();
 
-        Call<JSONObject> call = api.uploadPetitionMultiFile(pid,requestBody);
-        call.enqueue(new Callback<JSONObject>() {
+        Call<ResponseBody> call = api.uploadPetitionMultiFile(pid,requestBody);
+        call.enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<JSONObject> call, Response<JSONObject> response) {
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 String strResponse = response.toString();
+                System.out.println("uploadMultiFile :: "+strResponse);
                 System.out.println( "AddPetitionActivity.this ::: uploadMultiFile :::" +response.toString());
 
                 if(strResponse != null && !strResponse.equalsIgnoreCase("")) {
-                    if(strResponse != null && !strResponse.equalsIgnoreCase("")) {
                         try {
-                            JSONObject jobject = new JSONObject(strResponse);
-                            if (strResponse.length() > 0) {
-                                if (jobject.has("message")) {
-                                    if (jobject.getString("message").equalsIgnoreCase("SUCCESS")) {
-                                        CustomDialog(AddPetitionActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
-                                        binding.etTitle.setText("");
-                                        binding.spOffice.setText("");
-                                        binding.spSelection.setText("");
-                                        binding.imageView1.setImageResource(R.drawable.ic_add_item);
-                                        binding.imageView2.setImageResource(R.drawable.ic_add_item);
-                                        binding.imageView3.setImageResource(R.drawable.ic_add_item);
-                                        binding.imageView3.setImageResource(R.drawable.ic_add_item);
-                                        binding.imageView4.setImageResource(R.drawable.ic_add_item);
-                                        binding.imageView5.setImageResource(R.drawable.ic_add_item);
+                            if(isJSONValid(strResponse)) {
+                                JSONObject jobject = new JSONObject(strResponse);
+                                if (strResponse.length() > 0) {
+                                    if (jobject.has("message")) {
+                                        if (jobject.getString("message").equalsIgnoreCase("SUCCESS")) {
+                                            CustomDialog(AddPetitionActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
+                                            binding.etTitle.setText("");
+                                            binding.spOffice.setText("");
+                                            binding.spSelection.setText("");
+                                            binding.imageView1.setImageResource(R.drawable.ic_add_item);
+                                            binding.imageView2.setImageResource(R.drawable.ic_add_item);
+                                            binding.imageView3.setImageResource(R.drawable.ic_add_item);
+                                            binding.imageView3.setImageResource(R.drawable.ic_add_item);
+                                            binding.imageView4.setImageResource(R.drawable.ic_add_item);
+                                            binding.imageView5.setImageResource(R.drawable.ic_add_item);
+                                        }else
+                                            showAlert(AddPetitionActivity.this, "Failed to upload Images", "Result:" + response.toString(), "OK");
                                     }
                                 }
+                            }else
+                            {
+                                if(response.code() == 200){
+                                    CustomDialog(AddPetitionActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
+                                    binding.etTitle.setText("");
+                                    binding.spOffice.setText("");
+                                    binding.spSelection.setText("");
+                                    binding.imageView1.setImageResource(R.drawable.ic_add_item);
+                                    binding.imageView2.setImageResource(R.drawable.ic_add_item);
+                                    binding.imageView3.setImageResource(R.drawable.ic_add_item);
+                                    binding.imageView3.setImageResource(R.drawable.ic_add_item);
+                                    binding.imageView4.setImageResource(R.drawable.ic_add_item);
+                                    binding.imageView5.setImageResource(R.drawable.ic_add_item);
+                                }else
+                                    showAlert(AddPetitionActivity.this, "Failed to upload Images", "Result:" + response.toString(), "OK");
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
-                }else {
-                    showAlert(AddPetitionActivity.this, "Failed to upload Images", "Result:" + response.toString(), "OK");
-                }
             }
 
             @Override
-            public void onFailure(Call<JSONObject> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.d(TAG, "Error " + t.getMessage());
                 showAlert(AddPetitionActivity.this, "Failed to upload Images", "Result:" + t.getMessage(), "OK");
             }
         });
+    }
+
+    public boolean isJSONValid(String test) {
+        try {
+            new JSONObject(test);
+        } catch (JSONException ex) {
+            try {
+                new JSONArray(test);
+            } catch (JSONException ex1) {
+                return false;
+            }
+        }
+
+        return true;
+
     }
     private static boolean fileExists(String filePath) {
         File file = new File(filePath);

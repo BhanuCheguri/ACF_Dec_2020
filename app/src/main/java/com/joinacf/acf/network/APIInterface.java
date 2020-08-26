@@ -141,7 +141,7 @@ public interface APIInterface {
     Call<JSONObject> uploadMultiFile(@Header("item") String authorization, @Body RequestBody file);
 
     @POST("petitions/upload")
-    Call<JSONObject> uploadPetitionMultiFile(@Header("pid") String authorization, @Body RequestBody file);
+    Call<ResponseBody> uploadPetitionMultiFile(@Header("pid") String authorization, @Body RequestBody file);
 
     @GET("moderation/getserviceproviders?")
     Call<KnowYourActModel> getKnowYourActs();

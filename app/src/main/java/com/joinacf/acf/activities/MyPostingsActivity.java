@@ -60,6 +60,9 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import static com.joinacf.acf.utilities.DataUtilities.getExtensionType;
+import static com.joinacf.acf.utilities.DataUtilities.loadImagePath;
+
 public class MyPostingsActivity extends BaseActivity {
 
     private ActivityMyPostingsBinding dataBiding;
@@ -328,7 +331,7 @@ public class MyPostingsActivity extends BaseActivity {
                                     @Override
                                     public void onClick(View v) {
                                         String url = imageView.getContentDescription().toString();
-                                        loadImagePath(url, finalHolder1.imgFilePath);
+                                        loadImagePath(url, finalHolder1.imgFilePath,context);
                                     }
                                 });
                             }
@@ -470,29 +473,7 @@ public class MyPostingsActivity extends BaseActivity {
             return dataListFiltered.size();
         }
 
-        private void loadImagePath(String url, ImageView imgFilePath) {
-            String strMimeType = getExtensionType(Uri.parse(url), context);
-            imgFilePath.setContentDescription(url);
-            if (strMimeType != null && !strMimeType.equalsIgnoreCase("")) {
-                if (strMimeType.equalsIgnoreCase("jpg") || strMimeType.equalsIgnoreCase("jpeg") || strMimeType.equalsIgnoreCase("png")) {
-                    Glide.with(context).load(url).into(imgFilePath);
-                } else if (strMimeType.equalsIgnoreCase("mp4")) {
-                    Glide.with(context).load(R.drawable.mp4).into(imgFilePath);
-                } else if (strMimeType.equalsIgnoreCase("application/pdf") || strMimeType.equalsIgnoreCase("pdf")) {
-                    Glide.with(context).load(R.drawable.pdf).into(imgFilePath);
-                } else if (strMimeType.equalsIgnoreCase("docx") || strMimeType.equalsIgnoreCase("doc") || strMimeType.equalsIgnoreCase("application/vnd.openxmlformats-officedocument.wordprocessingml.document") || strMimeType.equalsIgnoreCase("application/msword")) {
-                    Glide.with(context).load(R.drawable.doc).into(imgFilePath);
-                } else if (strMimeType.equalsIgnoreCase("xlsx") || strMimeType.equalsIgnoreCase("xls") || strMimeType.equalsIgnoreCase("application/vnd.ms-excel") || strMimeType.equalsIgnoreCase("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
-                    Glide.with(context).load(R.drawable.excel).into(imgFilePath);
-                } else if (strMimeType.equalsIgnoreCase("ppt") || strMimeType.equalsIgnoreCase("application/vnd.ms-powerpoint") || strMimeType.equalsIgnoreCase("application/vnd.openxmlformats-officedocument.presentationml.presentation")) {
-                    Glide.with(context).load(R.drawable.powerpoint).into(imgFilePath);
-                } else if (strMimeType.equalsIgnoreCase("txt") || strMimeType.equalsIgnoreCase("text/plain")) {
-                    Glide.with(context).load(R.drawable.txt).into(imgFilePath);
-                } else if (strMimeType.equalsIgnoreCase("mp3") || strMimeType.equalsIgnoreCase("audio/mpeg")) {
-                    Glide.with(context).load(R.drawable.mp3).into(imgFilePath);
-                }
-            }
-        }
+
 
         public void loadImages(String url, final ImageView img, LinearLayout linearLayout, boolean first, final ImageView imgFilePath, int length) {
             String strMimeType = getExtensionType(Uri.parse(url), context);
@@ -599,18 +580,6 @@ public class MyPostingsActivity extends BaseActivity {
                     }
                 }
             }
-        }
-
-        public String getExtensionType(Uri contentURI, Context context)
-        {
-            String extension;
-            if (contentURI.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-                final MimeTypeMap mime = MimeTypeMap.getSingleton();
-                extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(contentURI));
-            } else {
-                extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(new File(contentURI.getPath())).toString());
-            }
-            return extension;
         }
 
         private String getPostedDate(String postedDate)

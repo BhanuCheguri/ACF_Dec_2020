@@ -1,39 +1,32 @@
 package com.joinacf.acf.adapters;
 
 import android.content.ActivityNotFoundException;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.MimeTypeMap;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
-import com.joinacf.acf.modelclasses.PetitionModel;
 import com.joinacf.acf.modelclasses.WallPostsModel;
 import com.joinacf.acf.R;
 import com.joinacf.acf.utilities.ImageLoader;
-import java.io.File;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import static com.joinacf.acf.utilities.DataUtilities.getExtensionType;
+import static com.joinacf.acf.utilities.DataUtilities.loadImagePath;
+import static com.joinacf.acf.utilities.DataUtilities.openFile;
 
 public class HomePageAdapter extends RecyclerView.Adapter<HomePageAdapter.ViewHolder> implements Filterable {
     public ArrayList<WallPostsModel.Result> dataSet;
@@ -59,16 +52,11 @@ public class HomePageAdapter extends RecyclerView.Adapter<HomePageAdapter.ViewHo
                 String charString = charSequence.toString();
 
                 if (charString.isEmpty()) {
-
                     dataListFiltered = dataSet;
                 } else {
-
                     ArrayList<WallPostsModel.Result> list = new ArrayList<>();
-
                     for (WallPostsModel.Result result : dataSet) {
-
                         if (result.getTitle().toLowerCase().contains(charString)) {
-
                             list.add(result);
                         }
                     }
@@ -171,7 +159,7 @@ public class HomePageAdapter extends RecyclerView.Adapter<HomePageAdapter.ViewHo
                                 @Override
                                 public void onClick(View v) {
                                     String url = imageView.getContentDescription().toString();
-                                    loadImagePath(url, finalHolder1.imgFilePath);
+                                    loadImagePath(url, finalHolder1.imgFilePath,context);
                                 }
                             });
                         }
@@ -210,30 +198,6 @@ public class HomePageAdapter extends RecyclerView.Adapter<HomePageAdapter.ViewHo
     @Override
     public long getItemId(int position) {
         return position;
-    }
-
-    private void loadImagePath(String url, ImageView imgFilePath) {
-        String strMimeType = getExtensionType(Uri.parse(url), context);
-        imgFilePath.setContentDescription(url);
-        if (strMimeType != null && !strMimeType.equalsIgnoreCase("")) {
-            if (strMimeType.equalsIgnoreCase("jpg") || strMimeType.equalsIgnoreCase("jpeg") || strMimeType.equalsIgnoreCase("png")) {
-                Glide.with(context).load(url).into(imgFilePath);
-            } else if (strMimeType.equalsIgnoreCase("mp4")) {
-                Glide.with(context).load(R.drawable.mp4).into(imgFilePath);
-            } else if (strMimeType.equalsIgnoreCase("application/pdf") || strMimeType.equalsIgnoreCase("pdf")) {
-                Glide.with(context).load(R.drawable.pdf).into(imgFilePath);
-            } else if (strMimeType.equalsIgnoreCase("docx") || strMimeType.equalsIgnoreCase("doc") || strMimeType.equalsIgnoreCase("application/vnd.openxmlformats-officedocument.wordprocessingml.document") || strMimeType.equalsIgnoreCase("application/msword")) {
-                Glide.with(context).load(R.drawable.doc).into(imgFilePath);
-            } else if (strMimeType.equalsIgnoreCase("xlsx") || strMimeType.equalsIgnoreCase("xls") || strMimeType.equalsIgnoreCase("application/vnd.ms-excel") || strMimeType.equalsIgnoreCase("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
-                Glide.with(context).load(R.drawable.excel).into(imgFilePath);
-            } else if (strMimeType.equalsIgnoreCase("ppt") || strMimeType.equalsIgnoreCase("application/vnd.ms-powerpoint") || strMimeType.equalsIgnoreCase("application/vnd.openxmlformats-officedocument.presentationml.presentation")) {
-                Glide.with(context).load(R.drawable.powerpoint).into(imgFilePath);
-            } else if (strMimeType.equalsIgnoreCase("txt") || strMimeType.equalsIgnoreCase("text/plain")) {
-                Glide.with(context).load(R.drawable.txt).into(imgFilePath);
-            } else if (strMimeType.equalsIgnoreCase("mp3") || strMimeType.equalsIgnoreCase("audio/mpeg")) {
-                Glide.with(context).load(R.drawable.mp3).into(imgFilePath);
-            }
-        }
     }
 
     public void loadImages(String url, final ImageView img, LinearLayout linearLayout, boolean first, final ImageView imgFilePath, int length) {
@@ -342,78 +306,6 @@ public class HomePageAdapter extends RecyclerView.Adapter<HomePageAdapter.ViewHo
             }
         }
     }
-
-    private void openFile(Uri uri, String url, Context ctx) {
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        if (url.toString().contains(".doc") || url.toString().contains(".docx")) {
-            // Word document
-            intent.setDataAndType(uri, "application/msword");
-        } else if (url.toString().contains(".pdf")) {
-            // PDF file
-            intent.setDataAndType(uri, "application/pdf");
-        } else if (url.toString().contains(".ppt") || url.toString().contains(".pptx")) {
-            // Powerpoint file
-            intent.setDataAndType(uri, "application/vnd.ms-powerpoint");
-        } else if (url.toString().contains(".xls") || url.toString().contains(".xlsx")) {
-            // Excel file
-            intent.setDataAndType(uri, "application/vnd.ms-excel");
-        } else if (url.toString().contains(".zip") || url.toString().contains(".rar")) {
-            // WAV audio file
-            intent.setDataAndType(uri, "application/x-wav");
-        } else if (url.toString().contains(".rtf")) {
-            // RTF file
-            intent.setDataAndType(uri, "application/rtf");
-        } else if (url.toString().contains(".wav") || url.toString().contains(".mp3")) {
-            // WAV audio file
-            intent.setDataAndType(uri, "audio/x-wav");
-        } else if (url.toString().contains(".gif")) {
-            // GIF file
-            intent.setDataAndType(uri, "image/gif");
-        } else if (url.toString().contains(".jpg") || url.toString().contains(".jpeg") || url.toString().contains(".png")) {
-            // JPG file
-            intent.setDataAndType(uri, "image/jpeg");
-        } else if (url.toString().contains(".txt")) {
-            // Text file
-            intent.setDataAndType(uri, "text/plain");
-        } else if (url.toString().contains(".3gp") || url.toString().contains(".mpg") || url.toString().contains(".mpeg") || url.toString().contains(".mpe") || url.toString().contains(".mp4") || url.toString().contains(".avi")) {
-            // Video files
-            intent.setDataAndType(uri, "video/*");
-        } else {
-            // Other files
-            intent.setDataAndType(uri, "*/*");
-        }
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        ctx.startActivity(intent);
-    }
-
-
-    public static String getExtensionType(Uri contentURI, Context context) {
-        String extension;
-        if (contentURI.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-            final MimeTypeMap mime = MimeTypeMap.getSingleton();
-            extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(contentURI));
-        } else {
-            extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(new File(contentURI.getPath())).toString());
-        }
-        return extension;
-    }
-
-    public boolean isImageExists(String url) {
-        try {
-            HttpURLConnection.setFollowRedirects(false);
-            HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
-            con.setRequestMethod("HEAD");
-            System.out.println(" code :: " + con.getResponseCode());
-            return (con.getResponseCode() == HttpURLConnection.HTTP_OK);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
 
     private String getPostedDate(String postedDate) {
         if (postedDate.contains("T")) {

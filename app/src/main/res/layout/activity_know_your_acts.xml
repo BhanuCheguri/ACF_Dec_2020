@@ -25,25 +25,28 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:textSize="@dimen/dimen_14"
+                android:textSize="@dimen/dimen_16"
                 android:id="@+id/rti"
-                android:text="Right to Information"
+                android:text="RTI"
+                android:fontFamily="@font/montserrat_bold"
                 android:textColor="@color/colorBrown"/>
             <RadioButton
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:textSize="@dimen/dimen_14"
+                android:textSize="@dimen/dimen_16"
                 android:id="@+id/rts"
-                android:text="Right to Service"
+                android:text="RTS"
+                android:fontFamily="@font/montserrat_bold"
                 android:textColor="@color/colorBrown"/>
             <RadioButton
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:textSize="@dimen/dimen_14"
+                android:textSize="@dimen/dimen_16"
                 android:id="@+id/cc"
-                android:text="Citizens Chart"
+                android:text="CC"
+                android:fontFamily="@font/montserrat_bold"
                 android:textColor="@color/colorBrown"/>
         </RadioGroup>
 
@@ -55,20 +58,6 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:textColor="@color/colorBrown"
-                android:textSize="@dimen/dimen_14"
-                android:padding="@dimen/dimen_10"
-                android:textStyle="bold"
-                android:gravity="center"
-                android:layout_weight="1"
-                android:text="Home"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?android:attr/selectableItemBackground"/>
 
             <TextView
                 android:layout_width="match_parent"

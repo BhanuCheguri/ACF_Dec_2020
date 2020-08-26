@@ -5,11 +5,13 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -49,6 +51,8 @@ import com.pd.chocobar.ChocoBar;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -59,9 +63,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends BaseActivity {
 
+    private static final String TAG = "MainActivity.Java";
     LocationHandler locationHandler;
     ActivityMainBinding binding;
     private FusedLocationProviderClient locationProviderClient;
@@ -151,32 +157,13 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         apiRetrofitClient = new APIRetrofitClient();
-        boolean bFirst = getBooleanSharedPreference(MainActivity.this, "FirstTime");
 
         navigation = (BottomNavigationViewNew) findViewById(R.id.bottom_navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navigation.setVisibility(View.VISIBLE);
         showBottomNavigation();
-        boolean isLocationEnabled = isLocationEnabled(MainActivity.this);
-        if(bFirst) {
-            if (isLocationEnabled) {
-                getCurrentLocation();
-            } else {
-                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    new AlertDialog.Builder(MainActivity.this)
-                            .setTitle("GPS not found")  // GPS not found
-                            .setMessage("Want to enable?") // Want to enable?
-                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                                }
-                            })
-                            .setNegativeButton("No", null)
-                            .show();
-                }
-            }
-        }
+
+        getLatestVersion();
 
         loadHomeFragment();
 
@@ -207,6 +194,102 @@ public class MainActivity extends BaseActivity {
             }
         });*/
 
+    }
+
+    private String getCurrentVersion(){
+        PackageManager pm = this.getPackageManager();
+        PackageInfo pInfo = null;
+        try {
+            pInfo =  pm.getPackageInfo(this.getPackageName(),0);
+        } catch (PackageManager.NameNotFoundException e1) {
+            e1.printStackTrace();
+        }
+        String currentVersion = pInfo.versionName;
+        return currentVersion;
+    }
+
+    private void getLatestVersion() {
+        String latestVersion = "";
+        String currentVersion = getCurrentVersion();
+        Log.d(TAG, "Current version = " + currentVersion);
+        try {
+            latestVersion = new GetLatestVersion().execute().get();
+            Log.d(TAG, "Latest version = " + latestVersion);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        //If the versions are not the same
+        if(!currentVersion.equals(latestVersion)){
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("An Update is Available");
+            builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //Click button action
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=your app package address")));
+                    dialog.dismiss();
+                }
+            });
+
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //Cancel button action
+                }
+            });
+
+            builder.setCancelable(false);
+            builder.show();
+        }
+
+        getLocationUpdate();
+    }
+
+    private void getLocationUpdate() {
+        boolean isLocationEnabled = isLocationEnabled(MainActivity.this);
+        boolean bFirst = getBooleanSharedPreference(MainActivity.this, "FirstTime");
+        if(bFirst) {
+            if (isLocationEnabled) {
+                getCurrentLocation();
+            } else {
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("GPS not found")  // GPS not found
+                            .setMessage("Want to enable?") // Want to enable?
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                                }
+                            })
+                            .setNegativeButton("No", null)
+                            .show();
+                }
+            }
+        }
+    }
+
+    private class GetLatestVersion extends AsyncTask<String, String, String> {
+        String latestVersion;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                //It retrieves the latest version by scraping the content of current version from play store at runtime
+                String urlOfAppFromPlayStore = "https://play.google.com/store/apps/details?id= your app package address";
+                Document doc = Jsoup.connect(urlOfAppFromPlayStore).get();
+                latestVersion = doc.getElementsByAttributeValue("itemprop","softwareVersion").first().text();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            return latestVersion;
+        }
     }
 
 
