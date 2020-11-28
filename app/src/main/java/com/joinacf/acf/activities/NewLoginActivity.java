@@ -121,7 +121,6 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
     private GoogleSignInAccount account;
     private WeakReference<NewLoginActivity> weakAct = new WeakReference<>(this);
 
-    int nStatus;
     private String personName,personFamilyName,personGivenName,personEmail,personId,personGender,personBday;
     private String image_url;
     String Mobile = "";
@@ -610,7 +609,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                         putStringSharedPreference(NewLoginActivity.this, "personName", personName);
                         putStringSharedPreference(NewLoginActivity.this, "personEmail", personEmail);
                         putStringSharedPreference(NewLoginActivity.this, "personId", personId);
-                        putStringSharedPreference(NewLoginActivity.this, "mobile", "9177579498");
+                        putStringSharedPreference(NewLoginActivity.this, "mobile", "");
                         putStringSharedPreference(NewLoginActivity.this, "personId", personId);
                         putStringSharedPreference(NewLoginActivity.this, "personPhoto", image_url);
 
@@ -1005,6 +1004,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     try {
+                        int nStatus = -1;
                         String  bodyString = new String(response.body().bytes());
                         Log.v("bodyString ::: ",bodyString);
                         hideProgressDialog(NewLoginActivity.this);
@@ -1013,37 +1013,42 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                             //nStatus = jsonObject.getInt("status");
                             if (jsonObject.has("message")) {
                                 String msg = jsonObject.getString("message");
-                                if(jsonObject.has("result"))
-                                {
-                                    JSONArray jsonArray = new JSONArray(jsonObject.getString("result"));
-                                    for (int i = 0; i<jsonArray.length();i++)
+                                if(msg.equalsIgnoreCase("SUCCESS")){
+                                    if(jsonObject.has("result"))
                                     {
-                                        JSONObject jObject = jsonArray.getJSONObject(i);
-                                        if(jObject.has("Status"))
-                                            nStatus = jObject.getInt("Status");
+                                        JSONArray jsonArray = new JSONArray(jsonObject.getString("result"));
+                                        for (int i = 0; i<jsonArray.length();i++)
+                                        {
+                                            JSONObject jObject = jsonArray.getJSONObject(i);
+                                            if(jObject.has("Status"))
+                                                nStatus = jObject.getInt("Status");
+
+                                            if (nStatus == 0) {
+                                                putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
+                                                putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
+
+                                                Toast.makeText(NewLoginActivity.this, "Successfully Registered", Toast.LENGTH_LONG);
+                                                Intent intent = new Intent(NewLoginActivity.this, OTPVerificationActivity.class);
+                                                startActivity(intent);
+                                                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                                                finish();
+                                            } else if (nStatus == 1) {
+                                                putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
+                                                putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
+
+                                                Toast.makeText(NewLoginActivity.this, "Already Registered", Toast.LENGTH_LONG);
+                                                Intent intent = new Intent(NewLoginActivity.this, MainActivity.class);
+                                                startActivity(intent);
+                                                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                                                finish();
+                                            } else {
+                                                showAlert(NewLoginActivity.this, "Error", "Something wrong fro our end", "OK");
+                                            }
+                                        }
                                     }
                                 }
-                                if (nStatus == 0) {
-                                    putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
-                                    putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
 
-                                    Toast.makeText(NewLoginActivity.this, "Successfully Registered", Toast.LENGTH_LONG);
-                                    Intent intent = new Intent(NewLoginActivity.this, OTPVerificationActivity.class);
-                                    startActivity(intent);
-                                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                                    finish();
-                                } else if (nStatus == 1) {
-                                    putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
-                                    putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
 
-                                    Toast.makeText(NewLoginActivity.this, "Already Registered", Toast.LENGTH_LONG);
-                                    Intent intent = new Intent(NewLoginActivity.this, MainActivity.class);
-                                    startActivity(intent);
-                                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                                    finish();
-                                } else {
-                                    showAlert(NewLoginActivity.this, "Error", "Something wrong fro our end", "OK");
-                                }
                             } else {
                                 hideProgressDialog(NewLoginActivity.this);
                                 Crashlytics.log(response.body().toString());

@@ -42,13 +42,13 @@
                 <ImageView
                     android:id="@+id/imgFilePath"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dimen_200"
+                    android:layout_height="wrap_content"
                     android:background="@android:color/transparent"
                     android:foreground="@drawable/rippleeffect"
                     android:layout_marginBottom="@dimen/dimen_10"
                     android:layout_marginTop="@dimen/dimen_5"
                     android:visibility="visible"
-                    android:scaleType="fitXY"/>
+                    android:scaleType="centerCrop"/>
 
                 <HorizontalScrollView
                     android:layout_width="match_parent"

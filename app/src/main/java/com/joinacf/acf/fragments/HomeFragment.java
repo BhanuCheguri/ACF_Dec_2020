@@ -27,6 +27,7 @@ import com.joinacf.acf.activities.MainActivity;
 import com.joinacf.acf.activities.NewComplaintActivity;
 import com.joinacf.acf.activities.NewLoginActivity;
 import com.joinacf.acf.activities.MyProfileActivity;
+import com.joinacf.acf.activities.OTPVerificationActivity;
 import com.joinacf.acf.adapters.HomePageAdapter;
 import com.joinacf.acf.modelclasses.WallPostsModel;
 import com.joinacf.acf.network.APIInterface;
@@ -257,6 +258,7 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
                 GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(getActivity(), gso);
                 googleSignInClient.signOut();
                 putBooleanSharedPreference(getActivity(), "LoggedIn", false);
+                putStringSharedPreference(getActivity(),"mobile","");
                 Toast.makeText(getApplicationContext(), "User Logged out successfully", Toast.LENGTH_LONG).show();
 
                 Intent intent = new Intent(getActivity(), NewLoginActivity.class);
