@@ -1,6 +1,7 @@
 package com.joinacf.acf.activities;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -162,8 +163,8 @@ public class MainActivity extends BaseActivity {
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navigation.setVisibility(View.VISIBLE);
         showBottomNavigation();
-
-        getLatestVersion();
+        getLocationUpdate();
+       // getLatestVersion();
 
         loadHomeFragment();
 
@@ -196,7 +197,7 @@ public class MainActivity extends BaseActivity {
 
     }
 
-    private String getCurrentVersion(){
+    /*private String getCurrentVersion(){
         PackageManager pm = this.getPackageManager();
         PackageInfo pInfo = null;
         try {
@@ -245,7 +246,7 @@ public class MainActivity extends BaseActivity {
         }
 
         getLocationUpdate();
-    }
+    }*/
 
     private void getLocationUpdate() {
         boolean isLocationEnabled = isLocationEnabled(MainActivity.this);
@@ -496,6 +497,7 @@ public class MainActivity extends BaseActivity {
         //return currentLatLang;
     }
 
+    @SuppressLint("MissingPermission")
     public String getLocation()
     {
         locationProviderClient = LocationServices.getFusedLocationProviderClient(this);

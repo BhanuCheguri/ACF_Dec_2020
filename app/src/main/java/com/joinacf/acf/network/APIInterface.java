@@ -11,12 +11,14 @@ import com.joinacf.acf.modelclasses.ModeratorStatusModel;
 import com.joinacf.acf.modelclasses.MyPostingModel;
 import com.joinacf.acf.modelclasses.MyProfileModel;
 import com.joinacf.acf.modelclasses.NewComplaintDataRequest;
+import com.joinacf.acf.modelclasses.OTPResponse;
 import com.joinacf.acf.modelclasses.OfficesModel;
 import com.joinacf.acf.modelclasses.ProviderModel;
 import com.joinacf.acf.modelclasses.ResultModel;
 import com.joinacf.acf.modelclasses.SPLoginModel;
 import com.joinacf.acf.modelclasses.SectionsModel;
 import com.joinacf.acf.modelclasses.StatusModel;
+import com.joinacf.acf.modelclasses.StatusResponse;
 import com.joinacf.acf.modelclasses.WallPostsModel;
 import com.joinacf.acf.modelclasses.PetitionModel;
 
@@ -54,7 +56,7 @@ public interface APIInterface {
     Call<String> getVideoLink();
 
     @GET("members/validatemember?")
-    Call<ResponseBody> getValidateMember(@Query("email") String email);
+    Call<StatusResponse> getValidateMember(@Query("email") String email);
 
     @Headers("Content-Type: application/json")
     @POST("members/updatemobile?")
@@ -74,7 +76,7 @@ public interface APIInterface {
     Call<ResponseBody> getValidateOTPStatus(@Query("mobile") String mobile,@Query("otp") String otp);
 
     @GET("members/sendsms?")
-    Call<ResponseBody> getSMSOTP(@Query("mobile") String mobile);
+    Call<OTPResponse> getSMSOTP(@Query("mobile") String mobile);
 
     @GET("posts/getposts?")
     Call<WallPostsModel> getWallPostDetails(@Query("categoryID") String categoryID, @Query("days") String days);

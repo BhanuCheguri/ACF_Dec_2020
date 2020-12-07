@@ -25,6 +25,7 @@ import android.view.View;
 import android.widget.MediaController;
 import android.widget.Toast;
 
+import com.facebook.login.LoginBehavior;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -67,6 +68,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.joinacf.acf.modelclasses.AddMemberResult;
+import com.joinacf.acf.modelclasses.StatusResponse;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.utilities.App;
@@ -88,6 +90,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -124,6 +127,8 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
     private String personName,personFamilyName,personGivenName,personEmail,personId,personGender,personBday;
     private String image_url;
     String Mobile = "";
+    List<StatusResponse.Result> mystatusResult = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -240,39 +245,43 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
             super.onPostExecute(result);
             hideProgressDialog(NewLoginActivity.this);
             //Location of Media File
-            Uri vidUri = Uri.parse(result);
+            try {
+                Uri vidUri = Uri.parse(result);
+                binding.videoView.setVideoURI(vidUri);
+                binding.videoView.requestFocus();
+                //binding.videoView.start();
+                binding.videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mediaPlayer) {
+                    }
+                });
 
-            binding.videoView.setVideoURI(vidUri);
-            binding.videoView.requestFocus();
-            //binding.videoView.start();
-            binding.videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mediaPlayer) {
-                }
-            });
+                binding.videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mediaPlayer) {
+                        binding.videoView.start();
+                        mediaPlayer.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
+                            @Override
+                            public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
+                                MediaController mediaController = new MediaController(NewLoginActivity.this);
+                                binding.videoView.setMediaController(mediaController);
+                                mediaController.setAnchorView(binding.videoView);
+                            }
+                        });
+                    }
+                });
 
-            binding.videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mediaPlayer) {
-                    binding.videoView.start();
-                    mediaPlayer.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
-                        @Override
-                        public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-                            MediaController mediaController = new MediaController(NewLoginActivity.this);
-                            binding.videoView.setMediaController(mediaController);
-                            mediaController.setAnchorView(binding.videoView);
-                        }
-                    });
-                }
-            });
-
-            binding.videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                @Override
-                public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
-                    Log.d("video", "setOnErrorListener ");
-                    return true;
-                }
-            });
+                binding.videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                    @Override
+                    public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+                        Log.d("video", "setOnErrorListener ");
+                        return true;
+                    }
+                });
+            }catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
 
         @Override
@@ -392,10 +401,17 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                 }
             };
             fbTracker.startTracking();
-            binding.loginButton.setReadPermissions("user_friends");
+            /*binding.loginButton.setReadPermissions("user_friends");
             binding.loginButton.setReadPermissions("public_profile");
             binding.loginButton.setReadPermissions("email");
-            binding.loginButton.setReadPermissions("user_birthday");
+            binding.loginButton.setReadPermissions("user_birthday");*/
+
+            List<String> permission =
+                    new ArrayList<>();
+            permission.add("email");
+            permission.add("public_profile");
+            permission.add("user_friends");
+
 
             binding.loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
                 @Override
@@ -431,7 +447,8 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
 
                 }
             });
-            LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile"));
+            LoginManager.getInstance().setLoginBehavior(LoginBehavior.NATIVE_WITH_FALLBACK).logInWithReadPermissions(this,permission);
+            //LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile"));
         }catch (Exception e) {
             Crashlytics.logException(e);
             e.printStackTrace();
@@ -502,6 +519,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
 
     private void getUserProfile(AccessToken currentAccessToken) {
         try {
+            Toast.makeText(this, "GetUserProfileMethod", Toast.LENGTH_SHORT).show();
             GraphRequest request = GraphRequest.newMeRequest(
                     currentAccessToken, new GraphRequest.GraphJSONObjectCallback() {
                         @Override
@@ -534,8 +552,10 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                                 putStringSharedPreference(NewLoginActivity.this, "mobile", "");
                                 putStringSharedPreference(NewLoginActivity.this, "personPhoto", image_url);
 
-                                if(App.isNetworkAvailable())
+                                if(App.isNetworkAvailable()) {
+                                    Toast.makeText(NewLoginActivity.this, "GetUserProfileMethod", Toast.LENGTH_SHORT).show();
                                     new AsyncTaskAddMember().execute();
+                                }
                                 else{
                                     ChocoBar.builder().setView(binding.linearLayout)
                                             .setText("No Internet connection")
@@ -621,6 +641,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                     Toast.makeText(NewLoginActivity.this, "Google Sign-In failed", Toast.LENGTH_SHORT).show();
                     Log.e(TAG, "Google Sign-In failed. resultCode"+resultCode);
                     Log.e(TAG, "Google Sign-In failed result"+result);
+                    Toast.makeText(this, result.toString(), Toast.LENGTH_SHORT).show();
                 }
             }catch (Exception e) {
                 Crashlytics.logException(e);
@@ -683,10 +704,12 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
             } catch (JSONException ex) {
                 ex.printStackTrace();
                 Crashlytics.logException(ex);
+                Toast.makeText(NewLoginActivity.this, ex.getMessage(), Toast.LENGTH_SHORT).show();
             } catch (Exception e)
             {
              e.printStackTrace();
              Crashlytics.logException(e);
+             Toast.makeText(NewLoginActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
 
             return personEmail;
@@ -998,76 +1021,62 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         try{
             Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
             APIInterface api = retrofit.create(APIInterface.class);
-            Call<ResponseBody> call = api.getValidateMember(Email);
+            Call<StatusResponse> call = api.getValidateMember(Email);
 
-            call.enqueue(new Callback<ResponseBody>() {
+            call.enqueue(new Callback<StatusResponse>() {
                 @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    try {
-                        int nStatus = -1;
-                        String  bodyString = new String(response.body().bytes());
-                        Log.v("bodyString ::: ",bodyString);
-                        hideProgressDialog(NewLoginActivity.this);
-                        if (response.isSuccessful()) {
-                            JSONObject jsonObject = new JSONObject(bodyString);
-                            //nStatus = jsonObject.getInt("status");
-                            if (jsonObject.has("message")) {
-                                String msg = jsonObject.getString("message");
-                                if(msg.equalsIgnoreCase("SUCCESS")){
-                                    if(jsonObject.has("result"))
-                                    {
-                                        JSONArray jsonArray = new JSONArray(jsonObject.getString("result"));
-                                        for (int i = 0; i<jsonArray.length();i++)
-                                        {
-                                            JSONObject jObject = jsonArray.getJSONObject(i);
-                                            if(jObject.has("Status"))
-                                                nStatus = jObject.getInt("Status");
+                public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
+                    //int nStatus = -1;
+                    //String  bodyString = new String(response.body().bytes());
+                    //Log.v("bodyString ::: ",bodyString);
+                    hideProgressDialog(NewLoginActivity.this);
+                    if(response.code() == 200)
+                    {
+                        StatusResponse myResponseData = response.body();
+                        if(myResponseData != null) {
+                            String status = myResponseData.getstatus();
+                            String msg = myResponseData.getMessage();
+                            if (msg.equalsIgnoreCase("SUCCESS")) {
+                                mystatusResult = myResponseData.getResult();
+                                for (int i = 0; i < mystatusResult.size(); i++) {
+                                    int nStatusValue = mystatusResult.get(i).getStatus();
 
-                                            if (nStatus == 0) {
-                                                putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
-                                                putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
+                                    if (nStatusValue == 0 || nStatusValue == 1) {
+                                        putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
+                                        putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", false);
 
-                                                Toast.makeText(NewLoginActivity.this, "Successfully Registered", Toast.LENGTH_LONG);
-                                                Intent intent = new Intent(NewLoginActivity.this, OTPVerificationActivity.class);
-                                                startActivity(intent);
-                                                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                                                finish();
-                                            } else if (nStatus == 1) {
-                                                putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
-                                                putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
+                                        Toast.makeText(NewLoginActivity.this, "Successfully Registered", Toast.LENGTH_LONG);
+                                        Intent intent = new Intent(NewLoginActivity.this, OTPVerificationActivity.class);
+                                        startActivity(intent);
+                                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                                        finish();
+                                    } /*else if (nStatusValue == 1) {
+                                        putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
+                                        putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
 
-                                                Toast.makeText(NewLoginActivity.this, "Already Registered", Toast.LENGTH_LONG);
-                                                Intent intent = new Intent(NewLoginActivity.this, MainActivity.class);
-                                                startActivity(intent);
-                                                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                                                finish();
-                                            } else {
-                                                showAlert(NewLoginActivity.this, "Error", "Something wrong fro our end", "OK");
-                                            }
-                                        }
+                                        Toast.makeText(NewLoginActivity.this, "Already Registered", Toast.LENGTH_LONG);
+                                        Intent intent = new Intent(NewLoginActivity.this, MainActivity.class);
+                                        startActivity(intent);
+                                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                                        finish();
+                                    }*/else {
+                                        showAlert(NewLoginActivity.this, "Error", "Something wrong fro our end", "OK");
                                     }
                                 }
-
-
-                            } else {
-                                hideProgressDialog(NewLoginActivity.this);
-                                Crashlytics.log(response.body().toString());
-                                Toast.makeText(NewLoginActivity.this, "RESPONSE :: " + response.body().toString(), Toast.LENGTH_SHORT).show();
                             }
                         }
-                    } catch (IOException e) {
-                        hideProgressDialog(NewLoginActivity.this);
-                        e.printStackTrace();
-                        Crashlytics.logException(e);
-                    } catch (JSONException e) {
-                        hideProgressDialog(NewLoginActivity.this);
-                        e.printStackTrace();
-                        Crashlytics.logException(e);
+
+
+                        else {
+                            hideProgressDialog(NewLoginActivity.this);
+                            Crashlytics.log(response.body().toString());
+                            Toast.makeText(NewLoginActivity.this, "RESPONSE :: " + response.body().toString(), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
 
                 @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                public void onFailure(Call<StatusResponse> call, Throwable t) {
                     Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
                     hideProgressDialog(NewLoginActivity.this);
                 }

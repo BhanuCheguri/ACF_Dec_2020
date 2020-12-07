@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import com.joinacf.acf.R;
 import com.joinacf.acf.custom_dialogs.CustomProgressDialog;
+import com.joinacf.acf.modelclasses.OTPResponse;
 import com.joinacf.acf.network.APIInterface;
 import com.joinacf.acf.network.APIRetrofitClient;
 import com.joinacf.acf.network.ServiceCall;
@@ -242,6 +243,7 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
 
         private String resp;
         CustomProgressDialog progressDialog;
+        List<OTPResponse.OTPResult> myOTPResult = new ArrayList<>();
 
         @Override
         protected void onPreExecute() {
@@ -259,23 +261,33 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
                     if (!isValidMobile(params[0].trim())) {
                         Toast.makeText(getApplicationContext(), "Please enter the valid Mobile Number to get OTP", Toast.LENGTH_SHORT).show();
                     } else {
-                        Call<ResponseBody> call = api.getSMSOTP(params[0].toString());
+                        Call<OTPResponse> call = api.getSMSOTP(params[0].toString());
 
-                        call.enqueue(new Callback<ResponseBody>() {
+                        call.enqueue(new Callback<OTPResponse>() {
                             @Override
-                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            public void onResponse(Call<OTPResponse> call, Response<OTPResponse> response) {
                                 if(response.code() == 200)
                                 {
-                                    ResponseBody myProfileData = response.body();
-
-                                    binding.llVerifyMobileNo.setVisibility(View.GONE);
-                                    binding.llVerifyingOtp.setVisibility(View.VISIBLE);
+                                    OTPResponse myOTPData = response.body();
+                                    if(myOTPData != null) {
+                                        String status = myOTPData.getStatus();
+                                        String msg = myOTPData.getMessage();
+                                        if (msg.equalsIgnoreCase("SUCCESS")) {
+                                            myOTPResult = myOTPData.getResult();
+                                            for (int i = 0; i < myOTPResult.size(); i++) {
+                                                String strOTP = myOTPResult.get(i).getOTP();
+                                                binding.otpCode.setText(strOTP);
+                                            }
+                                            binding.llVerifyMobileNo.setVisibility(View.GONE);
+                                            binding.llVerifyingOtp.setVisibility(View.VISIBLE);
+                                        }
+                                    }
                                 }else
                                     Toast.makeText(getApplicationContext(), response.body().toString(), Toast.LENGTH_SHORT).show();
                             }
 
                             @Override
-                            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            public void onFailure(Call<OTPResponse> call, Throwable t) {
                                 Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -417,6 +429,7 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
 
         private String resp;
         CustomProgressDialog progressDialog;
+        List<OTPResponse.OTPResult> myOTPResult = new ArrayList<>();
 
         @Override
         protected void onPreExecute() {
@@ -430,76 +443,47 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
             try{
                 Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
                 APIInterface api = retrofit.create(APIInterface.class);
-                Call<ResponseBody> call = api.getValidateOTPStatus(params[0].toString(),params[1].toString());
+                if(!params[0].equalsIgnoreCase("")) {
+                    if (!isValidMobile(params[0].trim())) {
+                        Toast.makeText(getApplicationContext(), "Please enter the valid Mobile Number to get OTP", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Call<OTPResponse> call = api.getSMSOTP(params[0].toString());
 
-                call.enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        ResponseBody myOTPStatus = response.body();
-                        try {
-                            String  result = new String(response.body().bytes());
-                            Log.v("bodyString ::: ",result);
-                            int nStatus = -2;
-                            if (response.isSuccessful()) {
-                                if(!result.equalsIgnoreCase("") && result != null) {
-                                    JSONObject jobject = new JSONObject(result);
-                                    if (result.length() > 0) {
-                                        if (jobject.has("message")) {
-                                            if(jobject.getString("message").equalsIgnoreCase("SUCCESS")) {
-                                                if (jobject.has("result")) {
-                                                    JSONArray jsonArray = new JSONArray(jobject.getString("result"));
-                                                    for (int i=0; i<jsonArray.length();i++)
-                                                    {
-                                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                                        nStatus = jsonObject.getInt("Status");
-                                                        if(nStatus == 1) {
-                                                            putBooleanSharedPreference(OTPVerificationActivity.this, "FirstTime", true);
-                                                            putBooleanSharedPreference(OTPVerificationActivity.this, "LoggedIn", true);
-                                                            Intent intent = new Intent(OTPVerificationActivity.this, MainActivity.class);
-                                                            startActivity(intent);
-                                                            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                                                            finish();
-                                                        }else if(nStatus == 0){
-                                                            putBooleanSharedPreference(OTPVerificationActivity.this, "FirstTime", false);
-                                                            putBooleanSharedPreference(OTPVerificationActivity.this, "LoggedIn", false);
-                                                            showAlert(OTPVerificationActivity.this,"Failed","Something wrong from our end","OK");
-                                                        }
-                                                        else if(nStatus == -1){
-                                                            putBooleanSharedPreference(OTPVerificationActivity.this, "FirstTime", false);
-                                                            putBooleanSharedPreference(OTPVerificationActivity.this, "LoggedIn", false);
-                                                            showAlert(OTPVerificationActivity.this,"Error","Error in Validating OTP","OK");
-                                                        }
-                                                    }
-                                                }
-                                            }else if (jobject.getString("message").equalsIgnoreCase("ERROR")) {
-                                                showAlert(OTPVerificationActivity.this, "Error", jobject.getString("result"), "OK");
-                                            } else if (jobject.getString("message").equalsIgnoreCase("FAILURE")) {
-                                                showAlert(OTPVerificationActivity.this, "Failed",jobject.getString("result"), "OK");
+                        call.enqueue(new Callback<OTPResponse>() {
+                            @Override
+                            public void onResponse(Call<OTPResponse> call, Response<OTPResponse> response) {
+                                if(response.code() == 200)
+                                {
+                                    OTPResponse myOTPData = response.body();
+                                    if(myOTPData != null) {
+                                        String status = myOTPData.getStatus();
+                                        String msg = myOTPData.getMessage();
+                                        if (msg.equalsIgnoreCase("SUCCESS")) {
+                                            myOTPResult = myOTPData.getResult();
+                                            for (int i = 0; i < myOTPResult.size(); i++) {
+                                                String strOTP = myOTPResult.get(i).getOTP();
+                                                binding.otpCode.setText(strOTP);
                                             }
+                                            binding.llVerifyMobileNo.setVisibility(View.GONE);
+                                            binding.llVerifyingOtp.setVisibility(View.VISIBLE);
                                         }
                                     }
-                                }
+                                }else
+                                    Toast.makeText(getApplicationContext(), response.body().toString(), Toast.LENGTH_SHORT).show();
                             }
-                        }catch (IOException ex) {
-                            ex.printStackTrace();
-                        }catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
 
-                    public void UpdateMobileNo(String MobileNO, String MemberID){
-
+                            @Override
+                            public void onFailure(Call<OTPResponse> call, Throwable t) {
+                                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
-
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Crashlytics.logException(t);
-                        Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+                }
+                else{
+                    Toast.makeText(getApplicationContext(), "Mobile Number shouldn't be empty", Toast.LENGTH_SHORT).show();
+                }
             }catch (Exception e)
             {
-                e.printStackTrace();
                 Crashlytics.logException(e);
             }
             return resp;
