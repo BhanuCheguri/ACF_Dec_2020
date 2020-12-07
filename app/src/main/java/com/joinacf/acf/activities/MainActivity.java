@@ -1,7 +1,6 @@
 package com.joinacf.acf.activities;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -73,12 +72,12 @@ public class MainActivity extends BaseActivity {
     ActivityMainBinding binding;
     private FusedLocationProviderClient locationProviderClient;
     private Geocoder geocoder;
-    private double latitude,longitude;
+    private double latitude, longitude;
     private List<Address> addresses;
     private int locationRequestCode = 1000;
-    String lat,lang = "";
-    String currentAddress="";
-    String currentLatLang ="";
+    String lat, lang = "";
+    String currentAddress = "";
+    String currentLatLang = "";
     String LatLang;
     BottomNavigationViewNew navigation;
     APIRetrofitClient apiRetrofitClient;
@@ -163,8 +162,8 @@ public class MainActivity extends BaseActivity {
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navigation.setVisibility(View.VISIBLE);
         showBottomNavigation();
+
         getLocationUpdate();
-       // getLatestVersion();
 
         loadHomeFragment();
 
@@ -197,11 +196,11 @@ public class MainActivity extends BaseActivity {
 
     }
 
-    /*private String getCurrentVersion(){
+    private String getCurrentVersion() {
         PackageManager pm = this.getPackageManager();
         PackageInfo pInfo = null;
         try {
-            pInfo =  pm.getPackageInfo(this.getPackageName(),0);
+            pInfo = pm.getPackageInfo(this.getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e1) {
             e1.printStackTrace();
         }
@@ -222,7 +221,7 @@ public class MainActivity extends BaseActivity {
             e.printStackTrace();
         }
         //If the versions are not the same
-        if(!currentVersion.equals(latestVersion)){
+        if (!currentVersion.equals(latestVersion)) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("An Update is Available");
             builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
@@ -246,12 +245,12 @@ public class MainActivity extends BaseActivity {
         }
 
         getLocationUpdate();
-    }*/
+    }
 
     private void getLocationUpdate() {
         boolean isLocationEnabled = isLocationEnabled(MainActivity.this);
         boolean bFirst = getBooleanSharedPreference(MainActivity.this, "FirstTime");
-        if(bFirst) {
+        if (bFirst) {
             if (isLocationEnabled) {
                 getCurrentLocation();
             } else {
@@ -274,6 +273,7 @@ public class MainActivity extends BaseActivity {
 
     private class GetLatestVersion extends AsyncTask<String, String, String> {
         String latestVersion;
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -285,8 +285,8 @@ public class MainActivity extends BaseActivity {
                 //It retrieves the latest version by scraping the content of current version from play store at runtime
                 String urlOfAppFromPlayStore = "https://play.google.com/store/apps/details?id= your app package address";
                 Document doc = Jsoup.connect(urlOfAppFromPlayStore).get();
-                latestVersion = doc.getElementsByAttributeValue("itemprop","softwareVersion").first().text();
-            }catch (Exception e){
+                latestVersion = doc.getElementsByAttributeValue("itemprop", "softwareVersion").first().text();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return latestVersion;
@@ -294,8 +294,7 @@ public class MainActivity extends BaseActivity {
     }
 
 
-    public void hideBottomNavigation()
-    {
+    public void hideBottomNavigation() {
         navigation.setVisibility(View.GONE);
         /*TranslateAnimation animate = new TranslateAnimation(
                 0,                 // fromXDelta
@@ -307,8 +306,7 @@ public class MainActivity extends BaseActivity {
         navigation.startAnimation(animate);*/
     }
 
-    public void showBottomNavigation()
-    {
+    public void showBottomNavigation() {
         navigation.setVisibility(View.VISIBLE);
        /* TranslateAnimation animate = new TranslateAnimation(
                 0,                 // fromXDelta
@@ -320,18 +318,20 @@ public class MainActivity extends BaseActivity {
         navigation.startAnimation(animate);*/
     }
 
-    public class AsyncUpdateMembersLocation extends AsyncTask<String,String,String> {
+    public class AsyncUpdateMembersLocation extends AsyncTask<String, String, String> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            showProgressDialog(MainActivity.this,"Updating Member location");
+            showProgressDialog(MainActivity.this, "Updating Member location");
         }
+
         @Override
         protected String doInBackground(String... strings) {
             String latLang = strings[0];
             String split[] = latLang.split("#");
-            return updateCurrentLocation(split[0].toString(),split[1].toString());
+            return updateCurrentLocation(split[0].toString(), split[1].toString());
         }
+
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
@@ -339,18 +339,17 @@ public class MainActivity extends BaseActivity {
             hideProgressDialog(MainActivity.this);
             showBottomNavigation();
             int nStatus = -2;
-            if(result != null && !result.equalsIgnoreCase(""))
-            {
+            if (result != null && !result.equalsIgnoreCase("")) {
                 try {
                     JSONObject jobject = new JSONObject(result);
                     if (result.length() > 0) {
                         if (jobject.has("message")) {
-                            if(jobject.getString("message").equalsIgnoreCase("SUCCESS")) {
+                            if (jobject.getString("message").equalsIgnoreCase("SUCCESS")) {
                                 if (jobject.has("result")) {
                                     JSONArray jsonArray = new JSONArray(jobject.getString("result"));
                                     for (int i = 0; i < jsonArray.length(); i++) {
                                         JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                        if(jsonObject.has("STATUS"))
+                                        if (jsonObject.has("STATUS"))
                                             nStatus = jsonObject.getInt("STATUS");
                                     }
                                     if (nStatus == 1)
@@ -364,8 +363,7 @@ public class MainActivity extends BaseActivity {
                             }
                         }
                     }
-                }catch (JSONException e)
-                {
+                } catch (JSONException e) {
                     e.printStackTrace();
                     Crashlytics.logException(e);
                 }
@@ -374,15 +372,14 @@ public class MainActivity extends BaseActivity {
     }
 
     private String updateCurrentLocation(String lat, String lang) {
-        String reponse ="";
+        String reponse = "";
         JsonObject json = new JsonObject();
-        try{
+        try {
             try {
-                json.addProperty("memberid",getStringSharedPreference(MainActivity.this, "MemberID"));
+                json.addProperty("memberid", getStringSharedPreference(MainActivity.this, "MemberID"));
                 json.addProperty("latitude", lat);
                 json.addProperty("langitude", lang);
-            }catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
                 Crashlytics.logException(e);
             }
@@ -390,7 +387,7 @@ public class MainActivity extends BaseActivity {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
-            conn.setRequestProperty("Accept","application/json");
+            conn.setRequestProperty("Accept", "application/json");
             conn.setDoOutput(true);
             conn.setDoInput(true);
             DataOutputStream os = new DataOutputStream(conn.getOutputStream());
@@ -408,8 +405,7 @@ public class MainActivity extends BaseActivity {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-            finally {
+            } finally {
                 try {
                     response.close();
                 } catch (IOException e) {
@@ -418,10 +414,9 @@ public class MainActivity extends BaseActivity {
             }
             reponse = sb.toString();
             Log.i("STATUS", String.valueOf(conn.getResponseCode()));
-            Log.i("MSG" , conn.getResponseMessage());
+            Log.i("MSG", conn.getResponseMessage());
             conn.disconnect();
-        }catch (Exception e)
-        {
+        } catch (Exception e) {
             Crashlytics.logException(e);
         }
         return reponse;
@@ -461,7 +456,7 @@ public class MainActivity extends BaseActivity {
         int locationMode = 0;
         String locationProviders;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             try {
                 locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
 
@@ -472,7 +467,7 @@ public class MainActivity extends BaseActivity {
 
             return locationMode != Settings.Secure.LOCATION_MODE_OFF;
 
-        }else{
+        } else {
             locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
             return !TextUtils.isEmpty(locationProviders);
         }
@@ -490,18 +485,25 @@ public class MainActivity extends BaseActivity {
                 getLocation();
             }
 
-        }catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         //return currentLatLang;
     }
 
-    @SuppressLint("MissingPermission")
-    public String getLocation()
-    {
+    public String getLocation() {
         locationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return TAG;
+        }
         locationProviderClient.getLastLocation().addOnSuccessListener(MainActivity.this, new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
@@ -522,10 +524,10 @@ public class MainActivity extends BaseActivity {
 
                         lat = String.valueOf(latitude);
                         lang = String.valueOf(longitude);
-                        currentAddress = lat +"#"+lang;
-                        if(App.isNetworkAvailable())
+                        currentAddress = lat + "#" + lang;
+                        if (App.isNetworkAvailable())
                             new AsyncUpdateMembersLocation().execute(currentAddress);
-                        else{
+                        else {
                             ChocoBar.builder().setView(binding.container)
                                     .setText("No Internet connection")
                                     .setDuration(ChocoBar.LENGTH_INDEFINITE)
