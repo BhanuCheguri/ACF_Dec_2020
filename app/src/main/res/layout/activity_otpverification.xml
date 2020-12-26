@@ -6,13 +6,13 @@
     <data>
         <variable
             name="person"
-            type="com.joinacf.acf.activities.OTPVerificationActivity" />
+            type="com.anticorruptionforce.acf.activities.OTPVerificationActivity" />
     </data>
 
 <RelativeLayout android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/mainLayout"
-    tools:context="com.joinacf.acf.Activities.OTPVerificationActivity">
+    tools:context="com.anticorruptionforce.acf.Activities.OTPVerificationActivity">
 
             <RelativeLayout
                 android:layout_width="match_parent"

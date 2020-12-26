@@ -6,7 +6,7 @@
     <data>
         <variable
             name="person"
-            type="com.joinacf.acf.fragments.FindnFixFragment" />
+            type="com.anticorruptionforce.acf.fragments.FindnFixFragment" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -45,12 +45,18 @@
                         android:gravity="center"
                         android:text="No Data" />
                 </LinearLayout>
+                <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/swipeContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/lv_FindnFixFeed"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:divider="@android:color/transparent"/>
+                </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
                <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/fab"

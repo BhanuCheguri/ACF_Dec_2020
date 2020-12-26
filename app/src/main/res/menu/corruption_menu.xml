@@ -9,7 +9,6 @@
         app:actionViewClass="android.widget.SearchView" />
 
     <item android:title="Profile"
-        android:id="@+id/profile"
         app:showAsAction="always"
         android:icon="@mipmap/ic_profileimage">
 
@@ -19,7 +18,6 @@
                 app:showAsAction="ifRoom" />
 
             <item android:title="Notifications"
-                android:id="@+id/notifications"
                 app:showAsAction="ifRoom" />
 
             <item android:title="Logout"

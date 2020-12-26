@@ -5,7 +5,7 @@
     <data>
         <variable
             name="person"
-            type="com.joinacf.acf.activities.ViewMediaActivity" />
+            type="com.anticorruptionforce.acf.activities.ViewMediaActivity" />
     </data>
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/ACFBackup-Latest-master.iml" filepath="$PROJECT_DIR$/.idea/modules/ACFBackup-Latest-master.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/ACFBackup-Latest-master.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/ACFBackup-Latest-master.app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/bottom-nav-bar/ACFBackup-Latest-master.bottom-nav-bar.iml" filepath="$PROJECT_DIR$/.idea/modules/bottom-nav-bar/ACFBackup-Latest-master.bottom-nav-bar.iml" />
     </modules>
   </component>
 </project>

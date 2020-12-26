@@ -7,13 +7,10 @@
     <color name="colorDarkBlue">#023049</color>
     <color name="colorPaleGreen">#E0EFD8</color>
     <color name="colorWhite">#FFFFFF</color>
-    <color name="colorSkyBlue">#2196F3</color>
     <color name="colorGreen">#23B67F</color>
     <color name="colorSilverGrey">#e1e1e1</color>
     <color name="colorDarkGrey">#D3D3D3</color>
     <color name="colorMaroon">#6B2849</color>
-    <color name="winBackground">#98cb4a</color>
-    <color name="background">#f76d3c</color>
     <color name="colorBlack">#000000</color>
     <color name="colorBrown">#8f5d42</color>
 

@@ -6,7 +6,7 @@
     <data>
         <variable
             name="person"
-            type="com.joinacf.acf.activities.MyPostingsActivity" />
+            type="com.anticorruptionforce.acf.activities.MyPostingsActivity" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

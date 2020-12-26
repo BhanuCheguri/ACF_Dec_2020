@@ -3,9 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    xmlns:app="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:background="@color/colorSilverGrey">
+    >
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -130,11 +129,10 @@
                         <ImageView
                             android:id="@+id/imageView1"
                             android:layout_width="@dimen/dimen_50"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:background="@color/colorSilverGrey"
+                            android:layout_height="@dimen/dimen_50"
                             android:layout_margin="@dimen/dimen_5"
-                            app:srcCompat="@drawable/logo" />
+                            android:layout_weight="1"
+                            android:src="@drawable/petition_image" />
 
                         <ImageView
                             android:id="@+id/imageView2"
@@ -142,8 +140,7 @@
                             android:layout_height="@dimen/dimen_50"
                             android:layout_weight="1"
                             android:layout_margin="@dimen/dimen_5"
-                            app:srcCompat="@drawable/logo"
-                            android:background="@color/colorSilverGrey"
+                            android:src="@drawable/petition_image"
                             />
 
                         <ImageView
@@ -152,8 +149,7 @@
                             android:layout_height="@dimen/dimen_50"
                             android:layout_weight="1"
                             android:layout_margin="@dimen/dimen_5"
-                            app:srcCompat="@drawable/logo"
-                            android:background="@color/colorSilverGrey"
+                            android:src="@drawable/petition_image"
                             />
 
                     </LinearLayout>
@@ -170,8 +166,7 @@
                             android:layout_height="@dimen/dimen_50"
                             android:layout_weight="1"
                             android:layout_margin="@dimen/dimen_5"
-                            app:srcCompat="@drawable/logo"
-                            android:background="@color/colorSilverGrey"
+                            android:src="@drawable/petition_image"
                             />
 
                         <ImageView
@@ -180,8 +175,8 @@
                             android:layout_height="@dimen/dimen_50"
                             android:layout_weight="1"
                             android:layout_margin="@dimen/dimen_5"
-                            app:srcCompat="@drawable/logo"
-                            android:background="@color/colorSilverGrey" />
+                            android:src="@drawable/petition_image"
+                            />
 
                         <ImageView
                             android:id="@+id/imageView6"
@@ -189,8 +184,8 @@
                             android:layout_height="@dimen/dimen_50"
                             android:layout_weight="1"
                             android:visibility="invisible"
-                            app:srcCompat="@drawable/ic_add_item"
-                            android:background="@color/colorSilverGrey"/>
+                            android:src="@drawable/ic_add_item"
+                            />
                     </LinearLayout>
 
                 </LinearLayout>

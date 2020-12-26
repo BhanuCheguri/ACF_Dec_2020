@@ -42,7 +42,7 @@
             <ImageView
                 android:id="@+id/imgFilePath"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/dimen_200"
+                android:layout_height="@dimen/dimen_250"
                 app:srcCompat="@mipmap/logo"
                 android:background="@android:color/transparent"
                 android:foreground="@drawable/rippleeffect"
@@ -52,7 +52,6 @@
                 android:scaleType="fitXY"/>
 
             <HorizontalScrollView
-                android:id="@+id/horizontal_scroll"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:fillViewport="true">

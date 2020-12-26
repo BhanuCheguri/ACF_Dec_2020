@@ -6,7 +6,7 @@
     <data>
         <variable
             name="person"
-            type="com.joinacf.acf.activities.AdminLogin" />
+            type="com.anticorruptionforce.acf.activities.AdminLogin" />
     </data>
 <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
@@ -37,9 +37,8 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/lv_SPpetitions"
-        tools:ignore="MissingConstraints">
+        android:layout_height="match_parent"
+        android:id="@+id/lv_SPpetitions">
     </androidx.recyclerview.widget.RecyclerView>
 </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

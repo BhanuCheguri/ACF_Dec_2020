@@ -36,14 +36,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/montserrat_light"
+                    android:fontFamily="@font/montserrat_semibold"
                     android:text="Petition No:"
                     />
                 <TextView
                     android:id="@+id/tv_petitionNo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/montserrat_light"
+                    android:fontFamily="@font/montserrat_semibold"
                     android:text="12345"
                     android:gravity="left"
                     android:layout_marginLeft="@dimen/dimen_10"
@@ -83,7 +83,7 @@
             android:layout_marginTop="@dimen/dimen_5">
 
             <TextView
-                android:fontFamily="@font/montserrat_light"
+                android:fontFamily="@font/montserrat_semibold"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Complaint for cheating"
@@ -94,7 +94,7 @@
                 android:id="@+id/tv_petitioner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/montserrat_light"
+                android:fontFamily="@font/montserrat_semibold"
                 android:text="RK Reddy"
                 android:padding="@dimen/dimen_5" />
         </LinearLayout>
@@ -102,17 +102,17 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="@dimen/dimen_5">
+            android:orientation="horizontal">
 
             <TextView
-                android:fontFamily="@font/montserrat_light"
+                android:fontFamily="@font/montserrat_semibold"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/tv_status"
                 android:layout_weight="0.6"
+                android:gravity="center_vertical"
                 android:text="Status: Not Verified"
-                android:layout_marginTop="@dimen/dimen_10"
+                android:padding="@dimen/dimen_5"
                 android:textStyle="bold" />
 
             <Button
@@ -126,6 +126,7 @@
                 android:text="View Attachments"
                 android:textColor="@color/colorPrimary"
                 android:textSize="@dimen/dimen_14"
+                android:visibility="gone"
                 android:textStyle="bold" />
         </LinearLayout>
         <LinearLayout
@@ -137,6 +138,7 @@
             android:layout_marginBottom="@dimen/dimen_3">
 
             <Button
+                android:enabled="true"
                 android:fontFamily="@font/montserrat_light"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

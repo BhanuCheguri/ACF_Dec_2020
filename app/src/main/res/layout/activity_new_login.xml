@@ -6,7 +6,7 @@
     <data>
         <variable
             name="person"
-            type="com.joinacf.acf.activities.NewLoginActivity" />
+            type="com.anticorruptionforce.acf.activities.NewLoginActivity" />
     </data>
 
     <LinearLayout android:layout_width="match_parent"

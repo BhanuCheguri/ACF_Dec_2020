@@ -5,7 +5,7 @@
     <data>
         <variable
             name="person"
-            type="com.joinacf.acf.fragments.MyPetitionListFragment" />
+            type="com.anticorruptionforce.acf.fragments.MyPetitionListFragment" />
     </data>
 
 <androidx.constraintlayout.widget.ConstraintLayout
@@ -13,12 +13,37 @@
     android:layout_height="wrap_content"
     android:id="@+id/mainLayout">
 
-        <androidx.recyclerview.widget.RecyclerView
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipeContainer"
             android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/lv_petitions"
+                tools:ignore="MissingConstraints">
+            </androidx.recyclerview.widget.RecyclerView>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/lv_petitions"
-            tools:ignore="MissingConstraints">
-        </androidx.recyclerview.widget.RecyclerView>
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="@dimen/dimen_16"
+            android:layout_marginRight="@dimen/dimen_16"
+            android:clickable="true"
+            app:backgroundTint="@color/colorPrimaryDark"
+            android:src="@mipmap/ic_add_petition"
+            app:elevation="@dimen/dimen_4" />
+
+    </RelativeLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

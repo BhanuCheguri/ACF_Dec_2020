@@ -4,7 +4,7 @@
     <data>
         <variable
             name="person"
-            type="com.joinacf.acf.fragments.MoreGridFragment" />
+            type="com.anticorruptionforce.acf.fragments.MoreGridFragment" />
     </data>
 
     <LinearLayout

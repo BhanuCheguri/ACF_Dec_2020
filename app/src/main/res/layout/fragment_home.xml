@@ -6,7 +6,7 @@
     <data>
         <variable
             name="person"
-            type="com.joinacf.acf.fragments.HomeFragment" />
+            type="com.anticorruptionforce.acf.fragments.HomeFragment" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -46,12 +46,18 @@
                         android:gravity="center"
                         android:text="No Data" />
                 </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/lv_HomeFeed"
+                <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/swipeContainer"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:divider="@android:color/transparent"/>
+                    android:layout_height="match_parent">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/lv_HomeFeed"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:divider="@android:color/transparent"/>
+                </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/fab"

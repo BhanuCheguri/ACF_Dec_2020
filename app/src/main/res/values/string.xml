@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">ACF</string>
-    <string name="title_home">Home</string>
-    <string name="title_adulteration">Adulteration</string>
     <string name="title_findandFix">Find n Fix</string>
     <string name="title_corruption">Corruption</string>
     <string name="title_socialEvil">Social Evil</string>
@@ -12,33 +10,10 @@
     <string name="splash_text">లంచం అడిగితే చెప్పుతో కొట్టండి లేదా మాకు చెప్పండి</string>
 
     <!-- Toolbar titles when navigation menu item is selected -->
-    <string-array name="nav_item_activity_titles">
-        <item>Home</item>
-        <item>Photos</item>
-        <item>Movies</item>
-        <item>Notifications</item>
-        <item>Settings</item>
-    </string-array>
 
-    <string name="activity_title_about_us">About Us</string>
-    <string name="activity_title_privacy_policy">Privacy Policy</string>
-    <string name="action_clear_all">Clear All</string>
-    <string name="action_logout">Logout</string>
-    <string name="action_mark_all_read">Mark All as Read</string>
-    <string name="privacy_policy">Privacy Policy</string>
-
-
-    <string name="preview_description">Image and Video preview will appear here</string>
-    <string name="btn_take_picture">Take Picture</string>
-    <string name="btn_record_video">Record Video</string>
 
     <!-- Login -->
     <string name="mobile_number">Mobile Number</string>
-    <string name="password">Password</string>
-    <string name="login">Login</string>
-    <string name="signup1">Don\'t have an account?</string>
-    <string name="sign_up">Sign Up</string>
-    <string name="forgot_pswd">Forgot Password?</string>
     <string name="termsNconditions">By signing in,you agree to our <font size="12"><b>Terms</b></font> and <font size="12"><b>Privacy Policy</b></font></string>
 
    <!--  New Complaint-->
@@ -47,34 +22,20 @@
     <string name="submit">Submit</string>
     <string name="title_new_Item">New Post</string>
     <string name="error_max_limit_exceeds">You have reached maximum limit to upload files.</string>
-    <string name="alert_success">Your request has been successfully posted. We will process and keep in touch with you.</string>
-    <string name="alert_thankyou">Thank You</string>
-    <string name="alert_ok">OK</string>
     <string name="title">Enter you Issue Title</string>
 
     <!--OTP Verification-->
     <string name="verify_mobile_no">Verify Your Number</string>
     <string name="verifing_mobile_no">Mobile verification in process</string>
     <string name="verify">Verify</string>
-    <string name="already_registered">Already Register?</string>
-    <string name="login_here">Login here</string>
     <string name="txt_continue">Continue</string>
     <string name="verify_mobile_text">Please enter your Mobile Number to receive a verifaction code</string>
     <string name="verify_otp">Wait we are trying to retrieve your OTP. </string>
-    <string name="enter_otp">Please enter below </string>
     <string name="otp">OTP Code</string>
     <string name="or">OR</string>
     <string name="change_mobile_no">Go back to change your Mobile Number </string>
-    <string name="alert_verify_mobile_no">Mobile Number shouldn\'t be empty.</string>
 
     <!--Registration-->
-    <string name="name">Name</string>
-    <string name="male">Male</string>
-    <string name="female">Female</string>
-    <string name="register">Register</string>
-    <string name="sign_in">Sign In</string>
-    <string name="sign_in1">Have an Account?</string>
-    <string name="search_for_post">Search for post</string>
 
     <!-- Forgot Password-->
     <string name="title_forgot_pswd">Forgot Password</string>

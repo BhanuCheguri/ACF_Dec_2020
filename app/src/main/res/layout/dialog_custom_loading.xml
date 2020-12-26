@@ -5,7 +5,6 @@
     android:layout_height="match_parent">
 
     <com.github.ybq.android.spinkit.SpinKitView
-        android:id="@+id/spin_kit"
         style="@style/SpinKitView.Circle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

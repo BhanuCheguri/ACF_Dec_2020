@@ -1,1 +1,1 @@
-include ':app', ':bottom-nav-bar'
+include ':app'

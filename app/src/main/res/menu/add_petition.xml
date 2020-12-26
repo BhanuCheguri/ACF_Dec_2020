@@ -9,10 +9,10 @@
         app:showAsAction="always"
         app:actionViewClass="androidx.appcompat.widget.SearchView"/>
 
-    <item android:id="@+id/add_petition"
+    <!--<item android:id="@+id/add_petition"
         android:title="Add Petition"
         android:icon="@mipmap/ic_add_petition"
-        app:showAsAction="always"/>
+        app:showAsAction="always"/>-->
 
     <item android:id="@+id/help"
         android:title="Help"

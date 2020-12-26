@@ -42,7 +42,7 @@
                 <ImageView
                     android:id="@+id/imgFilePath"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="@dimen/dimen_250"
                     android:background="@android:color/transparent"
                     android:foreground="@drawable/rippleeffect"
                     android:layout_marginBottom="@dimen/dimen_10"

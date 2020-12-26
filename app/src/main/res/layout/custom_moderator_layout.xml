@@ -34,35 +34,41 @@
                 android:textSize="@dimen/dimen_16"
                 android:textStyle="normal" />
 
-            <ImageView
-                android:id="@+id/imgFilePath"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/dimen_200"
-                app:srcCompat="@mipmap/logo"
-                android:background="@android:color/transparent"
-                android:foreground="@drawable/rippleeffect"
-                android:layout_marginBottom="@dimen/dimen_5"
-                android:layout_marginTop="@dimen/dimen_5"
-                android:visibility="visible"
-                android:scaleType="fitXY"/>
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/linearImages">
 
-            <HorizontalScrollView
-                android:id="@+id/horizontal_scroll"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:fillViewport="true">
-
-                <LinearLayout
-                    android:id="@+id/linear"
+                <ImageView
+                    android:id="@+id/imgFilePath"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dimen_250"
                     android:background="@android:color/transparent"
                     android:foreground="@drawable/rippleeffect"
+                    android:layout_marginBottom="@dimen/dimen_10"
+                    android:layout_marginTop="@dimen/dimen_5"
+                    android:visibility="visible"
+                    android:scaleType="centerCrop"/>
+
+                <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:scaleType="fitCenter">
-                </LinearLayout>
+                    android:fillViewport="true"
+                    android:scrollbars="horizontal">
 
-            </HorizontalScrollView>
+                    <LinearLayout
+                        android:id="@+id/linear"
+                        android:background="@android:color/transparent"
+                        android:foreground="@drawable/rippleeffect"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:scaleType="fitCenter">
+                    </LinearLayout>
+
+                </HorizontalScrollView>
+            </LinearLayout>
 
 
             <LinearLayout
@@ -130,10 +136,12 @@
 
                     </LinearLayout>
                     <LinearLayout
+                        android:id="@+id/ll_spinners"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="@dimen/dimen_2"
+                        android:layout_marginTop="@dimen/dimen_5"
                         android:background="@drawable/editbox_blueborder">
 
                         <LinearLayout
