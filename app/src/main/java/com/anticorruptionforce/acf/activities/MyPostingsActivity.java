@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,6 +29,7 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.anticorruptionforce.acf.utilities.Utils;
 import com.bumptech.glide.Glide;
 import com.anticorruptionforce.acf.R;
 import com.anticorruptionforce.acf.databinding.ActivityMyPostingsBinding;
@@ -55,6 +57,7 @@ import retrofit2.Retrofit;
 
 import static com.anticorruptionforce.acf.utilities.DataUtilities.getExtensionType;
 import static com.anticorruptionforce.acf.utilities.DataUtilities.loadImagePath;
+import static com.anticorruptionforce.acf.utilities.DataUtilities.openFile;
 
 public class MyPostingsActivity extends BaseActivity {
 
@@ -114,10 +117,6 @@ public class MyPostingsActivity extends BaseActivity {
                 // filter recycler view when text is changed
                 if (adapter!=null)
                     adapter.getFilter().filter(query);
-                Toast.makeText(MyPostingsActivity.this,
-                        getString(R.string.abc_searchview_description_submit),
-                        Toast.LENGTH_SHORT)
-                        .show();
                 return false;
             }
         });
@@ -349,11 +348,23 @@ public class MyPostingsActivity extends BaseActivity {
                 @Override
                 public void onClick(View v) {
                     String content = v.getContentDescription().toString();
+                    Log.i("AdapeterFilePath" ,content);
                     try {
-                        openFile(Uri.parse(content), content, context);
+                        String strMimeType = getExtensionType(Uri.parse(content), context);
+                        System.out.println("MimeType :: "+strMimeType);
+                        //openFile(Uri.parse(content), content, context);
+                        if(strMimeType.equalsIgnoreCase("jpg") || strMimeType.equalsIgnoreCase("mp4")){
+                        /*Intent intent = new Intent(context, WatchItemActivity.class);
+                        intent.putExtra("MimeType",strMimeType);
+                        intent.putExtra("content",content);
+                        context.startActivity(intent);*/
+                            Utils.showDialog(strMimeType,content,context);
+                        }else
+                            //openFile(Uri.parse(content), content, context);
+                            Utils.showDialog(strMimeType,content,context);
                     } catch (ActivityNotFoundException e) {
                         e.printStackTrace();
-                        Toast.makeText(context, "No Activity found to handle this file. Need to install supported Application", Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, "No File found to handle this file.", Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -612,7 +623,7 @@ public class MyPostingsActivity extends BaseActivity {
                                 //if (hh <= 60 && day != 0) {
                                 if (hh <= 60 && day != 0) {
                                     if(day > 5){
-                                        spf = new SimpleDateFormat("dd MMM yyyy");
+                                        spf = new SimpleDateFormat("dd-MMM-yyyy");
                                         date = spf.format(oldDate);
                                         return date;
                                     }

@@ -28,6 +28,7 @@ import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.anticorruptionforce.acf.activities.WatchItemActivity;
+import com.anticorruptionforce.acf.utilities.Utils;
 import com.bumptech.glide.Glide;
 import com.anticorruptionforce.acf.R;
 import com.anticorruptionforce.acf.modelclasses.PetitionModel;
@@ -157,6 +158,12 @@ public class PetitionsListAdapter extends RecyclerView.Adapter<PetitionsListAdap
 
         final PetitionModel.Result dataModel = filteredList.get(position);
 
+        String strImage1 = dataModel.getImage1();
+        String strImage2 = dataModel.getImage2();
+        String strImage3 = dataModel.getImage3();
+        String strImage4 = dataModel.getImage4();
+        String strImage5 = dataModel.getImage5();
+
         if(petitions.equalsIgnoreCase("MyPetitions")) {
             holder.txtPetitionier.setText("OTP : "+ dataModel.getVerificationCode());
             if(dataModel.getVerificationDate().equalsIgnoreCase("")) {
@@ -165,39 +172,50 @@ public class PetitionsListAdapter extends RecyclerView.Adapter<PetitionsListAdap
             else {
                 holder.txtStatus.setText(Html.fromHtml("<font color=\"#000000\">" + "Status : " + "Verified"));
             }
-            if(!(dataModel.getImage1()).equalsIgnoreCase("")|| !ImagesExists(dataModel.getImage1()))
-                Glide.with(context).load(R.drawable.petition_image).into(holder.imageView1);
-            else
-                Glide.with(context).load(dataModel.getImage1()).into(holder.imageView1);
-            if(!(dataModel.getImage2()).equalsIgnoreCase("")|| !ImagesExists(dataModel.getImage2()))
-                Glide.with(context).load(R.drawable.petition_image).into(holder.imageView2);
-            else
-                Glide.with(context).load(dataModel.getImage2()).into(holder.imageView2);
-            if(!(dataModel.getImage3()).equalsIgnoreCase("")|| !ImagesExists(dataModel.getImage3()))
-                Glide.with(context).load(R.drawable.petition_image).into(holder.imageView3);
-            else
-                Glide.with(context).load(dataModel.getImage3()).into(holder.imageView3);
-            if(!(dataModel.getImage4()).equalsIgnoreCase("")|| !ImagesExists(dataModel.getImage4()))
-                Glide.with(context).load(R.drawable.petition_image).into(holder.imageView4);
-            else
-                Glide.with(context).load(dataModel.getImage4()).into(holder.imageView4);
-            if(!(dataModel.getImage5()).equalsIgnoreCase("")|| !ImagesExists(dataModel.getImage5()))
-                Glide.with(context).load(R.drawable.petition_image).into(holder.imageView5);
-            else
-                Glide.with(context).load(dataModel.getImage5()).into(holder.imageView5);
 
-            holder.imageView1.setContentDescription(dataModel.getImage1());
-            holder.imageView2.setContentDescription(dataModel.getImage2());
-            holder.imageView3.setContentDescription(dataModel.getImage3());
-            holder.imageView4.setContentDescription(dataModel.getImage4());
-            holder.imageView5.setContentDescription(dataModel.getImage5());
+            if(!strImage1.equalsIgnoreCase("")/*|| !ImagesExists(dataModel.getImage1())*/) {
+                Glide.with(context).load(strImage1).into(holder.imageView1);
+                holder.imageView1.setContentDescription(dataModel.getImage1());
+                holder.imageView1.setOnClickListener(this);
+            }
+            else {
+                holder.imageView1.setVisibility(View.GONE);
+            }
 
-            holder.imageView1.setOnClickListener(this);
-            holder.imageView2.setOnClickListener(this);
-            holder.imageView3.setOnClickListener(this);
-            holder.imageView4.setOnClickListener(this);
-            holder.imageView5.setOnClickListener(this);
+            if(!strImage2.equalsIgnoreCase("")/*|| !ImagesExists(dataModel.getImage2())*/) {
+                Glide.with(context).load(strImage2).into(holder.imageView2);
+                holder.imageView2.setContentDescription(dataModel.getImage2());
+                holder.imageView2.setOnClickListener(this);
+            }
+            else {
+                holder.imageView2.setVisibility(View.GONE);
+            }
 
+            if(!strImage3.equalsIgnoreCase("")/*|| !ImagesExists(dataModel.getImage3())*/) {
+                Glide.with(context).load(strImage3).into(holder.imageView3);
+                holder.imageView3.setContentDescription(dataModel.getImage3());
+                holder.imageView3.setOnClickListener(this);
+            }
+            else {
+                holder.imageView3.setVisibility(View.GONE);
+            }
+
+            if(!strImage4.equalsIgnoreCase("")/*|| !ImagesExists(dataModel.getImage4())*/) {
+                Glide.with(context).load(strImage4).into(holder.imageView4);
+                holder.imageView4.setContentDescription(dataModel.getImage4());
+                holder.imageView4.setOnClickListener(this);
+            }
+            else {
+                holder.imageView4.setVisibility(View.GONE);
+            }
+            if(!strImage5.equalsIgnoreCase("")/*|| !ImagesExists(dataModel.getImage5())*/) {
+                Glide.with(context).load(strImage5).into(holder.imageView5);
+                holder.imageView5.setContentDescription(dataModel.getImage5());
+                holder.imageView5.setOnClickListener(this);
+            }
+            else {
+                holder.imageView5.setVisibility(View.GONE);
+            }
         }
 
         else if(petitions.equalsIgnoreCase("SPPetitions")) {
@@ -226,7 +244,7 @@ public class PetitionsListAdapter extends RecyclerView.Adapter<PetitionsListAdap
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd  HH:mm");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("dd-MMM-yyyy  HH:mm");
         String finalDate = timeFormat.format(myDate);
         System.out.println(finalDate);
 
@@ -265,13 +283,16 @@ public class PetitionsListAdapter extends RecyclerView.Adapter<PetitionsListAdap
             case R.id.imageView3:
             case R.id.imageView4:
             case R.id.imageView5:
-                String strMimeType = getExtensionType(Uri.parse(url), context);
-                System.out.println("MimeType :: "+strMimeType);
-                if(strMimeType.equalsIgnoreCase("jpg")){
-                    Intent intent = new Intent(context, WatchItemActivity.class);
+                if(!url.equalsIgnoreCase("") || url !=null) {
+                    String strMimeType = getExtensionType(Uri.parse(url), context);
+                    System.out.println("url :: " + url);
+                    if (strMimeType.equalsIgnoreCase("jpg")) {
+                   /* Intent intent = new Intent(context, WatchItemActivity.class);
                     intent.putExtra("MimeType",strMimeType);
                     intent.putExtra("content",url);
-                    context.startActivity(intent);
+                    context.startActivity(intent);*/
+                        Utils.showDialog(strMimeType, url, context);
+                    }
                 }
                 //openFile(Uri.parse(url),url,context);
                 break;

@@ -1,23 +1,36 @@
 package com.anticorruptionforce.acf.adapters;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
+import android.media.MediaPlayer;
 import android.net.Uri;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.anticorruptionforce.acf.activities.WatchItemActivity;
+import com.anticorruptionforce.acf.utilities.Utils;
 import com.bumptech.glide.Glide;
 import com.anticorruptionforce.acf.modelclasses.WallPostsModel;
 import com.anticorruptionforce.acf.R;
@@ -194,19 +207,27 @@ public class HomePageAdapter extends RecyclerView.Adapter<HomePageAdapter.ViewHo
                     System.out.println("MimeType :: "+strMimeType);
                     //openFile(Uri.parse(content), content, context);
                     if(strMimeType.equalsIgnoreCase("jpg") || strMimeType.equalsIgnoreCase("mp4")){
-                        Intent intent = new Intent(context, WatchItemActivity.class);
+                        /*Intent intent = new Intent(context, WatchItemActivity.class);
                         intent.putExtra("MimeType",strMimeType);
                         intent.putExtra("content",content);
-                        context.startActivity(intent);
+                        context.startActivity(intent);*/
+                        Utils.showDialog(strMimeType,content,context);
                     }else
                         openFile(Uri.parse(content), content, context);
                 } catch (ActivityNotFoundException e) {
                     e.printStackTrace();
-                    Toast.makeText(context, "No Activity found to handle this file. Need to install supported Application", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "No File found to handle this file.", Toast.LENGTH_LONG).show();
                 }
             }
         });
         //Toast.makeText(context,"Clicked :" + finalHolder.txtTitle.getText().toString(),Toast.LENGTH_LONG).show();
+    }
+
+    public static int getWidth(Context context) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        WindowManager windowmanager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        windowmanager.getDefaultDisplay().getMetrics(displayMetrics);
+        return displayMetrics.widthPixels;
     }
 
     @Override
@@ -355,7 +376,7 @@ public class HomePageAdapter extends RecyclerView.Adapter<HomePageAdapter.ViewHo
                             //if (hh <= 60 && day != 0) {
                             if (hh <= 60 && day != 0) {
                                 if (day > 5) {
-                                    spf = new SimpleDateFormat("dd MMM yyyy");
+                                    spf = new SimpleDateFormat("dd-MMM-yyyy");
                                     date = spf.format(oldDate);
                                     return date;
                                 } else

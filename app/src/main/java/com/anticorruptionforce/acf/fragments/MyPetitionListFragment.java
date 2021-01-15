@@ -105,7 +105,7 @@ public class MyPetitionListFragment extends BaseFragment {
         ((AppCompatActivity) getActivity()).getSupportActionBar().setBackgroundDrawable(getResources().getDrawable(R.drawable.gradient_theme));
 
         ((AppCompatActivity) getActivity()).getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("My Petitions");
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Petitions");
 
         ((MainActivity)getActivity()).showBottomNavigation();
 

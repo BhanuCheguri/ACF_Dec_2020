@@ -37,6 +37,7 @@ import android.widget.Toast;
 
 import com.anticorruptionforce.acf.adapters.HomePageAdapter;
 import com.anticorruptionforce.acf.databinding.ActivityModeratorBinding;
+import com.anticorruptionforce.acf.utilities.Utils;
 import com.bumptech.glide.Glide;
 //import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.JsonObject;
@@ -100,14 +101,14 @@ public class ModeratorActivity extends BaseActivity {
         Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
         api = retrofit.create(APIInterface.class);
 
-        hshStatus.put("ACB",1);
-        hshStatus.put("Department –L1" , 2);
-        hshStatus.put("Department –L2", 3);
-        hshStatus.put("Expert/Legal",4);
-        hshStatus.put("Health", 5);
-        hshStatus.put("Pending", 6);
-        hshStatus.put("Police", 7);
-        hshStatus.put("Publish", 8);
+        hshStatus.put("PENDING",1);
+        hshStatus.put("DEP-L1" , 2);
+        hshStatus.put("DEP-L2", 3);
+        hshStatus.put("ACB",4);
+        hshStatus.put("POLICE", 5);
+        hshStatus.put("HEALTH", 6);
+        hshStatus.put("EXPERT/LEGAL", 7);
+        hshStatus.put("PUBLISH", 8);
 
         for ( String key : hshStatus.keySet() ) {
             System.out.println( key );
@@ -117,7 +118,7 @@ public class ModeratorActivity extends BaseActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.mipmap.ic_launcher_icon);
-        setActionBarTitle("Moderator");
+        setActionBarTitle("Moderation");
         getSupportActionBar().setBackgroundDrawable(getResources().getDrawable(R.drawable.gradient_theme));
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
@@ -373,8 +374,8 @@ public class ModeratorActivity extends BaseActivity {
         ArrayList<String> lstProvider;
         ArrayAdapter statusAdapter;
         ArrayAdapter providerAdapter;
-        int status ;
-        int provider ;
+        int status;
+        int provider;
         private ViewHolder finalHolder1;
 
         public MyModeratorAdapter(FragmentActivity context, ArrayList<ModeratorListModel.Result> data, ArrayList<String> provider, ArrayList<String> listStatus) {
@@ -387,8 +388,7 @@ public class ModeratorActivity extends BaseActivity {
             loadSPProvider();
         }
 
-        private void loadSPStatus()
-        {
+        private void loadSPStatus() {
             statusAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, lstStatus);
         }
 
@@ -418,10 +418,10 @@ public class ModeratorActivity extends BaseActivity {
                 this.txtDateTime = (TextView) rowView.findViewById(R.id.tv_DateTime);
                 this.spStatus = (Spinner) rowView.findViewById(R.id.sp_ModeratorStatus);
                 this.spProvider = (Spinner) rowView.findViewById(R.id.sp_ModeratorProvider);
-                this.imgFilePath = (ImageView)rowView.findViewById(R.id.imgFilePath);
-                this.linearLayout = (LinearLayout)rowView.findViewById(R.id.linear);
-                this.ll_spinners = (LinearLayout)rowView.findViewById(R.id.ll_spinners);
-                this.submit = (Button)rowView.findViewById(R.id.submit);
+                this.imgFilePath = (ImageView) rowView.findViewById(R.id.imgFilePath);
+                this.linearLayout = (LinearLayout) rowView.findViewById(R.id.linear);
+                this.ll_spinners = (LinearLayout) rowView.findViewById(R.id.ll_spinners);
+                this.submit = (Button) rowView.findViewById(R.id.submit);
                 this.imgFilePath.setBackgroundResource(R.drawable.rippleeffect);
                 this.linearImages = (LinearLayout) rowView.findViewById(R.id.linearImages);
             }
@@ -443,7 +443,7 @@ public class ModeratorActivity extends BaseActivity {
             holder.txtLocation.setText(dataModel.getLocation());
             holder.txtDateTime.setText(getPostedDate(dataModel.getPostedDate()));
 
-            if(dataModel.getMODSATUS().equalsIgnoreCase("PENDING")) {
+            if (dataModel.getMODSATUS().equalsIgnoreCase("PENDING")) {
 
                 holder.ll_spinners.setVisibility(View.VISIBLE);
                 holder.submit.setVisibility(View.VISIBLE);
@@ -454,10 +454,10 @@ public class ModeratorActivity extends BaseActivity {
                 holder.spStatus.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        status = position;
+                        status = position + 1;
                         String selectedItem = parent.getItemAtPosition(position).toString();
                         Log.i("TAG", selectedItem);
-                        Toast.makeText(ModeratorActivity.this, "Successfully assigned to " + selectedItem, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(ModeratorActivity.this, "Successfully assigned to " + selectedItem, Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -469,10 +469,10 @@ public class ModeratorActivity extends BaseActivity {
                 holder.spProvider.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        provider = position;
+                        provider = position + 1;
                         String selectedItem = parent.getItemAtPosition(position).toString();
                         Log.i("TAG", selectedItem);
-                        Toast.makeText(ModeratorActivity.this, "Successfully assigned to " + selectedItem, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(ModeratorActivity.this, "Successfully assigned to " + selectedItem, Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -480,10 +480,20 @@ public class ModeratorActivity extends BaseActivity {
 
                     }
                 });
-            }else
-            {
-                holder.ll_spinners.setVisibility(View.GONE);
-                holder.submit.setVisibility(View.GONE);
+            } else {
+               /* holder.ll_spinners.setVisibility(View.GONE);
+                holder.submit.setVisibility(View.GONE);*/
+                holder.spStatus.setAdapter(statusAdapter);
+                holder.spProvider.setAdapter(providerAdapter);
+
+                if (dataModel.getMODSATUS() != null) {
+                    int spinnerPosition = statusAdapter.getPosition(dataModel.getMODSATUS());
+                    holder.spStatus.setSelection(spinnerPosition);
+                }
+
+                if (dataModel.getAssignedTo() != null) {
+                    holder.spProvider.setSelection(Integer.valueOf(dataModel.getAssignedTo()));
+                }
             }
 
 
@@ -498,7 +508,7 @@ public class ModeratorActivity extends BaseActivity {
                     if (strFilepathArray.length > 1) {
 
                         holder.linearLayout.setVisibility(View.VISIBLE);
-                        if(holder.linearLayout.getChildCount() > 0)
+                        if (holder.linearLayout.getChildCount() > 0)
                             holder.linearLayout.removeAllViews();
 
                         for (int i = 0; i < strFilepathArray.length; i++) {
@@ -525,7 +535,7 @@ public class ModeratorActivity extends BaseActivity {
                                     @Override
                                     public void onClick(View v) {
                                         String url = imageView.getContentDescription().toString();
-                                        loadImagePath(url, finalHolder1.imgFilePath,context);
+                                        loadImagePath(url, finalHolder1.imgFilePath, context);
                                     }
                                 });
                             }
@@ -550,18 +560,16 @@ public class ModeratorActivity extends BaseActivity {
                 @Override
                 public void onClick(View v) {
                     String content = v.getContentDescription().toString();
-                    Log.i("AdapeterFilePath" ,content);
+                    Log.i("AdapeterFilePath", content);
                     try {
                         String strMimeType = getExtensionType(Uri.parse(content), context);
-                        System.out.println("MimeType :: "+strMimeType);
+                        System.out.println("MimeType :: " + strMimeType);
                         //openFile(Uri.parse(content), content, context);
-                        if(strMimeType.equalsIgnoreCase("jpg") || strMimeType.equalsIgnoreCase("mp4")){
-                            Intent intent = new Intent(context, WatchItemActivity.class);
-                            intent.putExtra("MimeType",strMimeType);
-                            intent.putExtra("content",content);
-                            context.startActivity(intent);
-                        }else
-                            openFile(Uri.parse(content), content, context);
+                        if (strMimeType.equalsIgnoreCase("jpg") || strMimeType.equalsIgnoreCase("mp4")) {
+                            Utils.showDialog(strMimeType, content, context);
+                        } else
+                            Utils.showDialog(strMimeType, content, context);
+                        //openFile(Uri.parse(content), content, context);
                     } catch (ActivityNotFoundException e) {
                         e.printStackTrace();
                         Toast.makeText(context, "No Activity found to handle this file. Need to install supported Application", Toast.LENGTH_LONG).show();
@@ -569,11 +577,11 @@ public class ModeratorActivity extends BaseActivity {
                 }
             });
 
-            final String MemeberID = getStringSharedPreference(context,"MemberID");
+            final String MemeberID = getStringSharedPreference(context, "MemberID");
             holder.submit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    postAddModeration(holder.submit,Integer.parseInt(dataModel.getItemID()),Integer.parseInt(MemeberID),status,provider);
+                    postAddModeration(holder.submit, Integer.parseInt(dataModel.getItemID()), Integer.parseInt(MemeberID), status, provider);
                 }
             });
         }
@@ -581,13 +589,13 @@ public class ModeratorActivity extends BaseActivity {
         public void loadImages(String url, final ImageView img, LinearLayout linearLayout, boolean first, final ImageView imgFilePath, int length) {
             String strMimeType = getExtensionType(Uri.parse(url), context);
             if (strMimeType != null && !strMimeType.equalsIgnoreCase("")) {
-                if (strMimeType.equalsIgnoreCase("jpg") || strMimeType.equalsIgnoreCase("jpeg")  || strMimeType.equalsIgnoreCase("png")) {
+                if (strMimeType.equalsIgnoreCase("jpg") || strMimeType.equalsIgnoreCase("jpeg") || strMimeType.equalsIgnoreCase("png")) {
                     //imageLoader.DisplayImage(url, img);
                     if (first) {
                         imgFilePath.setContentDescription(url);
                         //imageLoader.DisplayImage(url, imgFilePath);
                         Glide.with(context).load(url).into(imgFilePath);
-                    }else
+                    } else
                         Glide.with(context).load(url).override(600, 300).into(img);
 
                     if (length == 1)
@@ -734,21 +742,21 @@ public class ModeratorActivity extends BaseActivity {
                                     String msg = myResultResponse.getMessage();
                                     if (msg.equalsIgnoreCase("SUCCESS")) {
                                         lstResult = myResultResponse.getResult();
-                                        for(int i = 0;i< lstResult.size();i++) {
+                                        for (int i = 0; i < lstResult.size(); i++) {
                                             if (lstResult.get(i).getRES() != null) {
                                                 int res = lstResult.get(i).getRES();
                                                 if (res != -1) {
-                                                    showModAlert(ModeratorActivity.this, "Success","Verified :" +res, "OK");
+                                                    showModAlert(ModeratorActivity.this, "Success", "Verified :" + res, "OK");
                                                 } else
                                                     showAlert(ModeratorActivity.this, "Alert", "Item already added ", "OK");
                                             }
                                         }
                                     } else
-                                        Log.e("Tag", "error=" );
+                                        Log.e("Tag", "error=");
                                 } else
-                                    Log.e("Tag", "error=" );
+                                    Log.e("Tag", "error=");
                             } else
-                                Log.e("Tag", "error=" );
+                                Log.e("Tag", "error=");
 
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -759,11 +767,12 @@ public class ModeratorActivity extends BaseActivity {
                             }
                         }
                     }
+
                     @Override
                     public void onFailure(Call<ResultModel> call, Throwable t) {
                         try {
                             Log.e("Tag", "error" + t.toString());
-                            Toast.makeText(ModeratorActivity.this, "error :" +t.toString(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ModeratorActivity.this, "error :" + t.toString(), Toast.LENGTH_SHORT).show();
 
                         } catch (Resources.NotFoundException e) {
                             e.printStackTrace();
@@ -771,15 +780,13 @@ public class ModeratorActivity extends BaseActivity {
                     }
                 });
 
-            }catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
                 //FirebaseCrashlytics.getInstance().setCustomKey("ModeratorActivity", e.getMessage());
             }
         }
 
-        public void showModAlert(Activity activity, String Title, String strMsg, String Positive)
-        {
+        public void showModAlert(Activity activity, String Title, String strMsg, String Positive) {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             // Get the layout inflater
             LayoutInflater inflater = (activity).getLayoutInflater();
@@ -806,9 +813,20 @@ public class ModeratorActivity extends BaseActivity {
         }
 
 
-        private String getPostedDate(String postedDate)
-        {
-            if(postedDate.contains("T"))
+        private String getPostedDate(String postedDate) {
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            Date myDate = null;
+            try {
+                myDate = dateFormat.parse(postedDate);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            SimpleDateFormat timeFormat = new SimpleDateFormat("dd-MMM-yyyy  HH:mm");
+            String finalDate = timeFormat.format(myDate);
+
+            return finalDate;
+            /*if(postedDate.contains("T"))
             {
                 String[] strDateZ = null;
                 String date ="";
@@ -822,7 +840,7 @@ public class ModeratorActivity extends BaseActivity {
                 }
                 try {
                     if(strDateZ != null  && !date.equalsIgnoreCase("")) {
-                        SimpleDateFormat spf = new SimpleDateFormat("yyyy-MM-dd hh:mm:sss");
+                        SimpleDateFormat spf = new SimpleDateFormat("yyyy-MM-dd  hh:mm:sss");
                         try {
 
                             Date oldDate = spf.parse(date);
@@ -842,7 +860,7 @@ public class ModeratorActivity extends BaseActivity {
                                 //if (hh <= 60 && day != 0) {
                                 if (hh <= 60 && day != 0) {
                                     if(day > 5){
-                                        spf = new SimpleDateFormat("dd MMM yyyy");
+                                        spf = new SimpleDateFormat("dd-MMM-yyyy");
                                         date = spf.format(oldDate);
                                         return date;
                                     }
@@ -867,6 +885,7 @@ public class ModeratorActivity extends BaseActivity {
                 }
             }
             return postedDate;
+        }*/
         }
     }
 

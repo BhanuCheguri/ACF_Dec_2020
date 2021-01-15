@@ -8,6 +8,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.RadioGroup;
@@ -47,7 +48,6 @@ public class KnowYourActsActivity extends BaseActivity implements View.OnClickLi
 
 
     private void  init() {
-        getSupportActionBar().setTitle(strName);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.mipmap.ic_launcher_icon);
@@ -58,7 +58,12 @@ public class KnowYourActsActivity extends BaseActivity implements View.OnClickLi
         if (b != null)
         {
             strCategoryID = b.getString("CatergoryID").toString();
-            strName = b.getString("Name").toString();
+            String[] strArr = strCategoryID.split("-");
+            strCategoryID = strArr[0];
+            strName = strArr[1];
+            Log.i("activity name",strName);
+            getSupportActionBar().setTitle(strName);
+            setActionBarTitle(strName);
             LoadAdapter();
         }
 
@@ -186,7 +191,7 @@ public class KnowYourActsActivity extends BaseActivity implements View.OnClickLi
         switch (v.getId()){
             case R.id.act_english:
                 if(nRadioGroup == 0){
-                    intent.setDataAndType(Uri.parse("http://api.ainext.in/rtieng.pdf"), "application/pdf");
+                    intent.setDataAndType(Uri.parse("http://api.ainext.in/dimen_250eng.pdf"), "application/pdf");
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                 }else if(nRadioGroup == 1){
@@ -201,7 +206,7 @@ public class KnowYourActsActivity extends BaseActivity implements View.OnClickLi
                 break;
             case R.id.act_telugu:
                 if(nRadioGroup == 0){
-                    intent.setDataAndType(Uri.parse("http://api.ainext.in/rtitel.pdf"), "application/pdf");
+                    intent.setDataAndType(Uri.parse("http://api.ainext.in/dimen_250tel.pdf"), "application/pdf");
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                 }else if(nRadioGroup == 1){

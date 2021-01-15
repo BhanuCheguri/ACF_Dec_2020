@@ -38,6 +38,7 @@ public class AdminLogin extends BaseActivity {
     String UType="";
     String strSPID="";
     String strSectionID="";
+    String strProviderName="";
     boolean isRememberMeChecked = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,6 +122,9 @@ public class AdminLogin extends BaseActivity {
                                 UType = i.getUType();
                                 strSectionID = i.getSectionID();
                                 strSPID = i.getSPID();
+                                strProviderName = i.getName();
+
+                                putStringSharedPreference(AdminLogin.this,"ProviderName",strProviderName);
                                 putStringSharedPreference(AdminLogin.this,"SectionID",strSectionID);
                                 putStringSharedPreference(AdminLogin.this,"SPID",strSPID);
                             }

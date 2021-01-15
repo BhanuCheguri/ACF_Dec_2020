@@ -12,6 +12,7 @@ public class SPLoginModel {
     @SerializedName("message")
     @Expose
     private String message;
+
     @SerializedName("result")
     @Expose
     private ArrayList<Result> result = null;
@@ -42,6 +43,9 @@ public class SPLoginModel {
 
     public class Result {
 
+        @SerializedName("Name")
+        @Expose
+        private String Name;
         @SerializedName("Status")
         @Expose
         private String status;
@@ -85,6 +89,14 @@ public class SPLoginModel {
 
         public void setSectionID(String sectionID) {
             this.sectionID = sectionID;
+        }
+
+        public String getName() {
+            return Name;
+        }
+
+        public void setName(String name) {
+            Name = name;
         }
     }
 }

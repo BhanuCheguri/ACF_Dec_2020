@@ -141,7 +141,7 @@ public class SPPetitionsListAdapter extends RecyclerView.Adapter<SPPetitionsList
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd  HH:mm");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         String finalDate = timeFormat.format(myDate);
         System.out.println(finalDate);
 

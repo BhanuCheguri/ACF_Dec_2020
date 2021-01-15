@@ -9,6 +9,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -59,14 +60,19 @@ public class MoreActivity extends BaseActivity{
         getSupportActionBar().setBackgroundDrawable(getResources().getDrawable(R.drawable.gradient_theme));
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-        getSupportActionBar().setTitle(strName);
+
 
 
         Bundle b = getIntent().getExtras();
         if (b != null)
         {
             strCategoryID = b.getString("CatergoryID").toString();
-            strName = b.getString("Name").toString();
+            String[] strArr = strCategoryID.split("-");
+            strCategoryID = strArr[0];
+            strName = strArr[1];
+            Log.i("activity name",strName);
+            getSupportActionBar().setTitle(strName);
+            setActionBarTitle(strName);
             LoadAdapter();
         }
 

@@ -23,6 +23,8 @@ import android.content.IntentSender;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -110,7 +112,24 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
 
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.RECEIVE_SMS},
                 MY_PERMISSIONS_REQUEST_SMS_RECEIVE);
+
+        binding.otpCode.addTextChangedListener(textWatcher);
     }
+
+    private TextWatcher textWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            String  otpCodeInput =  binding.otpCode.getText().toString().trim();
+            binding.btnSubmit.setBackgroundResource(R.drawable.button_style);
+            binding.btnSubmit.setEnabled(!otpCodeInput.isEmpty());
+        }
+        @Override
+        public void afterTextChanged(Editable s) {
+        }
+    };
 
     @Override public void onConnected(@Nullable Bundle bundle) {
 
@@ -200,15 +219,20 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
             case R.id.change_mobile_no:
                 binding.llVerifyingOtp.setVisibility(View.GONE);
                 binding.llVerifyMobileNo.setVisibility(View.VISIBLE);
+                binding.btnSubmit.setEnabled(false);
+                binding.btnSubmit.setBackgroundResource(R.drawable.inactive_button_style);
 
                 break;
             case R.id.btnSubmit:
-                if((binding.otpCode.getText().toString()).equalsIgnoreCase("") &&
-                        (binding.otpCode.getText().toString()) == null )
+                if((binding.otpCode.getText().toString()).equalsIgnoreCase(""))
                 {
                     Toast.makeText(this,"OTP Code cannot be empty",Toast.LENGTH_LONG).show();
+                    binding.btnSubmit.setEnabled(false);
+                    binding.btnSubmit.setBackgroundResource(R.drawable.inactive_button_style);
                 }else
                 {
+                    binding.btnSubmit.setEnabled(true);
+                    binding.btnSubmit.setBackgroundResource(R.drawable.button_style);
                     GetOTPVerifiedAsyncTask getOTPVerifiedAsyncTask = new GetOTPVerifiedAsyncTask();
                     String strOTPCode = getStringSharedPreference(OTPVerificationActivity.this,"OTPCode");
                     if (strOTPCode.equalsIgnoreCase("")) {
@@ -318,6 +342,8 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
             }
             binding.llVerifyMobileNo.setVisibility(View.GONE);
             binding.llVerifyingOtp.setVisibility(View.VISIBLE);
+            binding.btnSubmit.setEnabled(false);
+            binding.btnSubmit.setBackgroundResource(R.drawable.inactive_button_style);
         }
 
     }
@@ -362,8 +388,14 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
                     message = intent.getStringExtra("number");
                     //Toast.makeText(OTPVerificationActivity.this, "OTP is :" + message, Toast.LENGTH_SHORT).show();
                 // message is the fetching OTP
-                    if(message != null && !message.equalsIgnoreCase(""))
+                    if(message != null && !message.equalsIgnoreCase("")) {
                         binding.otpCode.setText(message);
+                        binding.btnSubmit.setBackgroundResource(R.drawable.button_style);
+                        binding.btnSubmit.setEnabled(true);
+                    }else {
+                        binding.btnSubmit.setBackgroundResource(R.drawable.inactive_button_style);
+                        binding.btnSubmit.setEnabled(false);
+                    }
 
                   putStringSharedPreference(OTPVerificationActivity.this, "OTPCode", message);
             }

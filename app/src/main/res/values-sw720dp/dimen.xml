@@ -20,6 +20,8 @@
     <dimen name="dimen_25">30dp</dimen>
     <dimen name="dimen_28">28dp</dimen>
     <dimen name="dimen_30">35dp</dimen>
+    <dimen name="dimen_35">40dp</dimen>
+    <dimen name="dimen_45">50dp</dimen>
     <dimen name="dimen_50">55dp</dimen>
     <dimen name="dimen_120">180dp</dimen>
     <dimen name="dimen_150">200dp</dimen>

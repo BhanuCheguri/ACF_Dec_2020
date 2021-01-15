@@ -228,10 +228,6 @@ public class HomeFragment extends BaseFragment implements SearchView.OnQueryText
                 // filter recycler view when text is changed
                 if (adapter!=null)
                     adapter.getFilter().filter(query);
-                Toast.makeText(getActivity(),
-                        getString(R.string.abc_searchview_description_submit),
-                        Toast.LENGTH_SHORT)
-                        .show();
                 return false;
             }
         });

@@ -331,13 +331,13 @@ public class MoreGridFragment extends BaseFragment {
 
                 if(!hshMapDashBoardsLst.get(lstCategories.get(position)).equalsIgnoreCase("10")) {
                     Intent intent = new Intent(getActivity(), MoreActivity.class);
-                    intent.putExtra("CatergoryID", hshMapDashBoardsLst.get(lstCategories.get(position)));
+                    intent.putExtra("CatergoryID", hshMapDashBoardsLst.get(lstCategories.get(position)) + "-"+ lstCategories.get(position) );
                     intent.putExtra("Name", lstCategories.get(position));
                     getActivity().startActivity(intent);
                 }else
                 {
                     Intent intent = new Intent(getActivity(), KnowYourActsActivity.class);
-                    intent.putExtra("CatergoryID", hshMapDashBoardsLst.get(lstCategories.get(position)));
+                    intent.putExtra("CatergoryID", hshMapDashBoardsLst.get(lstCategories.get(position))+ "-"+ lstCategories.get(position));
                     intent.putExtra("Name", lstCategories.get(position));
                     getActivity().startActivity(intent);
                 }

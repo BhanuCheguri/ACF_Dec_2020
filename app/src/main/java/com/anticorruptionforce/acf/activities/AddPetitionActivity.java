@@ -31,9 +31,11 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.anticorruptionforce.acf.utilities.Utils;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -161,7 +163,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-        getSupportActionBar().setTitle("");
+        getSupportActionBar().setTitle("Add Petition");
 
         requestMultiplePermissions();
         getCurrentLocation();
@@ -596,13 +598,15 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         super.onActivityResult(requestCode, resultCode, data);
         String imgcurTime = dateFormat.format(new Date());
         String dir = getFilesDir().getAbsolutePath();
+        Bundle extras = data.getExtras();
+        photo = (Bitmap) extras.get("data");
+        //Bitmap resizedBitmap = Utils.getResizedBitmap(photo, 150, 300);
 
         switch(requestCode){
             case 1:
                 if(resultCode == RESULT_OK){
-                    Bundle extras = data.getExtras();
-                    photo = (Bitmap) extras.get("data");
                     binding.imageView1.setImageBitmap(photo);
+                    binding.imageView1.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     saveFile(AddPetitionActivity.this,photo,imgcurTime + ".jpg");
                     String imagePath = dir + "/"+imgcurTime + ".jpg";
                     lstPathURI.add(imagePath);
@@ -610,9 +614,8 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                 break;
             case 2:
                 if(resultCode == RESULT_OK) {
-                    Bundle extras = data.getExtras();
-                    photo = (Bitmap) extras.get("data");
                     binding.imageView2.setImageBitmap(photo);
+                    binding.imageView2.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     saveFile(AddPetitionActivity.this,photo,imgcurTime + ".jpg");
                     String imagePath = dir + "/"+imgcurTime + ".jpg";
                     lstPathURI.add(imagePath);
@@ -621,9 +624,8 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
 
             case 3:
                 if(resultCode == RESULT_OK){
-                    Bundle extras = data.getExtras();
-                    photo = (Bitmap) extras.get("data");
                     binding.imageView3.setImageBitmap(photo);
+                    binding.imageView3.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     saveFile(AddPetitionActivity.this,photo,imgcurTime + ".jpg");
                     String imagePath = dir + "/"+imgcurTime + ".jpg";
                     lstPathURI.add(imagePath);
@@ -631,9 +633,8 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                 break;
             case 4:
                 if(resultCode == RESULT_OK) {
-                    Bundle extras = data.getExtras();
-                    photo = (Bitmap) extras.get("data");
                     binding.imageView4.setImageBitmap(photo);
+                    binding.imageView4.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     saveFile(AddPetitionActivity.this,photo,imgcurTime + ".jpg");
                     String imagePath = dir + "/"+imgcurTime + ".jpg";
                     lstPathURI.add(imagePath);
@@ -641,9 +642,8 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                 break;
             case 5:
                 if(resultCode == RESULT_OK){
-                    Bundle extras = data.getExtras();
-                    photo = (Bitmap) extras.get("data");
                     binding.imageView5.setImageBitmap(photo);
+                    binding.imageView5.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     saveFile(AddPetitionActivity.this,photo,imgcurTime + ".jpg");
                     String imagePath = dir + "/"+imgcurTime + ".jpg";
                     lstPathURI.add(imagePath);
@@ -744,7 +744,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                 file = new File(filePaths.get(i));
             }
             System.out.println("image"+(i+1));
-            MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("image"+(i+1), file.getName(),
+            MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData(pid+"_image"+(i+1), file.getName(),
                     RequestBody.create(MediaType.parse("application/octet-stream"), file));
             builder.addPart(fileToUpload);
         }
@@ -771,11 +771,16 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                                             binding.spOffice.setText("");
                                             binding.spSelection.setText("");
                                             binding.imageView1.setImageResource(R.drawable.ic_add_item);
+                                            binding.imageView1.setScaleType(ImageView.ScaleType.CENTER);
                                             binding.imageView2.setImageResource(R.drawable.ic_add_item);
+                                            binding.imageView2.setScaleType(ImageView.ScaleType.CENTER);
                                             binding.imageView3.setImageResource(R.drawable.ic_add_item);
-                                            binding.imageView3.setImageResource(R.drawable.ic_add_item);
+                                            binding.imageView3.setScaleType(ImageView.ScaleType.CENTER);
                                             binding.imageView4.setImageResource(R.drawable.ic_add_item);
+                                            binding.imageView4.setScaleType(ImageView.ScaleType.CENTER);
                                             binding.imageView5.setImageResource(R.drawable.ic_add_item);
+                                            binding.imageView5.setScaleType(ImageView.ScaleType.CENTER);
+
                                         }else
                                             showAlert(AddPetitionActivity.this, "Failed to upload Images", "Result:" + response.toString(), "OK");
                                     }

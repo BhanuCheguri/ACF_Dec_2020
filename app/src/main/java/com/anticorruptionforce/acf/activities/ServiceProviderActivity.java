@@ -52,8 +52,7 @@ public class ServiceProviderActivity extends BaseActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.mipmap.ic_launcher_icon);
         getSupportActionBar().setBackgroundDrawable(getResources().getDrawable(R.drawable.gradient_theme));
-        setActionBarTitle("Service Provider");
-
+        setActionBarTitle(getStringSharedPreference(ServiceProviderActivity.this,"ProviderName"));
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         strSectionID = getStringSharedPreference(ServiceProviderActivity.this,"SectionID");

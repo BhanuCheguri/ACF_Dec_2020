@@ -1,77 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/card_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@android:color/white"
         card_view:cardCornerRadius="@dimen/dimen_5"
         card_view:cardElevation="@dimen/dimen_4"
-        card_view:contentPadding="@dimen/dimen_5"
-        android:id="@+id/card_view"
-        android:background="@android:color/white"
-        android:layout_marginBottom="8dp">
+        card_view:contentPadding="@dimen/dimen_5">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@color/colorWhite">
+            android:background="@color/colorWhite"
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:layout_weight="0.3">
+                    android:layout_weight="0.3"
+                    android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/montserrat_light"
-                        android:text="Petition No:"
                         android:layout_marginLeft="@dimen/dimen_5"
-                        android:padding="@dimen/dimen_5"/>
+                        android:fontFamily="@font/montserrat_light"
+                        android:padding="@dimen/dimen_5"
+                        android:text="Petition No:" />
+
                     <TextView
                         android:id="@+id/tv_petitionNo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/montserrat_light"
-                        android:text="12345"
-                        android:gravity="left"
                         android:layout_marginLeft="@dimen/dimen_10"
-                        android:layout_marginRight="@dimen/dimen_10"/>
+                        android:layout_marginRight="@dimen/dimen_10"
+                        android:fontFamily="@font/montserrat_light"
+                        android:gravity="left"
+                        android:text="12345" />
                 </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:layout_weight="0.4"
                     android:layout_gravity="left"
-                    android:gravity="left">
+                    android:layout_weight="0.4"
+                    android:gravity="left"
+                    android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:fontFamily="@font/montserrat_light"
-                        android:drawableRight="@drawable/ic_clock_16"
                         android:layout_marginLeft="@dimen/dimen_10"
-                        android:layout_marginRight="@dimen/dimen_10"/>
+                        android:layout_marginRight="@dimen/dimen_10"
+                        android:drawableRight="@drawable/ic_clock_16"
+                        android:fontFamily="@font/montserrat_light" />
+
                     <TextView
-                        android:fontFamily="@font/montserrat_light"
+                        android:id="@+id/tv_complaintDate"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/tv_complaintDate"
                         android:layout_gravity="fill_horizontal"
-                        android:gravity="left|center"
                         android:drawablePadding="@dimen/dimen_5"
-                        android:text="On 12/08/2019 7.15pm"
-                        />
+                        android:fontFamily="@font/montserrat_light"
+                        android:gravity="left|center"
+                        android:text="On 12/08/2019 7.15pm" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -83,109 +87,146 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
                     android:layout_marginTop="@dimen/dimen_5"
-                    android:layout_weight="0.3">
+                    android:layout_weight="0.3"
+                    android:orientation="vertical">
 
                     <TextView
-                        android:fontFamily="@font/montserrat_light"
+                        android:id="@+id/tv_complaint"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Complaint for cheating"
-                        android:id="@+id/tv_complaint"
-                        android:padding="@dimen/dimen_10"/>
+                        android:fontFamily="@font/montserrat_light"
+                        android:padding="@dimen/dimen_10"
+                        android:text="Complaint for cheating" />
 
                     <TextView
                         android:id="@+id/tv_petitioner"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/montserrat_semibold"
+                        android:padding="@dimen/dimen_10"
                         android:text="RK Reddy"
-                        android:textStyle="bold"
-                        android:padding="@dimen/dimen_10" />
+                        android:textStyle="bold" />
 
                     <TextView
-                        android:fontFamily="@font/montserrat_light"
+                        android:id="@+id/tv_status"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/tv_status"
+                        android:fontFamily="@font/montserrat_light"
+                        android:padding="@dimen/dimen_10"
                         android:text="Status: Not Verified"
-                        android:textStyle="bold"
-                        android:padding="@dimen/dimen_10"/>
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
+                    android:layout_marginTop="@dimen/dimen_5"
                     android:layout_weight="0.4"
-                    android:layout_marginTop="@dimen/dimen_5">
+                    android:orientation="vertical">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
-                        <ImageView
-                            android:id="@+id/imageView1"
-                            android:layout_width="@dimen/dimen_50"
-                            android:layout_height="@dimen/dimen_50"
-                            android:layout_margin="@dimen/dimen_5"
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:src="@drawable/petition_image" />
+                            card_view:cardBackgroundColor="@color/colorWhite"
+                            card_view:cardUseCompatPadding="true">
 
-                        <ImageView
-                            android:id="@+id/imageView2"
-                            android:layout_width="@dimen/dimen_50"
-                            android:layout_height="@dimen/dimen_50"
-                            android:layout_weight="1"
-                            android:layout_margin="@dimen/dimen_5"
-                            android:src="@drawable/petition_image"
-                            />
+                            <ImageView
+                                android:id="@+id/imageView1"
+                                android:layout_width="@dimen/dimen_50"
+                                android:layout_height="@dimen/dimen_50"
+                                android:scaleType="fitXY"/>
+                        </androidx.cardview.widget.CardView>
 
-                        <ImageView
-                            android:id="@+id/imageView3"
-                            android:layout_width="@dimen/dimen_50"
-                            android:layout_height="@dimen/dimen_50"
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_margin="@dimen/dimen_5"
-                            android:src="@drawable/petition_image"
-                            />
+                            card_view:cardBackgroundColor="@color/colorWhite"
+                            card_view:cardUseCompatPadding="true">
+
+                            <ImageView
+                                android:id="@+id/imageView2"
+                                android:layout_width="@dimen/dimen_50"
+                                android:layout_height="@dimen/dimen_50"
+                                android:layout_weight="1"
+                                android:scaleType="fitXY"/>
+                        </androidx.cardview.widget.CardView>
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            card_view:cardBackgroundColor="@color/colorWhite"
+                            card_view:cardUseCompatPadding="true">
+
+                            <ImageView
+                                android:id="@+id/imageView3"
+                                android:layout_width="@dimen/dimen_50"
+                                android:layout_height="@dimen/dimen_50"
+                                android:layout_weight="1"
+                                android:scaleType="fitXY"/>
+                        </androidx.cardview.widget.CardView>
 
                     </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="@dimen/dimen_10">
+                        android:layout_marginBottom="@dimen/dimen_10"
+                        android:orientation="horizontal">
 
-                        <ImageView
-                            android:id="@+id/imageView4"
-                            android:layout_width="@dimen/dimen_50"
-                            android:layout_height="@dimen/dimen_50"
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_margin="@dimen/dimen_5"
-                            android:src="@drawable/petition_image"
-                            />
+                            card_view:cardBackgroundColor="@color/colorWhite"
+                            card_view:cardUseCompatPadding="true">
 
-                        <ImageView
-                            android:id="@+id/imageView5"
-                            android:layout_width="@dimen/dimen_50"
-                            android:layout_height="@dimen/dimen_50"
-                            android:layout_weight="1"
-                            android:layout_margin="@dimen/dimen_5"
-                            android:src="@drawable/petition_image"
-                            />
+                            <ImageView
+                                android:id="@+id/imageView4"
+                                android:layout_width="@dimen/dimen_50"
+                                android:layout_height="@dimen/dimen_50"
+                                android:layout_weight="1"
+                                android:scaleType="fitXY"/>
+                        </androidx.cardview.widget.CardView>
 
-                        <ImageView
-                            android:id="@+id/imageView6"
-                            android:layout_width="@dimen/dimen_50"
-                            android:layout_height="@dimen/dimen_50"
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:visibility="invisible"
-                            android:src="@drawable/ic_add_item"
-                            />
+                            card_view:cardBackgroundColor="@color/colorWhite"
+                            card_view:cardUseCompatPadding="true">
+
+                            <ImageView
+                                android:id="@+id/imageView5"
+                                android:layout_width="@dimen/dimen_50"
+                                android:layout_height="@dimen/dimen_50"
+                                android:layout_weight="1"
+                                android:scaleType="fitXY"/>
+                        </androidx.cardview.widget.CardView>
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            card_view:cardBackgroundColor="@color/colorWhite"
+                            card_view:cardUseCompatPadding="true"
+                            android:visibility="invisible">
+
+                            <ImageView
+                                android:id="@+id/imageView6"
+                                android:layout_width="@dimen/dimen_50"
+                                android:layout_height="@dimen/dimen_50"
+                                android:layout_weight="1"
+                                android:scaleType="fitXY"/>
+                        </androidx.cardview.widget.CardView>
                     </LinearLayout>
 
                 </LinearLayout>
@@ -199,18 +240,17 @@
                 android:visibility="gone">
 
                 <Button
-                    android:background="@android:color/transparent"
-                    android:fontFamily="@font/montserrat_light"
                     android:id="@+id/tv_attachmentsNo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="right|center"
                     android:layout_weight="0.4"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="@font/montserrat_light"
+                    android:gravity="right|center"
                     android:text="View Attachments"
                     android:textColor="@color/colorPrimary"
                     android:textSize="@dimen/dimen_14"
-                    android:textStyle="bold"
-                    />
+                    android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>

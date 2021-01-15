@@ -25,27 +25,27 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:textSize="@dimen/dimen_16"
+                android:textSize="@dimen/dimen_12"
                 android:id="@+id/rti"
-                android:text="RTI"
+                android:text="Right to Information"
                 android:fontFamily="@font/montserrat_bold"
                 android:textColor="@color/colorBrown"/>
             <RadioButton
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:textSize="@dimen/dimen_16"
+                android:textSize="@dimen/dimen_12"
                 android:id="@+id/rts"
-                android:text="RTS"
+                android:text="Right to Service"
                 android:fontFamily="@font/montserrat_bold"
                 android:textColor="@color/colorBrown"/>
             <RadioButton
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:textSize="@dimen/dimen_16"
+                android:textSize="@dimen/dimen_12"
                 android:id="@+id/cc"
-                android:text="CC"
+                android:text="Citzen Chart"
                 android:fontFamily="@font/montserrat_bold"
                 android:textColor="@color/colorBrown"/>
         </RadioGroup>

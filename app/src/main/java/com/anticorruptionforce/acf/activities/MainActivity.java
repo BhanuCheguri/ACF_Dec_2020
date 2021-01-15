@@ -284,7 +284,7 @@ public class MainActivity extends BaseActivity {
         protected String doInBackground(String... params) {
             try {
                 //It retrieves the latest version by scraping the content of current version from play store at runtime
-                String urlOfAppFromPlayStore = "https://play.google.com/store/apps/details?id= your app package address";
+                String urlOfAppFromPlayStore = "https://play.google.com/store/apps/details?id=";
                 Document doc = Jsoup.connect(urlOfAppFromPlayStore).get();
                 latestVersion = doc.getElementsByAttributeValue("itemprop", "softwareVersion").first().text();
             } catch (Exception e) {
