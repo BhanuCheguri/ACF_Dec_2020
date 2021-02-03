@@ -184,6 +184,7 @@ public class SocialEvilFragment extends BaseFragment{
         call.enqueue(new Callback<WallPostsModel>() {
             @Override
             public void onResponse(Call<WallPostsModel> call, Response<WallPostsModel> response) {
+                System.out.println("getWallPostDetails::" + response);
                 if(response != null) {
                     WallPostsModel myWallData  = response.body();
                     if(myWallData != null) {

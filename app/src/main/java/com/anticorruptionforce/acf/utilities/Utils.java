@@ -1,7 +1,9 @@
 package com.anticorruptionforce.acf.utilities;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -16,6 +18,8 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.VideoView;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.anticorruptionforce.acf.R;
 import com.bumptech.glide.Glide;
@@ -88,23 +92,10 @@ public class Utils {
         });
 
         dialog2.show();
-        if(strMimeType.equalsIgnoreCase("jpg")){
-            imgPicture.setVisibility(View.VISIBLE);
-            imgVideo.setVisibility(View.GONE);
+        //if(strMimeType.equalsIgnoreCase("jpg") || strMimeType.equalsIgnoreCase("jpeg") || strMimeType.equalsIgnoreCase("png")){
 
-            Glide.with(context)
-                    .load(content) // image url
-                    .override(200, 250).centerCrop().into(imgPicture);  // imageview object.
-
-            /*try {
-                URL url = new URL(content);
-                Bitmap bmp;
-                bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                imgPicture.setImageBitmap(bmp);
-            }catch (Exception e){
-                e.printStackTrace();
-            }*/
-        }else if(strMimeType.equalsIgnoreCase("mp4")){
+        /*}else */
+        if(strMimeType.equalsIgnoreCase("mp4")){
             imgPicture.setVisibility(View.GONE);
             imgVideo.setVisibility(View.VISIBLE);
             try {
@@ -134,7 +125,59 @@ public class Utils {
 
                 }
             });
+        }else {
+            imgPicture.setVisibility(View.VISIBLE);
+            imgVideo.setVisibility(View.GONE);
+
+            Glide.with(context)
+                    .load(content) // image url
+                    .override(200, 250).centerCrop().into(imgPicture);  // imageview object.
         }
+    }
+
+
+    public static void showOKAlert(Activity activity, String strMsg)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        // Get the layout inflater
+        LayoutInflater inflater = (activity).getLayoutInflater();
+        // Inflate and set the layout for the dialog
+        // Pass null as the parent view because its going in the
+        // dialog layout
+        builder.setTitle("Success");
+        builder.setMessage(strMsg);
+        builder.setCancelable(false);
+        builder.setIcon(R.drawable.ic_success);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        builder.create();
+        builder.show();
+    }
+
+    public static void showErrorAlert(Activity activity, String strMsg)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        // Get the layout inflater
+        LayoutInflater inflater = (activity).getLayoutInflater();
+        // Inflate and set the layout for the dialog
+        // Pass null as the parent view because its going in the
+        // dialog layout
+        builder.setTitle("Error");
+        builder.setMessage(strMsg);
+        builder.setCancelable(false);
+        builder.setIcon(R.drawable.red_close);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        builder.create();
+        builder.show();
     }
 
 }

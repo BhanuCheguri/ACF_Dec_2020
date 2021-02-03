@@ -23,10 +23,12 @@ import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Looper;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
@@ -43,6 +45,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -64,9 +67,14 @@ import android.widget.Toast;
 
 import com.anticorruptionforce.acf.databinding.ActivityNewComplaintBinding;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 //import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.google.android.gms.tasks.Task;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.anticorruptionforce.acf.R;
@@ -150,96 +158,157 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
     CustomImageAdapter customImageAdapter;
     Bundle b;
     ArrayList<Integer> lstAutoEmpty;
+    FusedLocationProviderClient mFusedLocationClient;
+    int PERMISSION_ID = 44;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setActionBarTitle(getString(R.string.title_new_Item));
 
-
         binding = DataBindingUtil.setContentView(this, R.layout.activity_new_complaint);
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
         init();
-        getCurrentLocation();
-    }
-
-    private void getCurrentLocation() {
-        try {
-
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
-                        locationRequestCode);
-            } else {
-                getLocation();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void getLocation() {
-        locationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        geocoder = new Geocoder(NewComplaintActivity.this, Locale.getDefault());
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationProviderClient.getLastLocation().addOnSuccessListener(NewComplaintActivity.this, new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-
-                if (location != null) {
-                    latitude = location.getLatitude();
-                    longitude = location.getLongitude();
-                    try {
-                        addresses = geocoder.getFromLocation(latitude, longitude, 1);
-                        if (addresses.size() > 0) {
-                            String addressLine1 = addresses.get(0).getAddressLine(0);
-                            Log.e("line1", addressLine1);
-                            String city = addresses.get(0).getLocality();
-                            Log.e("city", city);
-                            String state = addresses.get(0).getAdminArea();
-                            Log.e("state", state);
-                            String pinCode = addresses.get(0).getPostalCode();
-                            Log.e("pinCode", pinCode);
-
-                            String fullAddress = addressLine1 + ",  " + city + ",  " + state + ",  " + pinCode;
-                            binding.currentLocation.setText(addressLine1);
-                            strLocation = addressLine1;
-                        }
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e("MainActivity", e.getMessage());
-                    }
-
-                }
-            }
-        });
+        getLastLocation();
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        getLastLocation();
+    }
+
+    private void getLastLocation() {
+        // check if permissions are given
+        if (checkPermissions()) {
+
+            // check if location is enabled
+            if (isLocationEnabled()) {
+
+                // getting last location from FusedLocationClient object
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+                mFusedLocationClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Location> task) {
+                        Location location = task.getResult();
+                        if (location == null) {
+                            requestNewLocationData();
+                        } else {
+                            latitude = location.getLatitude();
+                            longitude = location.getLongitude();
+                            getAddressFromLocation(latitude,longitude);
+                        }
+                    }
+                });
+            } else {
+                Toast.makeText(this, "Please turn on" + " your location...", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
+            }
+        } else {
+            // if permissions aren't available,
+            // request for permissions
+            requestPermissions();
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void requestNewLocationData() {
+
+        // Initializing LocationRequest
+        // object with appropriate methods
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(5);
+        mLocationRequest.setFastestInterval(0);
+        mLocationRequest.setNumUpdates(1);
+
+        // setting LocationRequest
+        // on FusedLocationClient
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+    }
+
+    private LocationCallback mLocationCallback = new LocationCallback() {
+
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            Location mLastLocation = locationResult.getLastLocation();
+
+            System.out.println("Location::getLatitude" + mLastLocation.getLatitude() + " :::::::" + "Location::getLongitude" + mLastLocation.getLatitude() );
+            if (mLastLocation != null) {
+                latitude = mLastLocation.getLatitude();
+                longitude = mLastLocation.getLongitude();
+                getAddressFromLocation(latitude,longitude);
+            }
+        }
+    };
+
+    private void getAddressFromLocation(Double lat , Double lang) {
+        try {
+            geocoder = new Geocoder(this, Locale.getDefault());
+            addresses = geocoder.getFromLocation(lat, lang, 1);
+            if (addresses.size() > 0) {
+                String addressLine1 = addresses.get(0).getAddressLine(0);
+                Log.e("line1", addressLine1);
+                String city = addresses.get(0).getLocality();
+                Log.e("city", city);
+                String state = addresses.get(0).getAdminArea();
+                Log.e("state", state);
+                String pinCode = addresses.get(0).getPostalCode();
+                Log.e("pinCode", pinCode);
+
+                String fullAddress = addressLine1 + ",  " + city + ",  " + state + ",  " + pinCode;
+                binding.currentLocation.setText(addressLine1);
+                strLocation = addressLine1;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("MainActivity", e.getMessage());
+        }
+    }
+
+    // method to check for permissions
+    private boolean checkPermissions() {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+        // If we want background location
+        // on Android 10.0 and higher,
+        // use:
+        // ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
+    }
+
+    // method to request for permissions
+    private void requestPermissions() {
+        ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ID);
+    }
+
+    // method to check
+    // if location is enabled
+    private boolean isLocationEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+    }
+
+    // If everything is alright then
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case 1000: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    getLocation();
-                } else {
-                    Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
-                }
-                break;
+
+        if (requestCode == PERMISSION_ID) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getLastLocation();
             }
         }
     }
+
+
 
     private void init() {
         apiRetrofitClient  = new APIRetrofitClient();
@@ -321,6 +390,7 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
             call.enqueue(new Callback<DashboardCategories>() {
                 @Override
                 public void onResponse(Call<DashboardCategories> call, Response<DashboardCategories> response) {
+                    System.out.println("getDashboardCategories::"+ response);
                     DashboardCategories myProfileData = response.body();
                     hideProgressDialog(NewComplaintActivity.this);
                     if(myProfileData != null) {
@@ -1202,13 +1272,6 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
         // Multiple Images
         for (int i = 0; i < filePaths.size(); i++) {
             File file = new File(filePaths.get(i));
-            /*Bitmap bmp = BitmapFactory.decodeFile(file.getAbsolutePath());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            bmp.compress(Bitmap.CompressFormat.PNG, 30, bos);*/
-            //RequestBody requestBody = RequestBody.create(MediaType.parse("*///*"), file);
-
-            /*MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(),
-                    RequestBody.create(MediaType.parse("application/octet-stream"), bos.toByteArray()));*/
             MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(),
                     RequestBody.create(MediaType.parse("application/octet-stream"), file));
             builder.addPart(fileToUpload);
@@ -1222,14 +1285,13 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
         call.enqueue(new Callback<JSONObject>() {
             @Override
             public void onResponse(Call<JSONObject> call, Response<JSONObject> response) {
-                System.out.println( "NewComplaintActivity.this ::: uploadMultiFile :::" +response.toString());
+                System.out.println( "uploadMultiFile::" +response.toString());
 
                 // showAlert(NewComplaintActivity.this, "Uploaded Successfully", "OK", "OK");
                 CustomDialog(NewComplaintActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
                 binding.etTitle.setText("");
                 binding.etDescription.setText("");
                 binding.spinner.setText("");
-                getLocation();
                 binding.currentDate.setText(currentTime);
                 customImageAdapter.notifyDataSetChanged();
                 customImageAdapter.clear();

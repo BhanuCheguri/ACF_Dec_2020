@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.databinding.DataBindingUtil;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -15,12 +16,15 @@ import android.graphics.Bitmap;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,7 +41,11 @@ import android.widget.Toast;
 
 import com.anticorruptionforce.acf.utilities.Utils;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import com.anticorruptionforce.acf.R;
@@ -50,6 +58,7 @@ import com.anticorruptionforce.acf.network.ServiceCall;
 import com.anticorruptionforce.acf.databinding.ActivityAddPetitionBinding;
 import com.anticorruptionforce.acf.utilities.App;
 //import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.google.android.gms.tasks.Task;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -120,13 +129,14 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
     ArrayList<SectionsModel.Result> lstSectionData;
     ArrayList<String> lstSectionNames;
     HashMap<String, String> hshMapSection;
-    String strSectionID = "";
-    String strSPID = "";
+    String strSectionID = "-1";
+    String strSPID = "-1";
     private String TAG = "AddPetitionActivity.class";
     private ArrayList<String> lstPathURI;
     String strOTP;
     String strPID;
-
+    int PERMISSION_ID = 44;
+    FusedLocationProviderClient mFusedLocationClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,12 +152,12 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         hshMapOffices = new HashMap<>();
         lstPathURI = new ArrayList<>();
 
-        lstSectionNames = new ArrayList<>();
         hshMapSection = new HashMap<>();
 
         mServiceCall = new ServiceCall();
         apiRetrofitClient = new APIRetrofitClient();
         appLocationService = new AppLocationService(AddPetitionActivity.this);
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         binding.imageView1.setOnClickListener(this);
         binding.imageView2.setOnClickListener(this);
@@ -166,8 +176,8 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         getSupportActionBar().setTitle("Add Petition");
 
         requestMultiplePermissions();
-        getCurrentLocation();
-
+        //getCurrentLocation();
+        getLastLocation();
         binding.spOffice.setEnabled(false);
         binding.spSelection.setEnabled(false);
 
@@ -231,17 +241,26 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         call.enqueue(new Callback<OfficesModel>() {
             @Override
             public void onResponse(Call<OfficesModel> call, Response<OfficesModel> response) {
+                System.out.println("getOfficesbyGeo::"+ response);
                 hideProgressDialog(AddPetitionActivity.this);
                 if (response != null) {
                     myOfficesResponse = response.body();
                     if (myOfficesResponse != null) {
+
+                        binding.spOffice.setVisibility(View.VISIBLE);
+                        binding.spSelection.setVisibility(View.VISIBLE);
+
                         String status = myOfficesResponse.getStatus();
                         String msg = myOfficesResponse.getMessage();
                         if (msg.equalsIgnoreCase("SUCCESS")) {
                             lstOfficesData = myOfficesResponse.getResult();
                             loadOfficeAdapter(lstOfficesData);
                         } else {
-                            hideProgressDialog(AddPetitionActivity.this);
+                            strSPID = "-1";
+                            strSectionID = "-1";
+                            binding.spOffice.setVisibility(View.GONE);
+                            binding.spSelection.setVisibility(View.GONE);
+                            //hideProgressDialog(AddPetitionActivity.this);
                         }
                     } else {
                         hideProgressDialog(AddPetitionActivity.this);
@@ -304,6 +323,8 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         call.enqueue(new Callback<SectionsModel>() {
             @Override
             public void onResponse(Call<SectionsModel> call, Response<SectionsModel> response) {
+                System.out.println("getSections::"+ response);
+                hideProgressDialog(AddPetitionActivity.this);
                 if (response != null) {
                     mySectionResponse = response.body();
                     if (mySectionResponse != null) {
@@ -338,6 +359,9 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
     private void loadSectionAdapter(ArrayList<SectionsModel.Result> lstSectionData) {
         hideProgressDialog(AddPetitionActivity.this);
         binding.spSelection.setEnabled(true);
+
+        lstSectionNames = new ArrayList<>();
+
         for (int i = 0; i < lstSectionData.size(); i++) {
             lstSectionNames.add(lstSectionData.get(i).getName().toString().trim());
             hshMapSection.put(lstSectionData.get(i).getName().toString().trim(), lstSectionData.get(i).getSectionID().toString().trim());
@@ -486,79 +510,146 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
         return reponse;
     }
 
-    private void getCurrentLocation() {
-        try {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
-                        locationRequestCode);
-            } else {
-                getLocation();
-            }
+    /*@Override
+    protected void onResume() {
+        super.onResume();
+        getLastLocation();
+    }*/
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    private void getLastLocation() {
+        // check if permissions are given
+        if (checkPermissions()) {
 
-    public void getLocation() {
-        locationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        geocoder = new Geocoder(AddPetitionActivity.this, Locale.getDefault());
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationProviderClient.getLastLocation().addOnSuccessListener(AddPetitionActivity.this, new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
+            // check if location is enabled
+            if (isLocationEnabled()) {
 
-                if (location != null) {
-                    latitude = location.getLatitude();
-                    longitude = location.getLongitude();
-                    try {
-                        addresses = geocoder.getFromLocation(latitude, longitude, 1);
-                        String addressLine1 = addresses.get(0).getAddressLine(0);
-                        Log.e("line1", addressLine1);
-                        String city = addresses.get(0).getLocality();
-                        Log.e("city", city);
-                        String state = addresses.get(0).getAdminArea();
-                        Log.e("state", state);
-                        String pinCode = addresses.get(0).getPostalCode();
-                        Log.e("pinCode", pinCode);
-
-                        currentAddress = addressLine1;
-                        lat = String.valueOf(latitude);
-                        lang = String.valueOf(longitude);
-
-                        //String fullAddress = addressLine1 + ",  " + city + ",  " + state + ",  " + pinCode;
-                        //binding.currentLocation.setText(addressLine1);
-                        if (App.isNetworkAvailable())
-                            //getOfficesbyGeoLocation(latitude,longitude);
-                            getOfficesbyGeoLocation(17.363336, 78.5270394);
-                        else {
-                            ChocoBar.builder().setView(binding.mainLayout)
-                                    .setText("No Internet connection")
-                                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
-                                    //.setActionText(android.R.string.ok)
-                                    .red()   // in built red ChocoBar
-                                    .show();
-                        }
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e("MainActivity", e.getMessage());
-                    }
-
+                // getting last location from FusedLocationClient object
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    return;
                 }
+                mFusedLocationClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Location> task) {
+                        Location location = task.getResult();
+                        if (location == null) {
+                            requestNewLocationData();
+                        } else {
+                            latitude = location.getLatitude();
+                            longitude = location.getLongitude();
+
+                            lat = String.valueOf(latitude);
+                            lang = String.valueOf(longitude);
+
+                            getAddressFromLocation(latitude,longitude);
+                        }
+                    }
+                });
+            } else {
+                Toast.makeText(this, "Please turn on" + " your location...", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
             }
-        });
+        } else {
+            // if permissions aren't available,
+            // request for permissions
+            requestPermissions();
+        }
     }
+
+    @SuppressLint("MissingPermission")
+    private void requestNewLocationData() {
+
+        // Initializing LocationRequest
+        // object with appropriate methods
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(5);
+        mLocationRequest.setFastestInterval(0);
+        mLocationRequest.setNumUpdates(1);
+
+        // setting LocationRequest
+        // on FusedLocationClient
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+    }
+
+    private LocationCallback mLocationCallback = new LocationCallback() {
+
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            Location mLastLocation = locationResult.getLastLocation();
+
+            System.out.println("Location::getLatitude" + mLastLocation.getLatitude() + " :::::::" + "Location::getLongitude" + mLastLocation.getLatitude() );
+            if (mLastLocation != null) {
+                latitude = mLastLocation.getLatitude();
+                longitude = mLastLocation.getLongitude();
+                getAddressFromLocation(latitude,longitude);
+            }
+        }
+    };
+
+    private void getAddressFromLocation(Double lat , Double lang) {
+        try {
+            geocoder = new Geocoder(this, Locale.getDefault());
+            addresses = geocoder.getFromLocation(lat, lang, 1);
+            if (addresses.size() > 0) {
+                String addressLine1 = addresses.get(0).getAddressLine(0);
+                Log.e("line1", addressLine1);
+                String city = addresses.get(0).getLocality();
+                Log.e("city", city);
+                String state = addresses.get(0).getAdminArea();
+                Log.e("state", state);
+                String pinCode = addresses.get(0).getPostalCode();
+                Log.e("pinCode", pinCode);
+
+                String fullAddress = addressLine1 + ",  " + city + ",  " + state + ",  " + pinCode;
+                currentAddress = addressLine1;
+                getOfficesbyGeoLocation(latitude,longitude);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("MainActivity", e.getMessage());
+        }
+    }
+
+    // method to check for permissions
+    private boolean checkPermissions() {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+        // If we want background location
+        // on Android 10.0 and higher,
+        // use:
+        // ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
+    }
+
+    // method to request for permissions
+    private void requestPermissions() {
+        ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ID);
+    }
+
+    // method to check
+    // if location is enabled
+    private boolean isLocationEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+    }
+
+    // If everything is alright then
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSION_ID) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getLastLocation();
+            }
+        }
+    }
+
+
 
     private void  requestMultiplePermissions(){
         Dexter.withActivity(this)
@@ -744,9 +835,12 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                 file = new File(filePaths.get(i));
             }
             System.out.println("image"+(i+1));
-            MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData(pid+"_image"+(i+1), file.getName(),
+            MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("image"+(i+1), file.getName(),
                     RequestBody.create(MediaType.parse("application/octet-stream"), file));
             builder.addPart(fileToUpload);
+            /*MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(),
+                    RequestBody.create(MediaType.parse("application/octet-stream"), file));
+            builder.addPart(fileToUpload);*/
         }
 
         MultipartBody requestBody = builder.build();
@@ -758,7 +852,7 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                 String strResponse = response.toString();
                 System.out.println("uploadMultiFile :: "+strResponse);
                 System.out.println( "AddPetitionActivity.this ::: uploadMultiFile :::" +response.toString());
-
+                System.out.println( "uploadPetitionMultiFile::" +response.toString());
                 if(strResponse != null && !strResponse.equalsIgnoreCase("")) {
                         try {
                             if(isJSONValid(strResponse)) {

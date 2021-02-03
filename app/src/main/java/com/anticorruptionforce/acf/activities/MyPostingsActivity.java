@@ -161,6 +161,7 @@ public class MyPostingsActivity extends BaseActivity {
             call.enqueue(new Callback<DashboardCategories>() {
                 @Override
                 public void onResponse(Call<DashboardCategories> call, Response<DashboardCategories> response) {
+                    System.out.println("getDashboardCategories::"+ response);
                     DashboardCategories myProfileData = response.body();
                     hideProgressDialog(MyPostingsActivity.this);
                     if(myProfileData != null) {
@@ -197,6 +198,7 @@ public class MyPostingsActivity extends BaseActivity {
         call.enqueue(new Callback<MyPostingModel>() {
             @Override
             public void onResponse(Call<MyPostingModel> call, Response<MyPostingModel> response) {
+                System.out.println("getMyPostings::"+ response);
                 MyPostingModel myPostingsData = response.body();
                 if(myPostingsData != null) {
                     hideProgressDialog(MyPostingsActivity.this);

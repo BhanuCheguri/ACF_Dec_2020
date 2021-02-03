@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.MediaController;
 import android.widget.Toast;
 
+import com.anticorruptionforce.acf.utilities.Utils;
 import com.facebook.login.LoginBehavior;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -658,10 +659,12 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         }
         @Override
         protected String doInBackground(String... strings) {
+            String emailId = "";
             try {
                 JSONObject jsonParam = prepareAddMemberJSON(personName,Mobile,personEmail,personGender,image_url);
                 String result = postAddMember(jsonParam.toString());
                 if(!result.equalsIgnoreCase("") && result != null) {
+                    emailId = personEmail;
                     JSONObject jobject = new JSONObject(result);
                     if (result.length() > 0) {
                         AddMemberResult addMember = new AddMemberResult();
@@ -704,7 +707,9 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
             } catch (JSONException ex) {
                 ex.printStackTrace();
                 //FirebaseCrashlytics.getInstance().setCustomKey("NewLoginActivity", ex.getMessage());
+                Utils.showErrorAlert(NewLoginActivity.this,"Google Login Failed. Details were not added to Server");
                 Toast.makeText(NewLoginActivity.this, ex.getMessage(), Toast.LENGTH_SHORT).show();
+                return emailId;
             } catch (Exception e)
             {
                 e.printStackTrace();
@@ -712,36 +717,38 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                 //Toast.makeText(NewLoginActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
 
-            return personEmail;
+            return emailId;
         }
 
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             hideProgressDialog(NewLoginActivity.this);
+            if(!result.equalsIgnoreCase("")) {
+                if (nStatusValue == 0) {
+                    putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
+                    putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", false);
 
-            //if (nStatusValue == 0 ) {
-                putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
-                putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", false);
+                    Toast.makeText(NewLoginActivity.this, "Successfully Registered", Toast.LENGTH_LONG);
+                    Intent intent = new Intent(NewLoginActivity.this, OTPVerificationActivity.class);
+                    intent.putExtra("email", result);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                    finish();
+                } else if (nStatusValue == 1) {
+                    putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
+                    putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
 
-                Toast.makeText(NewLoginActivity.this, "Successfully Registered", Toast.LENGTH_LONG);
-                Intent intent = new Intent(NewLoginActivity.this, OTPVerificationActivity.class);
-                intent.putExtra("email",result);
-                startActivity(intent);
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                finish();
-            /*} else if (nStatusValue == 1) {
-                putBooleanSharedPreference(NewLoginActivity.this, "FirstTime", true);
-                putBooleanSharedPreference(NewLoginActivity.this, "LoggedIn", true);
-
-                Toast.makeText(NewLoginActivity.this, "Already Registered", Toast.LENGTH_LONG);
-                Intent intent = new Intent(NewLoginActivity.this, MainActivity.class);
-                startActivity(intent);
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                finish();
-            }else {
-                showAlert(NewLoginActivity.this, "Error", "Something wrong fro our end", "OK");
-            }*/
+                    Toast.makeText(NewLoginActivity.this, "Already Registered", Toast.LENGTH_LONG);
+                    Intent intent = new Intent(NewLoginActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                    finish();
+                } else {
+                    showAlert(NewLoginActivity.this, "Error", "Something wrong fro our end", "OK");
+                }
+            }else
+                Utils.showErrorAlert(NewLoginActivity.this,"Google Login Failed. Details were not added to Server");
         }
     }
 
@@ -1047,6 +1054,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
             call.enqueue(new Callback<StatusResponse>() {
                 @Override
                 public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
+                    System.out.println("getValidateMember:"+ response);
                     hideProgressDialog(NewLoginActivity.this);
                     if(response.code() == 200)
                     {

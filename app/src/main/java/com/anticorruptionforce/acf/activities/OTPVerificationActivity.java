@@ -23,6 +23,7 @@ import android.content.IntentSender;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -198,6 +199,20 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
         switch (view.getId())
         {
             case R.id.btnContinue:
+                binding.timer.setVisibility(View.VISIBLE);
+                new CountDownTimer(30000, 1000) {
+
+                    public void onTick(long millisUntilFinished) {
+                        binding.timer.setText("" + millisUntilFinished / 1000);
+                        //here you can have your logic to set text to edittext
+                    }
+
+                    public void onFinish() {
+                        binding.timer.setVisibility(View.GONE);
+                    }
+
+                }.start();
+
                 GetOTPAsyncTask getOTPtask = new GetOTPAsyncTask();
                 if(!binding.etMobileNo.getText().toString().equalsIgnoreCase("")) {
                     if(App.isNetworkAvailable())
@@ -221,7 +236,6 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
                 binding.llVerifyMobileNo.setVisibility(View.VISIBLE);
                 binding.btnSubmit.setEnabled(false);
                 binding.btnSubmit.setBackgroundResource(R.drawable.inactive_button_style);
-
                 break;
             case R.id.btnSubmit:
                 if((binding.otpCode.getText().toString()).equalsIgnoreCase(""))
@@ -282,6 +296,7 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
             progressDialog = new CustomProgressDialog(OTPVerificationActivity.this);
             progressDialog.setTitle("Please wait...Receiving SMS");
             progressDialog.show();
+
         }
 
         @Override
@@ -293,11 +308,13 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
                     if (!isValidMobile(params[0].trim())) {
                         Toast.makeText(getApplicationContext(), "Please enter the valid Mobile Number to get OTP", Toast.LENGTH_SHORT).show();
                     } else {
+                        System.out.println("GetOTPAsyncTask::"+email);
                         Call<OTPResponse> call = api.getSMSOTP(params[0].toString(),email);
 
                         call.enqueue(new Callback<OTPResponse>() {
                             @Override
                             public void onResponse(Call<OTPResponse> call, Response<OTPResponse> response) {
+                                System.out.println("getSMSOTP::" + response);
                                 if(response.code() == 200)
                                 {
                                     OTPResponse myOTPData = response.body();
@@ -392,6 +409,7 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
                         binding.otpCode.setText(message);
                         binding.btnSubmit.setBackgroundResource(R.drawable.button_style);
                         binding.btnSubmit.setEnabled(true);
+                        binding.timer.setVisibility(View.GONE);
                     }else {
                         binding.btnSubmit.setBackgroundResource(R.drawable.inactive_button_style);
                         binding.btnSubmit.setEnabled(false);
@@ -528,6 +546,7 @@ public class OTPVerificationActivity extends BaseActivity implements View.OnClic
                 call.enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        System.out.println("getValidateOTPStatus:"+ response);
                         ResponseBody myOTPStatus = response.body();
                         try {
                             String  result = new String(response.body().bytes());

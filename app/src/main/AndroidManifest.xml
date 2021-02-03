@@ -34,12 +34,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".activities.WatchItemActivity"
-            android:theme="@style/AppTheme.NoActionBar"/>
-        <activity android:name=".activities.KnowYourActsActivity" />
-        <activity android:name=".activities.ServiceProviderActivity" />
-        <activity android:name=".activities.ModeratorActivity" />
-        <activity android:name=".activities.AdminLogin" />
+
         <activity
             android:name=".activities.SplashActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -50,6 +45,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".activities.NewLoginActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -114,8 +110,9 @@
             </intent-filter>
         </activity>
 
-        <meta-data android:name="com.facebook.sdk.AutoLogAppEventsEnabled"
-            android:value="false"/>
+        <meta-data
+            android:name="com.facebook.sdk.AutoLogAppEventsEnabled"
+            android:value="false" />
         <!--
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
@@ -151,6 +148,17 @@
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
+
+        <activity android:name=".activities.ShowAttachmentsGrid"
+            android:configChanges="keyboardHidden|orientation|screenSize">
+        </activity>
+        <activity
+            android:name=".activities.WatchItemActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".activities.KnowYourActsActivity" />
+        <activity android:name=".activities.ServiceProviderActivity" />
+        <activity android:name=".activities.ModeratorActivity" />
+        <activity android:name=".activities.AdminLogin" />
     </application>
 
 </manifest>

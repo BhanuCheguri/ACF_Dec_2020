@@ -286,13 +286,9 @@ public class PetitionsListAdapter extends RecyclerView.Adapter<PetitionsListAdap
                 if(!url.equalsIgnoreCase("") || url !=null) {
                     String strMimeType = getExtensionType(Uri.parse(url), context);
                     System.out.println("url :: " + url);
-                    if (strMimeType.equalsIgnoreCase("jpg")) {
-                   /* Intent intent = new Intent(context, WatchItemActivity.class);
-                    intent.putExtra("MimeType",strMimeType);
-                    intent.putExtra("content",url);
-                    context.startActivity(intent);*/
+                    //if (strMimeType.equalsIgnoreCase("jpg") || strMimeType.equalsIgnoreCase("jpeg") || strMimeType.equalsIgnoreCase("png") ) {
                         Utils.showDialog(strMimeType, url, context);
-                    }
+                    //}
                 }
                 //openFile(Uri.parse(url),url,context);
                 break;
@@ -372,6 +368,7 @@ public class PetitionsListAdapter extends RecyclerView.Adapter<PetitionsListAdap
         call.enqueue(new Callback<StatusModel>() {
             @Override
             public void onResponse(Call<StatusModel> call, Response<StatusModel> response) {
+                System.out.println("getVerifyOTP::"+ response);
                 if (response != null) {
                     myStatusResponse = response.body();
                     if (myStatusResponse != null) {

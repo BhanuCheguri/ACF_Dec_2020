@@ -2,11 +2,13 @@ package com.anticorruptionforce.acf.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.MenuItemCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -29,14 +31,18 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.anticorruptionforce.acf.adapters.HomePageAdapter;
 import com.anticorruptionforce.acf.databinding.ActivityModeratorBinding;
+import com.anticorruptionforce.acf.modelclasses.WallPostsModel;
 import com.anticorruptionforce.acf.utilities.Utils;
 import com.bumptech.glide.Glide;
 //import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -52,6 +58,7 @@ import com.anticorruptionforce.acf.utilities.App;
 import com.pd.chocobar.ChocoBar;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.ParseException;
@@ -79,15 +86,19 @@ public class ModeratorActivity extends BaseActivity {
     ArrayList<ModeratorListModel.Result> lstModeratorData;
     ProviderModel myProviderResponse;
     ArrayList<ProviderModel.Result> lstProviderData;
-    ArrayList<String> lstProvider = new ArrayList<>();
+    ArrayList<String> lstProvider;
     ModeratorStatusModel myStatusResponse;
     ArrayList<ModeratorStatusModel.Result> lstStatusData;
     ArrayList<String> lstStatus;
     ResultModel myResultResponse;
     ArrayList<ResultModel.Result> lstResult = new ArrayList<>();
-    HashMap<String,Integer> hshStatus = new HashMap<>();
-    ArrayList<String> listStatus =new ArrayList<>();
+    HashMap<String, Integer> hshStatus = new HashMap<>();
+    ArrayList<String> listStatus = new ArrayList<>();
     APIInterface api;
+    MyModeratorAdapter adapter;
+    private String strSPID = "";
+    private String strSectionID = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,13 +106,12 @@ public class ModeratorActivity extends BaseActivity {
         init();
     }
 
-    public void init()
-    {
+    public void init() {
         apiRetrofitClient = new APIRetrofitClient();
         Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
         api = retrofit.create(APIInterface.class);
 
-        hshStatus.put("PENDING",1);
+       /* hshStatus.put("PENDING",1);
         hshStatus.put("DEP-L1" , 2);
         hshStatus.put("DEP-L2", 3);
         hshStatus.put("ACB",4);
@@ -113,7 +123,7 @@ public class ModeratorActivity extends BaseActivity {
         for ( String key : hshStatus.keySet() ) {
             System.out.println( key );
             listStatus.add(key);
-        }
+        }*/
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -122,10 +132,29 @@ public class ModeratorActivity extends BaseActivity {
         getSupportActionBar().setBackgroundDrawable(getResources().getDrawable(R.drawable.gradient_theme));
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
+        strSectionID = getStringSharedPreference(ModeratorActivity.this, "SectionID");
+        strSPID = getStringSharedPreference(ModeratorActivity.this, "SPID");
+
+        binding.swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // Your code to refresh the list here.
+                // Make sure you call swipeContainer.setRefreshing(false)
+                // once the network request has completed successfully.
+                new AsyncGetProviderDetails().execute();
+            }
+        });
+        // Configure the refreshing colorsa
+        binding.swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+
+
         new AsyncGetProviderDetails().execute();
     }
 
-    public class AsyncGetModerationStatus extends AsyncTask<String,String,String> {
+    public class AsyncGetModerationStatus extends AsyncTask<String, String, String> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -134,9 +163,9 @@ public class ModeratorActivity extends BaseActivity {
 
         @Override
         protected String doInBackground(String... strings) {
-            if(App.isNetworkAvailable())
+            if (App.isNetworkAvailable())
                 getModerationStatus();
-            else{
+            else {
                 ChocoBar.builder().setView(binding.mainLayout)
                         .setText("No Internet connection")
                         .setDuration(ChocoBar.LENGTH_INDEFINITE)
@@ -150,46 +179,50 @@ public class ModeratorActivity extends BaseActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             hideProgressDialog(ModeratorActivity.this);
-            new AsyncGetModeratorDetails().execute();
         }
     }
 
-    private void getModerationStatus()
-    {
+    private void getModerationStatus() {
         Call<JsonObject> call = api.getmoderationstatus();
 
         call.enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                System.out.println("getmoderationstatus::" + response);
                 hideProgressDialog(ModeratorActivity.this);
+
                 if (response != null) {
-                    JsonObject myStatusResponse = response.body();
-                    System.out.println(myStatusResponse);
+                    //JsonObject myStatusResponse = response.body();
+                    String result = response.body().toString();
+                    System.out.println(result);
+                    try {
+                        JSONObject myStatusResponse = new JSONObject(result);
+                        if (result.length() > 0) {
+                            if (myStatusResponse.has("message")) {
+                                if (myStatusResponse.getString("message").equalsIgnoreCase("SUCCESS")) {
+                                    if (myStatusResponse.has("result")) {
+                                        JSONArray jsonArray = new JSONArray(myStatusResponse.getString("result"));
+                                        System.out.println(jsonArray);
+                                        for (int i = 0; i < jsonArray.length(); i++) {
+                                            JSONObject json = jsonArray.getJSONObject(i);
+                                            Iterator<String> keys = json.keys();
 
-                    try{
-                        if (myStatusResponse.has("message")) {
-                            if (myStatusResponse.get("message").toString().equalsIgnoreCase("Error")) {
-                                if (myStatusResponse.has("result")) {
-                                    JSONArray jsonArray = new JSONArray(myStatusResponse.get("result"));
-                                    System.out.println(jsonArray);
-                                    for (int i = 0; i < jsonArray.length(); i++) {
-                                        JSONObject json = jsonArray.getJSONObject(i);
-                                        Iterator<String> keys = json.keys();
+                                            while (keys.hasNext()) {
+                                                String key = keys.next();
+                                                Integer value = (Integer) json.get(key);
+                                                System.out.println("Key :" + key + "  Value :" + json.get(key));
+                                                hshStatus.put(key, value);
+                                                listStatus.add(key);
+                                                System.out.println(listStatus);
+                                            }
 
-                                        while (keys.hasNext()) {
-                                            String key = keys.next();
-                                            System.out.println("Key :" + key + "  Value :" + json.get(key));
-                                            //hshStatus.put(key, json.get(key).toString());
-                                            listStatus.add(key);
-                                            System.out.println(listStatus);
                                         }
-
                                     }
                                 }
+                                new AsyncGetModeratorDetails().execute();
                             }
                         }
-                    }catch (Exception e)
-                    {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
 
@@ -209,6 +242,7 @@ public class ModeratorActivity extends BaseActivity {
                 } else
                     Toast.makeText(ModeratorActivity.this, "No data", Toast.LENGTH_SHORT).show();
             }
+
             @Override
             public void onFailure(Call<JsonObject> call, Throwable t) {
                 Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
@@ -217,7 +251,7 @@ public class ModeratorActivity extends BaseActivity {
         });
     }
 
-    public class AsyncGetProviderDetails extends AsyncTask<String,String,String> {
+    public class AsyncGetProviderDetails extends AsyncTask<String, String, String> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -226,9 +260,9 @@ public class ModeratorActivity extends BaseActivity {
 
         @Override
         protected String doInBackground(String... strings) {
-            if(App.isNetworkAvailable())
+            if (App.isNetworkAvailable())
                 getProviderDetails();
-            else{
+            else {
                 ChocoBar.builder().setView(binding.mainLayout)
                         .setText("No Internet connection")
                         .setDuration(ChocoBar.LENGTH_INDEFINITE)
@@ -242,29 +276,34 @@ public class ModeratorActivity extends BaseActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             hideProgressDialog(ModeratorActivity.this);
-            new AsyncGetModeratorDetails().execute();
+            //new AsyncGetModeratorDetails().execute();
         }
     }
 
-    private void getProviderDetails()
-    {
+    private void getProviderDetails() {
         Call<ProviderModel> call = api.getServiceProviders();
 
         call.enqueue(new Callback<ProviderModel>() {
             @Override
             public void onResponse(Call<ProviderModel> call, Response<ProviderModel> response) {
+                System.out.println("getServiceProviders::" + response);
                 hideProgressDialog(ModeratorActivity.this);
                 if (response != null) {
                     myProviderResponse = response.body();
+
+                    lstProvider = new ArrayList<>();
+                    lstProvider.add("Select Provider");
+
                     if (myProviderResponse != null) {
                         String msg = myProviderResponse.getMessage();
                         if (msg.equalsIgnoreCase("SUCCESS")) {
                             lstProviderData = myProviderResponse.getResult();
-                            for (int i =0;i < lstProviderData.size();i++)
-                            {
+                            for (int i = 0; i < lstProviderData.size(); i++) {
                                 ProviderModel.Result providerModel = lstProviderData.get(i);
                                 lstProvider.add(providerModel.getName().toString());
                             }
+
+                            new AsyncGetModerationStatus().execute();
                         } else
                             Toast.makeText(ModeratorActivity.this, "No data", Toast.LENGTH_SHORT).show();
                     } else
@@ -272,6 +311,7 @@ public class ModeratorActivity extends BaseActivity {
                 } else
                     Toast.makeText(ModeratorActivity.this, "No data", Toast.LENGTH_SHORT).show();
             }
+
             @Override
             public void onFailure(Call<ProviderModel> call, Throwable t) {
                 Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
@@ -281,7 +321,7 @@ public class ModeratorActivity extends BaseActivity {
     }
 
 
-    public class AsyncGetModeratorDetails extends AsyncTask<String,String,String> {
+    public class AsyncGetModeratorDetails extends AsyncTask<String, String, String> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -290,9 +330,9 @@ public class ModeratorActivity extends BaseActivity {
 
         @Override
         protected String doInBackground(String... strings) {
-            if(App.isNetworkAvailable())
+            if (App.isNetworkAvailable())
                 getModeratorDetails();
-            else{
+            else {
                 ChocoBar.builder().setView(binding.mainLayout)
                         .setText("No Internet connection")
                         .setDuration(ChocoBar.LENGTH_INDEFINITE)
@@ -308,6 +348,7 @@ public class ModeratorActivity extends BaseActivity {
             hideProgressDialog(ModeratorActivity.this);
         }
     }
+
     private void getModeratorDetails() {
 
         Call<ModeratorListModel> call = api.getitemsformod("-1");
@@ -315,6 +356,7 @@ public class ModeratorActivity extends BaseActivity {
         call.enqueue(new Callback<ModeratorListModel>() {
             @Override
             public void onResponse(Call<ModeratorListModel> call, Response<ModeratorListModel> response) {
+                System.out.println("getitemsformod::" + response);
                 hideProgressDialog(ModeratorActivity.this);
                 if (response != null) {
                     binding.llNoData.setVisibility(View.GONE);
@@ -325,7 +367,8 @@ public class ModeratorActivity extends BaseActivity {
                             lstModeratorData = myResponse.getResult();
                             binding.lvModerator.setLayoutManager(new LinearLayoutManager(ModeratorActivity.this));
                             binding.lvModerator.setItemAnimator(new DefaultItemAnimator());
-                            binding.lvModerator.setAdapter(new MyModeratorAdapter(ModeratorActivity.this,lstModeratorData,lstProvider,listStatus));
+                            adapter = new MyModeratorAdapter(ModeratorActivity.this, lstModeratorData, lstProvider, listStatus);
+                            binding.lvModerator.setAdapter(adapter);
                         } else
                             binding.llNoData.setVisibility(View.VISIBLE);
                     } else
@@ -333,6 +376,7 @@ public class ModeratorActivity extends BaseActivity {
                 } else
                     binding.llNoData.setVisibility(View.VISIBLE);
             }
+
             @Override
             public void onFailure(Call<ModeratorListModel> call, Throwable t) {
                 Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
@@ -345,20 +389,39 @@ public class ModeratorActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.logout, menu);
+
+        final MenuItem searchItem = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setSubmitButtonEnabled(true);
+        searchView.setQueryHint("Search");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                // filter recycler view when text is changed
+                if (adapter != null)
+                    adapter.getFilter().filter(query);
+                return false;
+            }
+        });
+
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId())
-        {
+        switch (item.getItemId()) {
             case android.R.id.home:
                 break;
             case R.id.logout:
                 putBooleanSharedPreference(ModeratorActivity.this, "AdminLoginForM", false);
                 putBooleanSharedPreference(ModeratorActivity.this, "AdminLoginForSP", false);
                 putBooleanSharedPreference(ModeratorActivity.this, "AdminLogin", false);
-                Intent intent = new Intent(ModeratorActivity.this,NewLoginActivity.class);
+                Intent intent = new Intent(ModeratorActivity.this, NewLoginActivity.class);
                 startActivity(intent);
                 finish();
                 break;
@@ -367,22 +430,26 @@ public class ModeratorActivity extends BaseActivity {
     }
 
 
-    public class MyModeratorAdapter extends RecyclerView.Adapter<MyModeratorAdapter.ViewHolder> {
+    public class MyModeratorAdapter extends RecyclerView.Adapter<MyModeratorAdapter.ViewHolder> implements Filterable {
         public ArrayList<ModeratorListModel.Result> dataSet;
         FragmentActivity context;
         ArrayList<String> lstStatus;
         ArrayList<String> lstProvider;
         ArrayAdapter statusAdapter;
         ArrayAdapter providerAdapter;
+        String selectedStatus="";
         int status;
         int provider;
         private ViewHolder finalHolder1;
+        private ArrayList<ModeratorListModel.Result> dataListFiltered;
+        String MemeberID;
 
         public MyModeratorAdapter(FragmentActivity context, ArrayList<ModeratorListModel.Result> data, ArrayList<String> provider, ArrayList<String> listStatus) {
             this.dataSet = data;
             this.context = context;
             lstProvider = provider;
             lstStatus = listStatus;
+            dataListFiltered = data;
             //lstStatus  = new ArrayList<>();
             loadSPStatus();
             loadSPProvider();
@@ -394,6 +461,39 @@ public class ModeratorActivity extends BaseActivity {
 
         private void loadSPProvider() {
             providerAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, lstProvider);
+        }
+
+        @Override
+        public Filter getFilter() {
+            return new Filter() {
+                @Override
+                protected FilterResults performFiltering(CharSequence charSequence) {
+
+                    String charString = charSequence.toString();
+
+                    if (charString.isEmpty()) {
+                        dataListFiltered = dataSet;
+                    } else {
+                        ArrayList<ModeratorListModel.Result> list = new ArrayList<>();
+                        for (ModeratorListModel.Result result : dataSet) {
+                            if (result.getTitle().toLowerCase().contains(charString)) {
+                                list.add(result);
+                            }
+                        }
+                        dataListFiltered = list;
+                    }
+
+                    FilterResults filterResults = new FilterResults();
+                    filterResults.values = dataListFiltered;
+                    return filterResults;
+                }
+
+                @Override
+                protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                    dataListFiltered = (ArrayList<ModeratorListModel.Result>) filterResults.values;
+                    MyModeratorAdapter.this.notifyDataSetChanged();
+                }
+            };
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
@@ -443,59 +543,52 @@ public class ModeratorActivity extends BaseActivity {
             holder.txtLocation.setText(dataModel.getLocation());
             holder.txtDateTime.setText(getPostedDate(dataModel.getPostedDate()));
 
-            if (dataModel.getMODSATUS().equalsIgnoreCase("PENDING")) {
+            //if (dataModel.getMODSATUS().equalsIgnoreCase("PENDING")) {
+            holder.spStatus.setAdapter(statusAdapter);
+            holder.spProvider.setAdapter(providerAdapter);
 
-                holder.ll_spinners.setVisibility(View.VISIBLE);
-                holder.submit.setVisibility(View.VISIBLE);
-
-                holder.spStatus.setAdapter(statusAdapter);
-                holder.spProvider.setAdapter(providerAdapter);
-
-                holder.spStatus.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        status = position + 1;
-                        String selectedItem = parent.getItemAtPosition(position).toString();
-                        Log.i("TAG", selectedItem);
-                        //Toast.makeText(ModeratorActivity.this, "Successfully assigned to " + selectedItem, Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-
-                    }
-                });
-
-                holder.spProvider.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        provider = position + 1;
-                        String selectedItem = parent.getItemAtPosition(position).toString();
-                        Log.i("TAG", selectedItem);
-                        //Toast.makeText(ModeratorActivity.this, "Successfully assigned to " + selectedItem, Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-
-                    }
-                });
-            } else {
-               /* holder.ll_spinners.setVisibility(View.GONE);
-                holder.submit.setVisibility(View.GONE);*/
-                holder.spStatus.setAdapter(statusAdapter);
-                holder.spProvider.setAdapter(providerAdapter);
-
-                if (dataModel.getMODSATUS() != null) {
-                    int spinnerPosition = statusAdapter.getPosition(dataModel.getMODSATUS());
-                    holder.spStatus.setSelection(spinnerPosition);
+            holder.spStatus.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    status = position + 1;
+                    selectedStatus = parent.getItemAtPosition(position).toString();
+                    System.out.println("status:" + status);
+                    System.out.println("statusselectedItem:" + selectedStatus);
+                   // Toast.makeText(ModeratorActivity.this, "Successfully assigned to " + selectedItem, Toast.LENGTH_SHORT).show();
                 }
 
-                if (dataModel.getAssignedTo() != null) {
-                    holder.spProvider.setSelection(Integer.valueOf(dataModel.getAssignedTo()));
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
                 }
+            });
+
+            holder.spProvider.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    //nServiceProvider = position;
+                    provider = position;
+                    System.out.println("provider:" + provider);
+                    String selectedItem = parent.getItemAtPosition(position).toString();
+                    System.out.println("providerselectedItem:" + selectedItem);
+                    Log.i("TAG", selectedItem);
+                    //Toast.makeText(ModeratorActivity.this, "Successfully assigned to " + selectedItem, Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+
+            if (dataModel.getMODSATUS() != null) {
+                int spinnerPosition = lstStatus.indexOf(dataModel.getMODSATUS());
+                holder.spStatus.setSelection(spinnerPosition);
             }
 
+            if (dataModel.getAssignedTo() != null) {
+                holder.spProvider.setSelection(Integer.valueOf(dataModel.getAssignedTo()));
+            }
 
             ArrayList<String> lstFilepaths = new ArrayList<>();
             String strFilePaths = dataModel.getFilePath();
@@ -577,11 +670,22 @@ public class ModeratorActivity extends BaseActivity {
                 }
             });
 
-            final String MemeberID = getStringSharedPreference(context, "MemberID");
+            MemeberID = getStringSharedPreference(context, "MemberID");
             holder.submit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    postAddModeration(holder.submit, Integer.parseInt(dataModel.getItemID()), Integer.parseInt(MemeberID), status, provider);
+                    if(!selectedStatus.equalsIgnoreCase("PENDING")) {
+                        if (provider != 0) {
+                            System.out.println(Integer.parseInt(dataModel.getItemID()));
+                            System.out.println(Integer.parseInt(strSPID));
+                            System.out.println("Status "+status);
+                            System.out.println("Provider "+provider);
+                            postAddModeration(Integer.parseInt(dataModel.getItemID()), Integer.parseInt(strSPID), status, provider);
+                        } else
+                            Toast.makeText(context, "Please select a valid Service Provider", Toast.LENGTH_SHORT).show();
+                    }else
+                        Toast.makeText(context, "Please select a valid Status", Toast.LENGTH_SHORT).show();
+
                 }
             });
         }
@@ -718,7 +822,7 @@ public class ModeratorActivity extends BaseActivity {
             }
         }
 
-        private void postAddModeration(Button submit, int itemID, int memeberID, int status, int provider) {
+        private void postAddModeration(int itemID, int memeberID, int status, int provider) {
 
             try {
                 JsonObject json = new JsonObject();
@@ -732,6 +836,7 @@ public class ModeratorActivity extends BaseActivity {
                 registerCall.enqueue(new retrofit2.Callback<ResultModel>() {
                     @Override
                     public void onResponse(Call<ResultModel> registerCall, retrofit2.Response<ResultModel> response) {
+                        System.out.println("addModeration::" + response);
                         try {
                             hideProgressDialog(ModeratorActivity.this);
                             if (response != null) {
@@ -746,7 +851,7 @@ public class ModeratorActivity extends BaseActivity {
                                             if (lstResult.get(i).getRES() != null) {
                                                 int res = lstResult.get(i).getRES();
                                                 if (res != -1) {
-                                                    showModAlert(ModeratorActivity.this, "Success", "Verified :" + res, "OK");
+                                                    showModAlert(ModeratorActivity.this, "Success", "Moderation Successful", "OK");
                                                 } else
                                                     showAlert(ModeratorActivity.this, "Alert", "Item already added ", "OK");
                                             }
@@ -891,9 +996,8 @@ public class ModeratorActivity extends BaseActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if(keyCode==KeyEvent.KEYCODE_BACK)
-        {
-            showAlert(ModeratorActivity.this,"Exit Alert","Do you want to exit from the Application?",true,"Yes","No");
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            showAlert(ModeratorActivity.this, "Exit Alert", "Do you want to exit from the Application?", true, "Yes", "No");
         }
         return true;
     }

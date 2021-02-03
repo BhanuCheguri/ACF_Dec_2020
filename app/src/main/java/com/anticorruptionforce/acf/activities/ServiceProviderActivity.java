@@ -1,8 +1,10 @@
 package com.anticorruptionforce.acf.activities;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.MenuItemCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -12,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.anticorruptionforce.acf.R;
@@ -57,6 +60,23 @@ public class ServiceProviderActivity extends BaseActivity {
 
         strSectionID = getStringSharedPreference(ServiceProviderActivity.this,"SectionID");
         strSPID =  getStringSharedPreference(ServiceProviderActivity.this,"SPID");
+
+
+        binding.swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // Your code to refresh the list here.
+                // Make sure you call swipeContainer.setRefreshing(false)
+                // once the network request has completed successfully.
+                new AsyncGetSPpetitions().execute();
+            }
+        });
+        // Configure the refreshing colors
+        binding.swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+
         new AsyncGetSPpetitions().execute();
     }
 
@@ -89,7 +109,7 @@ public class ServiceProviderActivity extends BaseActivity {
 
         }
     }
-    private void getSPPetitions(String spid, String sectionid)
+    public void getSPPetitions(String spid, String sectionid)
     {
         //showProgressDialog(ServiceProviderActivity.this);
         apiRetrofitClient = new APIRetrofitClient();
@@ -100,6 +120,7 @@ public class ServiceProviderActivity extends BaseActivity {
         call.enqueue(new Callback<PetitionModel>() {
             @Override
             public void onResponse(Call<PetitionModel> call, Response<PetitionModel> response) {
+                System.out.println("getSPpetitions::"+ response);
                 hideProgressDialog(ServiceProviderActivity.this);
                 if (response != null) {
                     binding.llNoData.setVisibility(View.GONE);
@@ -138,6 +159,27 @@ public class ServiceProviderActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.logout, menu);
+
+        final MenuItem searchItem = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setSubmitButtonEnabled(true);
+        searchView.setQueryHint("Search");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                // filter recycler view when text is changed
+                stopSwipeRefresh();
+                if (adapter!=null)
+                    adapter.getFilter().filter(query);
+                return false;
+            }
+        });
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -158,5 +200,17 @@ public class ServiceProviderActivity extends BaseActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void stopSwipeRefresh()
+    {
+        if(binding.swipeContainer.isRefreshing()){
+            binding.swipeContainer.post(new Runnable() {
+                @Override
+                public void run() {
+                    binding.swipeContainer.setRefreshing(true);
+                }
+            });
+        }
     }
 }

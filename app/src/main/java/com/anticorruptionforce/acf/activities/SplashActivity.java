@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.anticorruptionforce.acf.R;
 
 
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends BaseActivity {
 
     private final int SPLASH_DISPLAY_LENGTH = 3000;
 

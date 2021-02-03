@@ -141,7 +141,8 @@ public class KnowYourActsActivity extends BaseActivity implements View.OnClickLi
         call.enqueue(new Callback<WallPostsModel>() {
             @Override
             public void onResponse(Call<WallPostsModel> call, Response<WallPostsModel> response) {
-                if(response != null) {
+                System.out.println("getWallPostDetails::" + response);
+               if(response != null) {
                     WallPostsModel myWallData  = response.body();
                     if(myWallData != null) {
                         dataBiding.llNoData.setVisibility(View.GONE);

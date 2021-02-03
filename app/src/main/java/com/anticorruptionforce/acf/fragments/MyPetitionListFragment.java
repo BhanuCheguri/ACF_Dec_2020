@@ -161,6 +161,7 @@ public class MyPetitionListFragment extends BaseFragment {
         call.enqueue(new Callback<PetitionModel>() {
             @Override
             public void onResponse(Call<PetitionModel> call, Response<PetitionModel> response) {
+                System.out.println("getMyPetitions::"+ response);
                 if(response != null) {
                     PetitionModel myPetitionData  = response.body();
                     if(myPetitionData != null) {

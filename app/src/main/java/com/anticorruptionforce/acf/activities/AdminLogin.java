@@ -109,6 +109,7 @@ public class AdminLogin extends BaseActivity {
         call.enqueue(new Callback<SPLoginModel>() {
             @Override
             public void onResponse(Call<SPLoginModel> call, Response<SPLoginModel> response) {
+                System.out.println("getAuthenticateModSP::"+ response);
                 hideProgressDialog(AdminLogin.this);
                 if (response != null) {
                     myResponse = response.body();

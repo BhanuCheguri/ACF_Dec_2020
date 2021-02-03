@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Verify OTP"
+        android:text="Verify Code"
         android:padding="@dimen/dimen_20"
         android:textColor="@color/colorPrimary"
         android:textSize="@dimen/dimen_16"
@@ -28,7 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Enter OTP"
+            android:text="Enter Verification code"
             android:padding="@dimen/dimen_20"
             android:textColor="@color/colorPrimary"
             android:textSize="@dimen/dimen_16"
@@ -39,11 +39,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:hint="Enter Your OTP"
+            android:hint="Enter your 6 digit Verification code"
             android:padding="@dimen/dimen_20"
             android:id="@+id/etEnterOtp"
             android:textColor="@color/colorPrimary"
             android:textSize="@dimen/dimen_16"
+            android:maxLength="6"
             android:textStyle="bold" />
 
         <Button

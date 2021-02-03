@@ -69,6 +69,7 @@ public class MyProfileActivity extends BaseActivity {
         call.enqueue(new Callback<MyProfileModel>() {
             @Override
             public void onResponse(Call<MyProfileModel> call, Response<MyProfileModel> response) {
+                System.out.println("getProfileDetailsbyEmail:"+ response);
                 hideProgressDialog(MyProfileActivity.this);
                 MyProfileModel myProfileData = response.body();
                 if(myProfileData != null) {

@@ -275,6 +275,7 @@ public class MoreGridFragment extends BaseFragment {
             call.enqueue(new Callback<DashboardCategories>() {
                 @Override
                 public void onResponse(Call<DashboardCategories> call, Response<DashboardCategories> response) {
+                    System.out.println("getDashboardCategories::"+ response);
                     DashboardCategories myProfileData  = response.body();
                     if(myProfileData != null) {
                         String status = myProfileData.getStatus();

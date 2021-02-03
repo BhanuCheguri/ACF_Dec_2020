@@ -30,7 +30,7 @@ public class MySMSBroadcastReceiver extends BroadcastReceiver {
                 String from = msgs[n].getOriginatingAddress();
                 String message = currentMessage.getDisplayMessageBody();
                 try {
-                    if (from.contains("CP-AHSSMS")) {
+                    if (from.contains("QP-AHSSMS") || from.contains("CP-AHSSMS") || from.contains("AD-AHSSMS")) {
                         String  body = message ;
                         String[] strData = body.split(":");
                         String OTP = strData[1].trim();

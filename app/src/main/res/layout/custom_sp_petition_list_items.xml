@@ -1,171 +1,173 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:background="@color/colorSilverGrey">
+    android:background="@color/colorSilverGrey"
+    android:orientation="vertical">
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/card_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@android:color/white"
         card_view:cardCornerRadius="@dimen/dimen_5"
         card_view:cardElevation="@dimen/dimen_4"
-        card_view:contentPadding="@dimen/dimen_5"
-        android:id="@+id/card_view"
-        android:background="@android:color/white"
-        android:layout_marginBottom="8dp">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@color/colorWhite">
+        card_view:contentPadding="@dimen/dimen_5">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="@dimen/dimen_2">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:layout_weight="0.4"
-                android:padding="@dimen/dimen_5">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/montserrat_semibold"
-                    android:text="Petition No:"
-                    />
-                <TextView
-                    android:id="@+id/tv_petitionNo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/montserrat_semibold"
-                    android:text="12345"
-                    android:gravity="left"
-                    android:layout_marginLeft="@dimen/dimen_10"
-                    android:layout_marginRight="@dimen/dimen_10"/>
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:layout_weight="0.6"
-                android:layout_gravity="left"
-                android:gravity="left">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/montserrat_light"
-                    android:drawableRight="@drawable/ic_clock_16"
-                    android:layout_marginLeft="@dimen/dimen_10"
-                    android:layout_marginRight="@dimen/dimen_10"/>
-                <TextView
-                    android:fontFamily="@font/montserrat_light"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/tv_complaintDate"
-                    android:layout_gravity="fill_horizontal"
-                    android:gravity="left|center"
-                    android:drawablePadding="@dimen/dimen_5"
-                    android:text="On 12/08/2019 7.15pm"
-                   />
-            </LinearLayout>
-        </LinearLayout>
+            android:background="@color/colorWhite"
+            android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="@dimen/dimen_5">
-
-            <TextView
-                android:fontFamily="@font/montserrat_semibold"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Complaint for cheating"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.4"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/dimen_8">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montserrat_semibold"
+                        android:text="Petition No:" />
+
+                    <TextView
+                        android:id="@+id/tv_petitionNo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/dimen_10"
+                        android:layout_marginRight="@dimen/dimen_10"
+                        android:fontFamily="@font/montserrat_semibold"
+                        android:gravity="left"
+                        android:text="12345" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="left"
+                    android:layout_weight="0.6"
+                    android:gravity="left"
+                    android:padding="@dimen/dimen_8"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/dimen_10"
+                        android:layout_marginRight="@dimen/dimen_10"
+                        android:drawableRight="@drawable/ic_clock_16"
+                        android:fontFamily="@font/montserrat_light" />
+
+                    <TextView
+                        android:id="@+id/tv_complaintDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="fill_horizontal"
+                        android:drawablePadding="@dimen/dimen_5"
+                        android:fontFamily="@font/montserrat_light"
+                        android:gravity="left|center"
+                        android:text="On 12/08/2019 7.15pm" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
                 android:id="@+id/tv_complaint"
-                android:padding="@dimen/dimen_5"/>
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/montserrat_semibold"
+                android:padding="@dimen/dimen_8"
+                android:text="Complaint for cheating" />
 
             <TextView
                 android:id="@+id/tv_petitioner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/montserrat_semibold"
-                android:text="RK Reddy"
-                android:padding="@dimen/dimen_5" />
-        </LinearLayout>
+                android:padding="@dimen/dimen_8"
+                android:text="RK Reddy" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:fontFamily="@font/montserrat_semibold"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/tv_status"
-                android:layout_weight="0.6"
-                android:gravity="center_vertical"
-                android:text="Status: Not Verified"
-                android:padding="@dimen/dimen_5"
-                android:textStyle="bold" />
-
-            <Button
-                android:background="@android:color/transparent"
-                android:fontFamily="@font/montserrat_light"
-                android:id="@+id/tv_attachmentsNo"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="right|center"
-                android:layout_weight="0.4"
-                android:text="View Attachments"
-                android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/dimen_14"
-                android:visibility="gone"
-                android:textStyle="bold" />
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="horizontal"
-            android:paddingLeft="@dimen/dimen_5"
-            android:layout_marginBottom="@dimen/dimen_3">
+                android:orientation="horizontal">
 
-            <Button
-                android:enabled="true"
-                android:fontFamily="@font/montserrat_light"
+                <TextView
+                    android:id="@+id/tv_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.5"
+                    android:fontFamily="@font/montserrat_semibold"
+                    android:gravity="center_vertical"
+                    android:padding="@dimen/dimen_8"
+                    android:text="Status: Not Verified"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/tv_attachmentsNo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="right"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:gravity="right|center"
+                    android:text="View Attachments"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="@dimen/dimen_16"
+                    android:textStyle="bold"
+                    android:layout_weight="0.5"
+                    android:layout_marginRight="@dimen/dimen_8"
+                    android:visibility="visible" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Verify Now"
-                android:textColor="@color/colorWhite"
-                android:background="@color/colorMaroon"
-                android:textSize="@dimen/dimen_12"
-                android:id="@+id/btnVerified"
-                android:drawableRight="@mipmap/ic_check_mark"
-                android:layout_marginLeft="@dimen/dimen_3"
-                android:paddingRight="@dimen/dimen_10"
-                android:layout_weight="0.6"
-                android:paddingLeft="@dimen/dimen_10"/>
+                android:layout_marginBottom="@dimen/dimen_3"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:padding="@dimen/dimen_8">
 
-            <Button
-                android:background="@android:color/transparent"
-                android:fontFamily="@font/montserrat_light"
-                android:id="@+id/tv_SPattachmentsNo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="right|center"
-                android:layout_weight="0.4"
-                android:text="View Attachments"
-                android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/dimen_14"
-                android:textStyle="bold" />
+                <Button
+                    android:id="@+id/btnVerified"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dimen_2"
+                    android:background="@drawable/sp_brown_button"
+                    android:drawableRight="@mipmap/ic_check_mark"
+                    android:enabled="true"
+                    android:fontFamily="@font/montserrat_light"
+                    android:paddingLeft="@dimen/dimen_20"
+                    android:paddingRight="@dimen/dimen_20"
+                    android:text="Verify Now"
+                    android:layout_weight="0.6"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="@dimen/dimen_12" />
+
+                <Button
+                    android:id="@+id/tv_SPattachmentsNo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="right"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:gravity="right|center"
+                    android:text="View Attachments"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="@dimen/dimen_16"
+                    android:textStyle="bold"
+                    android:layout_weight="0.4"
+                    android:visibility="visible" />
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
     </androidx.cardview.widget.CardView>
 </LinearLayout>
