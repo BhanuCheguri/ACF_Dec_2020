@@ -159,4 +159,7 @@ public interface APIInterface {
     @POST("posts/upload")
     Call<Response> uploadAlbum(@Part List<MultipartBody.Part> image);
 
+    @Multipart
+    @POST("posts/upload1")
+    Call<JSONObject> uploadMutlipleImages(@Header("item")String itemID, @PartMap Map<String, RequestBody> maps);
 }

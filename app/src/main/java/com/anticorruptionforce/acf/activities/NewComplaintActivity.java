@@ -38,6 +38,8 @@ import androidx.appcompat.app.AlertDialog;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -72,7 +74,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 //import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.android.gms.tasks.Task;
 import com.google.gson.Gson;
@@ -160,6 +161,7 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
     ArrayList<Integer> lstAutoEmpty;
     FusedLocationProviderClient mFusedLocationClient;
     int PERMISSION_ID = 44;
+    private String responseBodyString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -698,15 +700,20 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
             Uri contentURI = data.getData();
             try {
                 String recordedVideoPath = getPath(contentURI);
-                Log.d("frrr", recordedVideoPath);
-                if(recordedVideoPath != null) {
-                    String[] filePath = {MediaStore.Video.Media.DATA};
-                    Cursor cursor = getContentResolver().query(contentURI, filePath, null, null, null);
-                    cursor.moveToFirst();
-                    String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
-                    //Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(imagePath));
 
-                    setAttachmentData(recordedVideoPath, imagePath, contentURI, getExtensionType(contentURI), null);
+                if(getFolderSizeLabel(new File(recordedVideoPath)) < 20) {
+                    Log.d("frrr", recordedVideoPath);
+                    if (recordedVideoPath != null) {
+                        String[] filePath = {MediaStore.Video.Media.DATA};
+                        Cursor cursor = getContentResolver().query(contentURI, filePath, null, null, null);
+                        cursor.moveToFirst();
+                        String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
+                        //Uri uri = FileProvider.getUriForFile(NewComplaintActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(imagePath));
+
+                        setAttachmentData(recordedVideoPath, imagePath, contentURI, getExtensionType(contentURI), null);
+                    }
+                }else{
+                    showAlert(this,"Video exceeds 20 MB","Please select the video below 20 MB","OK");
                 }
             }catch (Exception e) {
                 e.printStackTrace();
@@ -721,8 +728,12 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
                 // MEDIA GALLERY
                 String selectedVideoPath = getPathFromUri(NewComplaintActivity.this,selectedVideoUri);
                 if (selectedVideoPath != null) {
-                    String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtensionType(selectedVideoUri));
-                    setAttachmentData(selectedVideoPath,selectedVideoPath,selectedVideoUri,mimeType,null);
+                    if(getFolderSizeLabel(new File(selectedVideoPath)) < 20) {
+                        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtensionType(selectedVideoUri));
+                        setAttachmentData(selectedVideoPath, selectedVideoPath, selectedVideoUri, mimeType, null);
+                    }else{
+                        showAlert(this,"Video exceeds 20 MB","Please select the video below 20 MB","OK");
+                    }
                 }
             }catch (Exception e)
             {
@@ -764,6 +775,29 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
             }
         }
     }
+
+    public static double getFolderSizeLabel(File file) {
+        double size = (double) getFolderSize(file) / 1000.0; // Get size and convert bytes into KB.
+        if (size >= 1024) {
+            //return (size / 1024) + " MB";
+            return (size / 1024);
+        } /*else {
+            return size + " KB";
+        }*/
+        return (size / 1024);
+    }
+    public static long getFolderSize(File file) {
+        long size = 0;
+        if (file.isDirectory()) {
+            for (File child : file.listFiles()) {
+                size += getFolderSize(child);
+            }
+        } else {
+            size = file.length();
+        }
+        return size;
+    }
+
 
     private void setAttachmentData(String Content, String FilePath, Uri contentURI, String mimeType,Bitmap bm) {
 
@@ -1040,6 +1074,68 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
         }
     }
 
+
+       /* public String getRealPathFromUri(final Uri uri) { // function for file path from uri,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && DocumentsContract.isDocumentUri(mContext, uri)) {
+            // ExternalStorageProvider
+            if (isExternalStorageDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                if ("primary".equalsIgnoreCase(type)) {
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                }
+            }
+            // DownloadsProvider
+            else if (isDownloadsDocument(uri)) {
+
+                final String id = DocumentsContract.getDocumentId(uri);
+                final Uri contentUri = ContentUris.withAppendedId(
+                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+
+                return getDataColumn(mContext, contentUri, null, null);
+            }
+            // MediaProvider
+            else if (isMediaDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                Uri contentUri = null;
+                if ("image".equals(type)) {
+                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                } else if ("video".equals(type)) {
+                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                } else if ("audio".equals(type)) {
+                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                }
+
+                final String selection = "_id=?";
+                final String[] selectionArgs = new String[]{
+                        split[1]
+                };
+
+                return getDataColumn(mContext, contentUri, selection, selectionArgs);
+            }
+        }
+        // MediaStore (and general)
+        else if ("content".equalsIgnoreCase(uri.getScheme())) {
+
+            // Return the remote address
+            if (isGooglePhotosUri(uri))
+                return uri.getLastPathSegment();
+
+            return getDataColumn(mContext, uri, null, null);
+        }
+        // File
+        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+
+        return null;
+    }*/
+
     private class AsyncUploadImages extends AsyncTask<String, String, String> {
 
         @Override
@@ -1054,18 +1150,140 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
             String itemID = strings[0];
             if(!lstPathURI.isEmpty())
             {
-                uploadMultiFile(itemID,lstPathURI);
+                //uploadMultiFile(itemID,lstPathURI);
+                result = uploadImages(itemID,lstPathURI);
             }
-
-            System.out.println("Upload Images Result::" + result);
             return result;
         }
 
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            hideCustomProgressDialog(NewComplaintActivity.this);
+            System.out.println("Upload Images Result::" + result);
+            Log.i("LOG_TAG", responseBodyString);
+            if(!responseBodyString.equalsIgnoreCase("")) {
+
+                try {
+                    JSONObject jsonObject = new JSONObject(responseBodyString);
+                    String message = null;
+                    if (jsonObject.has("message"))
+                        message = jsonObject.getString("message");
+
+                    if (message.equalsIgnoreCase("SUCCESS")) {
+                        CustomDialog(NewComplaintActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
+                        binding.etTitle.setText("");
+                        binding.etDescription.setText("");
+                        binding.spinner.setText("");
+                        binding.currentDate.setText(currentTime);
+                        customImageAdapter.notifyDataSetChanged();
+                        customImageAdapter.clear();
+                    } else if (message.equalsIgnoreCase("Request Entity Too Large")) {
+                        showAlert(NewComplaintActivity.this, "Upload Images", message, "OK");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
+    }
+
+    private String uploadImages(String itemID, ArrayList<String> lstPathURI) {
+        try{
+
+            OkHttpClient client = new OkHttpClient().newBuilder()
+                    .build();
+            MediaType mediaType = MediaType.parse("text/plain");
+            RequestBody body = null;
+            MultipartBody.Builder builder = new MultipartBody.Builder();
+
+            for (int i = 0; i < lstPathURI.size(); i++) {
+                File file = new File(lstPathURI.get(i));
+
+                /*body = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                        .addFormDataPart("file",lstPathURI.get(i),
+                                RequestBody.create(MediaType.parse("application/octet-stream"),
+                                        new File(lstPathURI.get(i)))).build();*/
+                builder.setType(MultipartBody.FORM);
+                MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(),
+                        RequestBody.create(MediaType.parse("application/octet-stream"), file));
+                builder.addPart(fileToUpload);
+               /* MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(),
+                        RequestBody.create(MediaType.parse("application/octet-stream"), file));
+                builder.addPart(fileToUpload);*/
+                //list.add(fileToUpload);
+                //builder.addFormDataPart("file", file.getName(), RequestBody.create(MultipartBody.FORM, bos.toByteArray()));
+            }
+            /*RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                    .addFormDataPart("file","/D:/Bhanu Priya Cheguri/Bhanu Personal/Designs/HairStyle/FB_IMG_1569490918813.jpg",
+                            RequestBody.create(MediaType.parse("application/octet-stream"),
+                                    new File("/D:/Bhanu Priya Cheguri/Bhanu Personal/Designs/HairStyle/FB_IMG_1569490918813.jpg")))
+                    .addFormDataPart("file","/D:/Bhanu Priya Cheguri/Bhanu Personal/Designs/HairStyle/FB_IMG_1568952724542.jpg",
+                            RequestBody.create(MediaType.parse("application/octet-stream"),
+                                    new File("/D:/Bhanu Priya Cheguri/Bhanu Personal/Designs/HairStyle/FB_IMG_1568952724542.jpg")))
+                    .build();*/
+            Request request = new Request.Builder()
+                    .url("http://api.ainext.in/posts/upload")
+                    .method("POST", builder.build())
+                    .addHeader("item", itemID)
+                    .build();
+
+            /*Request request = new Request.Builder()
+                    .url(String.format("http://api.ainext.in/posts/upload", port))
+                    .post(multipartBody).build();*/
+            okhttp3.Response response = client.newCall(request).execute();
+            responseBodyString = response.body().string();
+            hideCustomProgressDialog(NewComplaintActivity.this);
+        }catch (Exception e)
+        {
+
+        }
+
+        return responseBodyString; 
+       /* Map<String, RequestBody> maps = new HashMap<>();
+
+        if (lstPathURI!=null && lstPathURI.size()>0) {
+            for (int i = 0; i < lstPathURI.size(); i++) {
+                String filePath = lstPathURI.get(i);
+                File file1 = new File(filePath);
+
+                if (filePath != null && filePath.length() > 0) {
+                    if (file1.exists()) {
+                        okhttp3.RequestBody requestFile = okhttp3.RequestBody.create(okhttp3.MediaType.parse("multipart/form-data"), file1);
+                        String filename = "imagePath" + i; //key for upload file like : imagePath0
+                        //maps.put("file" + "\"; file=\"" + file1.getName(), requestFile);
+                        maps.put("file", requestFile);
+                    }
+                }
+            }
+        }
+
+        //hear is the your json request
+        Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
+        APIInterface api = retrofit.create(APIInterface.class);
+
+        Call<JSONObject> call = api.uploadMutlipleImages(itemID,maps);
+        //Call<String> call = service.postFile(maps, descriptionString);
+        call.enqueue(new Callback<JSONObject>() {
+            @Override
+            public void onResponse(Call<JSONObject> call,
+                                   Response<JSONObject> response) {
+
+               // hideCustomProgressDialog(NewComplaintActivity.this);
+                Log.i("LOG_TAG", "success");
+                Log.d("body==>", response.body().toString() + "");
+                Log.d("isSuccessful==>", response.isSuccessful() + "");
+                Log.d("message==>", response.message() + "");
+                Log.d("raw==>", response.raw().toString() + "");
+                Log.d("raw().networkResponse()", response.raw().networkResponse().toString() + "");
+            }
+
+            @Override
+            public void onFailure(Call<JSONObject> call, Throwable t) {
+                Log.e("LOG_TAG", t.getMessage());
+                //hideCustomProgressDialog(NewComplaintActivity.this);
+            }
+        });*/
     }
 
     public void CustomDialog(Context context,String title,String msg,String subMsg)
@@ -1285,16 +1503,37 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
         call.enqueue(new Callback<JSONObject>() {
             @Override
             public void onResponse(Call<JSONObject> call, Response<JSONObject> response) {
-                System.out.println( "uploadMultiFile::" +response.toString());
+                System.out.println( "uploadMultiFile::" +response.body().toString());
+                if (response.isSuccessful())
+                    Log.e("Success", new Gson().toJson(response.body()));
+                else
+                    Log.e("unSuccess", new Gson().toJson(response.errorBody()));
+                if(response.code() == 200) {
+                    String message = "";
+                    try {
+                        JSONObject jsonObject = new JSONObject(response.toString());
+                        if (jsonObject.has("message"))
+                            message = jsonObject.getString("message");
+
+                        if (message.equalsIgnoreCase("SUCCESS")) {
+                            CustomDialog(NewComplaintActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
+                            binding.etTitle.setText("");
+                            binding.etDescription.setText("");
+                            binding.spinner.setText("");
+                            binding.currentDate.setText(currentTime);
+                            customImageAdapter.notifyDataSetChanged();
+                            customImageAdapter.clear();
+                        } else if (message.equalsIgnoreCase("Request Entity Too Large")) {
+                            showAlert(NewComplaintActivity.this, "Upload Images", message, "OK");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
 
                 // showAlert(NewComplaintActivity.this, "Uploaded Successfully", "OK", "OK");
-                CustomDialog(NewComplaintActivity.this, "Thank You", "Your request has been successfully posted. We will process and keep in touch with you.", "");
-                binding.etTitle.setText("");
-                binding.etDescription.setText("");
-                binding.spinner.setText("");
-                binding.currentDate.setText(currentTime);
-                customImageAdapter.notifyDataSetChanged();
-                customImageAdapter.clear();
+
             }
 
             @Override
@@ -1312,7 +1551,6 @@ public class NewComplaintActivity extends BaseActivity /*implements View.OnFocus
     }
 
     public static String getPathFromUri(final Context context, final Uri uri) {
-
         // check here to KITKAT or new version
         final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
         String selection = null;

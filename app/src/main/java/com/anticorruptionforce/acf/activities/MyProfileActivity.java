@@ -51,11 +51,6 @@ public class MyProfileActivity extends BaseActivity {
 
     private void getProfileDetails() {
         String strPhotoURL = getStringSharedPreference(MyProfileActivity.this, "personPhoto");
-        Glide.with(this)
-                .load(strPhotoURL)
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .skipMemoryCache(true)
-                .into(binding.profileImage);
 
         final String strMobileNo = getStringSharedPreference(MyProfileActivity.this,"mobile");
         String strEmailId = getStringSharedPreference(MyProfileActivity.this,"personEmail");
@@ -95,6 +90,12 @@ public class MyProfileActivity extends BaseActivity {
                                 binding.gender.setText("Female");
                             else
                                 binding.gender.setText("");
+
+                            Glide.with(MyProfileActivity.this)
+                                    .load(myProfileResult.get(i).getPhoto())
+                                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                    .skipMemoryCache(true)
+                                    .into(binding.profileImage);
 
                             putStringSharedPreference(MyProfileActivity.this,"MemberID",myProfileResult.get(i).getMemberID());
                         }
@@ -192,6 +193,7 @@ public class MyProfileActivity extends BaseActivity {
         switch (item.getItemId())
         {
             case android.R.id.home:
+                finish();
                 break;
             case R.id.help:
                 Toast.makeText(MyProfileActivity.this, "Help", Toast.LENGTH_SHORT).show();

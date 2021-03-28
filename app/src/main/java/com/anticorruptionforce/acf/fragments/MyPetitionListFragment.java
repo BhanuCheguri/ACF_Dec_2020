@@ -32,6 +32,7 @@ import com.anticorruptionforce.acf.network.APIRetrofitClient;
 import com.anticorruptionforce.acf.modelclasses.PetitionModel;
 import com.anticorruptionforce.acf.adapters.PetitionsListAdapter;
 import com.anticorruptionforce.acf.utilities.App;
+import com.google.gson.Gson;
 import com.pd.chocobar.ChocoBar;
 
 import java.util.ArrayList;
@@ -162,6 +163,10 @@ public class MyPetitionListFragment extends BaseFragment {
             @Override
             public void onResponse(Call<PetitionModel> call, Response<PetitionModel> response) {
                 System.out.println("getMyPetitions::"+ response);
+                if (response.isSuccessful())
+                    Log.e("Success:getMyPetitions", new Gson().toJson(response.body()));
+                else
+                    Log.e("unSuccess", new Gson().toJson(response.errorBody()));
                 if(response != null) {
                     PetitionModel myPetitionData  = response.body();
                     if(myPetitionData != null) {
@@ -169,16 +174,22 @@ public class MyPetitionListFragment extends BaseFragment {
                         String msg = myPetitionData.getMessage();
                         if(msg.equalsIgnoreCase("SUCCESS")) {
                             lstPetitionData = myPetitionData.getResult();
-                            populateListView(lstPetitionData);
+                            if(lstPetitionData.size() > 0 && lstPetitionData != null)
+                                populateListView(lstPetitionData);
+                            else
+                                dataBiding.llNoData.setVisibility(View.VISIBLE);
                         }else
                         {
                             hideProgressDialog(getActivity());
+                            dataBiding.llNoData.setVisibility(View.VISIBLE);
                         }
                     }else {
                         hideProgressDialog(getActivity());
+                        dataBiding.llNoData.setVisibility(View.VISIBLE);
                     }
                 }else {
                     hideProgressDialog(getActivity());
+                    dataBiding.llNoData.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -186,6 +197,7 @@ public class MyPetitionListFragment extends BaseFragment {
             public void onFailure(Call<PetitionModel> call, Throwable t) {
                 //Toast.makeText(getActivity(), t.getMessage(), Toast.LENGTH_SHORT).show();
                 hideProgressDialog(getActivity());
+                dataBiding.llNoData.setVisibility(View.VISIBLE);
             }
         });
     }

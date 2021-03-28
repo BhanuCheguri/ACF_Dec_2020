@@ -92,8 +92,8 @@ public class ModeratorActivity extends BaseActivity {
     ArrayList<String> lstStatus;
     ResultModel myResultResponse;
     ArrayList<ResultModel.Result> lstResult = new ArrayList<>();
-    HashMap<String, Integer> hshStatus = new HashMap<>();
-    ArrayList<String> listStatus = new ArrayList<>();
+    HashMap<String, Integer> hshStatus;
+    ArrayList<String> listStatus;
     APIInterface api;
     MyModeratorAdapter adapter;
     private String strSPID = "";
@@ -190,6 +190,9 @@ public class ModeratorActivity extends BaseActivity {
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 System.out.println("getmoderationstatus::" + response);
                 hideProgressDialog(ModeratorActivity.this);
+
+                hshStatus = new HashMap<>();
+                listStatus = new ArrayList<>();
 
                 if (response != null) {
                     //JsonObject myStatusResponse = response.body();
@@ -288,6 +291,8 @@ public class ModeratorActivity extends BaseActivity {
             public void onResponse(Call<ProviderModel> call, Response<ProviderModel> response) {
                 System.out.println("getServiceProviders::" + response);
                 hideProgressDialog(ModeratorActivity.this);
+                lstProviderData = new ArrayList<>();
+
                 if (response != null) {
                     myProviderResponse = response.body();
 
@@ -507,6 +512,7 @@ public class ModeratorActivity extends BaseActivity {
             ImageView imgFilePath;
             LinearLayout linearLayout;
             LinearLayout ll_spinners;
+            LinearLayout ll_serviceprovider;
             LinearLayout linearImages;
             Button submit;
 
@@ -521,6 +527,7 @@ public class ModeratorActivity extends BaseActivity {
                 this.imgFilePath = (ImageView) rowView.findViewById(R.id.imgFilePath);
                 this.linearLayout = (LinearLayout) rowView.findViewById(R.id.linear);
                 this.ll_spinners = (LinearLayout) rowView.findViewById(R.id.ll_spinners);
+                this.ll_serviceprovider = (LinearLayout) rowView.findViewById(R.id.ll_serviceprovider);
                 this.submit = (Button) rowView.findViewById(R.id.submit);
                 this.imgFilePath.setBackgroundResource(R.drawable.rippleeffect);
                 this.linearImages = (LinearLayout) rowView.findViewById(R.id.linearImages);
@@ -552,6 +559,10 @@ public class ModeratorActivity extends BaseActivity {
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     status = position + 1;
                     selectedStatus = parent.getItemAtPosition(position).toString();
+                    if(selectedStatus.equalsIgnoreCase("PENDING") || selectedStatus.equalsIgnoreCase("PUBLISH")){
+                        holder.ll_serviceprovider.setVisibility(View.GONE);
+                    }else
+                        holder.ll_serviceprovider.setVisibility(View.VISIBLE);
                     System.out.println("status:" + status);
                     System.out.println("statusselectedItem:" + selectedStatus);
                    // Toast.makeText(ModeratorActivity.this, "Successfully assigned to " + selectedItem, Toast.LENGTH_SHORT).show();
@@ -584,6 +595,10 @@ public class ModeratorActivity extends BaseActivity {
             if (dataModel.getMODSATUS() != null) {
                 int spinnerPosition = lstStatus.indexOf(dataModel.getMODSATUS());
                 holder.spStatus.setSelection(spinnerPosition);
+                if(dataModel.getMODSATUS().equalsIgnoreCase("PUBLISH"))
+                    holder.spProvider.setEnabled(false);
+                else
+                    holder.spProvider.setEnabled(true);
             }
 
             if (dataModel.getAssignedTo() != null) {
@@ -661,8 +676,8 @@ public class ModeratorActivity extends BaseActivity {
                         if (strMimeType.equalsIgnoreCase("jpg") || strMimeType.equalsIgnoreCase("mp4")) {
                             Utils.showDialog(strMimeType, content, context);
                         } else
-                            Utils.showDialog(strMimeType, content, context);
-                        //openFile(Uri.parse(content), content, context);
+                            //Utils.showDialog(strMimeType, content, context);
+                            openFile(Uri.parse(content), content, context);
                     } catch (ActivityNotFoundException e) {
                         e.printStackTrace();
                         Toast.makeText(context, "No Activity found to handle this file. Need to install supported Application", Toast.LENGTH_LONG).show();
@@ -674,7 +689,9 @@ public class ModeratorActivity extends BaseActivity {
             holder.submit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(!selectedStatus.equalsIgnoreCase("PENDING")) {
+                    if(selectedStatus.equalsIgnoreCase("PENDING") || selectedStatus.equalsIgnoreCase("PUBLISH")){
+                        postAddModeration(Integer.parseInt(dataModel.getItemID()), Integer.parseInt(strSPID), status, provider);
+                    }else{
                         if (provider != 0) {
                             System.out.println(Integer.parseInt(dataModel.getItemID()));
                             System.out.println(Integer.parseInt(strSPID));
@@ -683,8 +700,7 @@ public class ModeratorActivity extends BaseActivity {
                             postAddModeration(Integer.parseInt(dataModel.getItemID()), Integer.parseInt(strSPID), status, provider);
                         } else
                             Toast.makeText(context, "Please select a valid Service Provider", Toast.LENGTH_SHORT).show();
-                    }else
-                        Toast.makeText(context, "Please select a valid Status", Toast.LENGTH_SHORT).show();
+                    }
 
                 }
             });
@@ -853,7 +869,7 @@ public class ModeratorActivity extends BaseActivity {
                                                 if (res != -1) {
                                                     showModAlert(ModeratorActivity.this, "Success", "Moderation Successful", "OK");
                                                 } else
-                                                    showAlert(ModeratorActivity.this, "Alert", "Item already added ", "OK");
+                                                    showAlert(ModeratorActivity.this, "Alert", "Result:"+ res, "OK");
                                             }
                                         }
                                     } else

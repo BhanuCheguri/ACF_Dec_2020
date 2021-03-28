@@ -176,8 +176,8 @@ public class MyPostingsActivity extends BaseActivity {
                 @Override
                 public void onFailure(Call<DashboardCategories> call, Throwable t) {
                     //FirebaseCrashlytics.getInstance().setCustomKey("MyPostingsActivity", t.getMessage());                    hideProgressDialog(MyPostingsActivity.this);
-                    Toast.makeText(MyPostingsActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-                    showAlert(MyPostingsActivity.this,"Error","Unable to get the Categories list","OK");
+                    Toast.makeText(MyPostingsActivity.this, "Unable to get the Categories list \n "+t.getMessage(), Toast.LENGTH_SHORT).show();
+                    //showAlert(MyPostingsActivity.this,"Error","Unable to get the Categories list","OK");
                 }
             });
 
@@ -206,10 +206,13 @@ public class MyPostingsActivity extends BaseActivity {
                     String msg = myPostingsData.getMessage();
                     if (msg.equalsIgnoreCase("SUCCESS")) {
                         myPostingResult = myPostingsData.getResult();
-                        adapter = new MyPostingAdapter(MyPostingsActivity.this,myPostingResult);
-                        dataBiding.lvPosting.setLayoutManager(new LinearLayoutManager(MyPostingsActivity.this));
-                        dataBiding.lvPosting.setItemAnimator(new DefaultItemAnimator());
-                        dataBiding.lvPosting.setAdapter(adapter);
+                        if(myPostingResult != null && myPostingResult.size() > 0){
+                            adapter = new MyPostingAdapter(MyPostingsActivity.this, myPostingResult);
+                            dataBiding.lvPosting.setLayoutManager(new LinearLayoutManager(MyPostingsActivity.this));
+                            dataBiding.lvPosting.setItemAnimator(new DefaultItemAnimator());
+                            dataBiding.lvPosting.setAdapter(adapter);
+                        }else
+                            dataBiding.llNoData.setVisibility(View.VISIBLE);
                     }else{
                         dataBiding.llNoData.setVisibility(View.VISIBLE);
                         hideProgressDialog(MyPostingsActivity.this);
@@ -224,6 +227,7 @@ public class MyPostingsActivity extends BaseActivity {
             @Override
             public void onFailure(Call<MyPostingModel> call, Throwable t) {
                 Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                dataBiding.llNoData.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -362,8 +366,8 @@ public class MyPostingsActivity extends BaseActivity {
                         context.startActivity(intent);*/
                             Utils.showDialog(strMimeType,content,context);
                         }else
-                            //openFile(Uri.parse(content), content, context);
-                            Utils.showDialog(strMimeType,content,context);
+                            openFile(Uri.parse(content), content, context);
+                            //Utils.showDialog(strMimeType,content,context);
                     } catch (ActivityNotFoundException e) {
                         e.printStackTrace();
                         Toast.makeText(context, "No File found to handle this file.", Toast.LENGTH_LONG).show();

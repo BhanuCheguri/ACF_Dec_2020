@@ -357,13 +357,13 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            showProgressDialog(NewLoginActivity.this,"Login-In to Google");
+            //showProgressDialog(NewLoginActivity.this,"Login-In to Google");
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            hideProgressDialog(NewLoginActivity.this);
+            //hideProgressDialog(NewLoginActivity.this);
         }
 
         @Override
@@ -504,6 +504,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                 break;
             case R.id.sign_in_button:
             case R.id.google:
+                showProgressDialog(NewLoginActivity.this,"Login-In to Google");
                 if(App.isNetworkAvailable())
                     new GPlusAyncTask().execute();
                 else{
@@ -594,7 +595,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         callbackManager.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
-
+        //hideProgressDialog(NewLoginActivity.this);
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             try {
@@ -655,7 +656,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            showProgressDialog(NewLoginActivity.this,"Please wait.. ");
+            //showProgressDialog(NewLoginActivity.this,"Please wait.. ");
         }
         @Override
         protected String doInBackground(String... strings) {
@@ -1045,7 +1046,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
 
     private void getValidateMember(String Email)
     {
-        showProgressDialog(NewLoginActivity.this,"Please wait.. We are validating your Email ID");
+        //showProgressDialog(NewLoginActivity.this,"Please wait.. We are validating your Email ID");
         try{
             Retrofit retrofit = apiRetrofitClient.getRetrofit(APIInterface.BASE_URL);
             APIInterface api = retrofit.create(APIInterface.class);
@@ -1055,7 +1056,7 @@ public class NewLoginActivity extends BaseActivity implements View.OnClickListen
                 @Override
                 public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
                     System.out.println("getValidateMember:"+ response);
-                    hideProgressDialog(NewLoginActivity.this);
+                    //hideProgressDialog(NewLoginActivity.this);
                     if(response.code() == 200)
                     {
                         StatusResponse myResponseData = response.body();

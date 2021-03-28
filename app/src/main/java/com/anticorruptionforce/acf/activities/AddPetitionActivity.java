@@ -138,6 +138,8 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
     int PERMISSION_ID = 44;
     FusedLocationProviderClient mFusedLocationClient;
 
+    Boolean bStatusVisible = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -187,50 +189,60 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
                 strTitle = binding.etTitle.getText().toString();
                 //strComments = binding.etCimment.getText().toString();
                 int petitionID = -1;
-                if (!strTitle.equalsIgnoreCase("") && /*!strComments.equalsIgnoreCase("") &&*/ !strSectionID.equalsIgnoreCase("") && !strSPID.equalsIgnoreCase("")) {
-                    String MemberID = getStringSharedPreference(AddPetitionActivity.this, "MemberID");
-                    if(!MemberID.equalsIgnoreCase("")) {
-                        int createBy = Integer.valueOf(MemberID);
-                        JSONObject jsonParam = new JSONObject();
-                        try {
-                            jsonParam.put("petitionID", petitionID);
-                            jsonParam.put("spid", strSPID);
-                            jsonParam.put("sectionID", strSectionID);
-                            jsonParam.put("title", binding.etTitle.getText().toString());
-                            jsonParam.put("image1", "");
-                            jsonParam.put("image2", "");
-                            jsonParam.put("image3", "");
-                            jsonParam.put("image4", "");
-                            jsonParam.put("image5", "");
-                            jsonParam.put("image6", "");
-                            jsonParam.put("createBy", createBy);
-                            jsonParam.put("location", currentAddress);
-                            jsonParam.put("latitude", lat);
-                            jsonParam.put("langitude", lang);
-                            jsonParam.put("remarks", "");
-                            Log.i("JSON", jsonParam.toString());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        if (App.isNetworkAvailable())
-                            new AsyncSubmitPetition().execute(jsonParam.toString()/*,ADD_PETITION*/);
-                        else {
-                            ChocoBar.builder().setView(binding.mainLayout)
-                                    .setText("No Internet connection")
-                                    .setDuration(ChocoBar.LENGTH_INDEFINITE)
-                                    //.setActionText(android.R.string.ok)
-                                    .red()   // in built red ChocoBar
-                                    .show();
-                        }
-                    }else{
-                        Toast.makeText(AddPetitionActivity.this, "Member ID is Empty.Please logout and Re-Login to get your Member ID", Toast.LENGTH_SHORT).show();
+                if (!bStatusVisible) {
+                    if (!strTitle.equalsIgnoreCase("") && /*!strComments.equalsIgnoreCase("") &&*/ !strSectionID.equalsIgnoreCase("") && !strSPID.equalsIgnoreCase("")) {
+                        callSubmit(petitionID);
+                    } else
+                        Toast.makeText(AddPetitionActivity.this, "Please fill all the fileds", Toast.LENGTH_SHORT).show();
+                }else {
+                    if (!strTitle.equalsIgnoreCase("") && /*!strComments.equalsIgnoreCase("") &&*/ !strSectionID.equalsIgnoreCase("-1") && !strSPID.equalsIgnoreCase("-1")) {
+                        callSubmit(petitionID);
                     }
-                } else
-                    Toast.makeText(AddPetitionActivity.this, "Please fill all the fileds", Toast.LENGTH_SHORT).show();
+                } /*else
+                    Toast.makeText(AddPetitionActivity.this, "Please fill all the fileds", Toast.LENGTH_SHORT).show();*/
             }
         });
     }
 
+    private void callSubmit(int petitionID){
+        String MemberID = getStringSharedPreference(AddPetitionActivity.this, "MemberID");
+        if (!MemberID.equalsIgnoreCase("")) {
+            int createBy = Integer.valueOf(MemberID);
+            JSONObject jsonParam = new JSONObject();
+            try {
+                jsonParam.put("petitionID", petitionID);
+                jsonParam.put("spid", strSPID);
+                jsonParam.put("sectionID", strSectionID);
+                jsonParam.put("title", binding.etTitle.getText().toString());
+                jsonParam.put("image1", "");
+                jsonParam.put("image2", "");
+                jsonParam.put("image3", "");
+                jsonParam.put("image4", "");
+                jsonParam.put("image5", "");
+                jsonParam.put("image6", "");
+                jsonParam.put("createBy", createBy);
+                jsonParam.put("location", currentAddress);
+                jsonParam.put("latitude", lat);
+                jsonParam.put("langitude", lang);
+                jsonParam.put("remarks", "");
+                Log.i("JSON", jsonParam.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (App.isNetworkAvailable())
+                new AsyncSubmitPetition().execute(jsonParam.toString()/*,ADD_PETITION*/);
+            else {
+                ChocoBar.builder().setView(binding.mainLayout)
+                        .setText("No Internet connection")
+                        .setDuration(ChocoBar.LENGTH_INDEFINITE)
+                        //.setActionText(android.R.string.ok)
+                        .red()   // in built red ChocoBar
+                        .show();
+            }
+        } else {
+            Toast.makeText(AddPetitionActivity.this, "Member ID is Empty.Please logout and Re-Login to get your Member ID", Toast.LENGTH_SHORT).show();
+        }
+    }
     private void getOfficesbyGeoLocation(double lat, double lang) {
         showProgressDialog(AddPetitionActivity.this);
         apiRetrofitClient = new APIRetrofitClient();
@@ -249,13 +261,14 @@ public class AddPetitionActivity extends BaseActivity implements View.OnClickLis
 
                         binding.spOffice.setVisibility(View.VISIBLE);
                         binding.spSelection.setVisibility(View.VISIBLE);
-
+                        bStatusVisible = true;
                         String status = myOfficesResponse.getStatus();
                         String msg = myOfficesResponse.getMessage();
                         if (msg.equalsIgnoreCase("SUCCESS")) {
                             lstOfficesData = myOfficesResponse.getResult();
                             loadOfficeAdapter(lstOfficesData);
                         } else {
+                            bStatusVisible = false;
                             strSPID = "-1";
                             strSectionID = "-1";
                             binding.spOffice.setVisibility(View.GONE);
